@@ -1,47 +1,47 @@
-// Генератор SVG-кусков «чашки вверх дном на подогреве» для art-src/bar/machine.svg (блок 29-1в).
-// Форма — игровая керамика (geomOf, k = 1: W 55, Wb 42,9, H 75, yb −8, ryR 14, reach 26, ручка th = 6·min(k, 1,2) px), отражённая по вертикали и уменьшенная в s раз (экранные px).
-// Запуск: node scripts/make-warmer-cups.mjs  → печатает куски; вставляются в machine.svg между <!--cups--> и <!--/cups-->. Тест test/artSrcCenter.test.ts сверяет их с geomOf.
+// Генератор SVG-кусков «чашки вверх дном на подогреве» для art-src/bar/machine.svg (блок 29-1д).
+// Каждая чашка нарисована явным контуром (не отражением игровой геометрии): низ на подносе — обод, самая широкая часть;
+// стенки сужаются к донышку наверху до 72 % ширины обода; донышко — плоский светлый эллипс ≈ 58 % ширины обода с тонким кольцом ножки;
+// ручка справа: верхний крепёж у донышка (1/4 высоты от верха), нижний на 2/3, петля наружу.
+// Размеры и положения: масштабы 0,50 / 0,425 / 0,36 игровой керамики 0,2 л (обод 55 ед. → ширина 55 / 47 / 40 px), высота 45 / 39 / 33 px.
+// Запуск: node scripts/make-warmer-cups.mjs  → печатает куски для machine.svg (между <!--cups--> и <!--/cups-->). Тест test/artSrcCenter.test.ts разбирает их.
 const f = (n) => +n.toFixed(1);
-export const GEOM = { W: 55, Wb: 55 * 0.78, H: 75, yb: -8, ryR: 14, reach: 26 };
-export const CUPS = [{ s: 0.5, cx: 505 }, { s: 0.425, cx: 577 }, { s: 0.36, cx: 641 }];
-export const TRAY_TOP = 184; // верх подноса; нижняя кромка обода на 1 px ниже
-const UNIT = 2.5 / 3; // BAR_UNIT керамики: k = s / UNIT
-export function cupSvg({ s, cx }) {
-  const { W, Wb, H, yb, ryR, reach } = GEOM;
-  const k = s / UNIT;
-  const yR = TRAY_TOP + 1 - ryR * s;
-  const X = (x) => cx + s * x;
-  const Y = (y) => yR - s * (y + H); // отражение: обод внизу, донце вверху
+export const RIM = 55;          // полуширина обода игровой керамики 0,2 л, ед.
+export const TOP_K = 0.72;      // ширина у донышка / ширина у обода
+export const FOOT_K = 0.58;     // ширина светлого эллипса донышка / ширина у обода
+export const CUPS = [{ s: 0.5, h: 45, cx: 505 }, { s: 0.425, h: 39, cx: 577 }, { s: 0.36, h: 33, cx: 641 }];
+export const TRAY_TOP = 184;    // верх подноса; линия обода на 1 px ниже
+const UNIT = 2.5 / 3;           // BAR_UNIT керамики: k = s / UNIT
+export function cupSvg({ s, h, cx }) {
+  const Wr = RIM * s, Wt = TOP_K * Wr, Wf = FOOT_K * Wr;
+  const ryR = 0.15 * Wr, ryT = 0.25 * Wt, ryF = 0.25 * Wf;     // обод почти прямая линия по подносу
+  const yb = TRAY_TOP + 1;                                       // нижняя точка обода (линия по подносу)
+  const yR = yb - ryR;                                           // центр эллипса обода
+  const B = h - ryR - ryT;                                       // высота стенки
+  const yT = yR - B;                                             // центр эллипса донышка
   const o = [];
-  o.push(`<ellipse cx="${f(cx + 1)}" cy="${f(TRAY_TOP + 1.5)}" rx="${f(W * s + 4)}" ry="2.4" fill="{{SHADOW}}" fill-opacity=".25" stroke="none"/>`);
-  o.push(`<ellipse cx="${f(cx)}" cy="${f(TRAY_TOP + 1)}" rx="${f(W * s - 2)}" ry="1.6" fill="{{SHADOW}}" fill-opacity=".4" stroke="none"/>`);
-  // ручка справа: полоса толщиной th = 6·min(k, 1,2) px с контуром M (как у игровой: INK th + 2M, PAPER th)
-  const th = 6 * Math.min(k, 1.2), d = th / 2 + 1.5;
-  const hx = W - 3, y0 = -H * 0.8, y1 = -H * 0.26;
-  const P = (t) => { const u = 1 - t, c = [[hx, y0], [hx + reach, y0 - 6], [hx + reach, y1 + 4], [hx - 3, y1]];
-    return [u*u*u*c[0][0] + 3*u*u*t*c[1][0] + 3*u*t*t*c[2][0] + t*t*t*c[3][0], u*u*u*c[0][1] + 3*u*u*t*c[1][1] + 3*u*t*t*c[2][1] + t*t*t*c[3][1]]; };
-  const pts = [], N = 14;
-  for (let i = 0; i <= N; i++) pts.push(P(i / N));
-  const sc = pts.map(([x, y]) => [X(x), Y(y)]);
+  o.push(`<ellipse cx="${f(cx + 1)}" cy="${f(yb + 0.5)}" rx="${f(Wr + 4)}" ry="2.4" fill="{{SHADOW}}" fill-opacity=".25" stroke="none"/>`);
+  // ручка: от донышка к ободу, петля наружу
+  const k = s / UNIT, th = 6 * Math.min(k, 1.2), d = th / 2 + 1.5;
+  const wallX = (t) => Wt + (Wr - Wt) * t;                       // полуширина стенки на доле высоты от верха
+  const t0 = 0.25, t1 = 0.67;
+  const c = [[cx + wallX(t0) - 1, yT + t0 * B], [cx + wallX(t0) + 0.62 * Wr, yT + t0 * B - 0.06 * B], [cx + wallX(t1) + 0.55 * Wr, yT + t1 * B + 0.1 * B], [cx + wallX(t1) - 2, yT + t1 * B]];
+  const P = (t) => { const u = 1 - t; return [0, 1].map((i) => u*u*u*c[0][i] + 3*u*u*t*c[1][i] + 3*u*t*t*c[2][i] + t*t*t*c[3][i]); };
+  const N = 14, sc = [];
+  for (let i = 0; i <= N; i++) sc.push(P(i / N));
   const nrm = sc.map((p, i) => { const a = sc[Math.max(0, i - 1)], b = sc[Math.min(N, i + 1)]; const dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1; return [-dy / l, dx / l]; });
   const L = sc.map((p, i) => [p[0] + nrm[i][0] * d, p[1] + nrm[i][1] * d]);
   const R = sc.map((p, i) => [p[0] - nrm[i][0] * d, p[1] - nrm[i][1] * d]).reverse();
-  const poly = [...L, ...R].map(([x, y], i) => `${i ? 'L' : 'M'}${f(x)} ${f(y)}`).join('') + 'Z';
-  o.push(`<path d="${poly}" fill="{{PAPER}}" stroke-width="{{M}}"/>`);
-  // корпус
-  const body = `M${f(X(-W))} ${f(Y(-H))}C${f(X(-W * 1.03))} ${f(Y(-H * 0.5))} ${f(X(-Wb * 1.1))} ${f(Y(-H * 0.1))} ${f(X(-Wb))} ${f(Y(yb))}Q${f(X(0))} ${f(Y(4))} ${f(X(Wb))} ${f(Y(yb))}C${f(X(Wb * 1.1))} ${f(Y(-H * 0.1))} ${f(X(W * 1.03))} ${f(Y(-H * 0.5))} ${f(X(W))} ${f(Y(-H))}A${f(W * s)} ${f(ryR * s)} 0 0 1 ${f(X(-W))} ${f(Y(-H))}Z`;
+  o.push(`<path d="${[...L, ...R].map(([x, y], i) => `${i ? 'L' : 'M'}${f(x)} ${f(y)}`).join('')}Z" fill="{{PAPER}}" stroke-width="{{M}}"/>`);
+  // корпус: левая стенка вверх к донышку, дальняя дуга донышка, правая стенка вниз, ближняя дуга обода (почти прямая по подносу)
+  const body = `M${f(cx - Wr)} ${f(yR)}C${f(cx - 1.03 * Wr)} ${f(yR - 0.5 * B)} ${f(cx - 1.08 * Wt)} ${f(yT + 0.12 * B)} ${f(cx - Wt)} ${f(yT)}A${f(Wt)} ${f(ryT)} 0 0 1 ${f(cx + Wt)} ${f(yT)}C${f(cx + 1.08 * Wt)} ${f(yT + 0.12 * B)} ${f(cx + 1.03 * Wr)} ${f(yR - 0.5 * B)} ${f(cx + Wr)} ${f(yR)}A${f(Wr)} ${f(ryR)} 0 0 1 ${f(cx - Wr)} ${f(yR)}Z`;
   o.push(`<path d="${body}" fill="{{PAPER}}" stroke-width="{{M}}"/>`);
-  // тень справа (как KRAFT_SH у игровой)
-  o.push(`<path d="M${f(X(W * 0.55))} ${f(Y(-H * 0.98))}L${f(X(W))} ${f(Y(-H))}C${f(X(W * 1.03))} ${f(Y(-H * 0.5))} ${f(X(Wb * 1.1))} ${f(Y(-H * 0.1))} ${f(X(Wb))} ${f(Y(yb))}Q${f(X(Wb * 0.4))} ${f(Y(1))} ${f(X(Wb * 0.15))} ${f(Y(0))}C${f(X(Wb * 0.5))} ${f(Y(-H * 0.3))} ${f(X(W * 0.72))} ${f(Y(-H * 0.62))} ${f(X(W * 0.55))} ${f(Y(-H * 0.98))}Z" fill="{{KRAFT_SH}}" stroke="none"/>`);
-  // донце сверху: плоский эллипс (донце видно сверху, внутри ничего)
-  const by = Y(yb);
-  const bw = Wb * s, bh = 0.23 * Wb * s;
-  // донце: светлая плоскость (без тёмного входа), контур только по дальней кромке; внутри узкий светлый эллипс с тонким кольцом ножки (меньше диаметра донца и тела)
-  o.push(`<ellipse cx="${f(cx)}" cy="${f(by)}" rx="${f(bw)}" ry="${f(bh)}" fill="{{PAPER}}" stroke="none"/>`);
-  o.push(`<path d="M${f(cx - bw)} ${f(by)}A${f(bw)} ${f(bh)} 0 0 1 ${f(cx + bw)} ${f(by)}" fill="none" stroke-width="{{M}}"/>`);
-  o.push(`<ellipse cx="${f(cx)}" cy="${f(by)}" rx="${f(bw * 0.58)}" ry="${f(bh * 0.58)}" fill="{{HILITE}}" stroke="{{KRAFT_SH}}" stroke-width="{{D}}"/>`);
-  // блик слева (как у игровой: белая дуга)
-  o.push(`<path d="M${f(X(-W * 0.82))} ${f(Y(-H * 0.8))}Q${f(X(-W * 0.88))} ${f(Y(-H * 0.45))} ${f(X(-Wb * 0.88))} ${f(Y(-H * 0.2))}" fill="none" stroke="{{HILITE}}" stroke-opacity=".75" stroke-width="{{D}}" stroke-linecap="round"/>`);
+  // тень справа
+  o.push(`<path d="M${f(cx + 0.66 * Wt)} ${f(yT + 0.7 * ryT)}L${f(cx + Wt)} ${f(yT)}C${f(cx + 1.08 * Wt)} ${f(yT + 0.12 * B)} ${f(cx + 1.03 * Wr)} ${f(yR - 0.5 * B)} ${f(cx + Wr)} ${f(yR)}L${f(cx + 0.68 * Wr)} ${f(yR + 0.73 * ryR)}C${f(cx + 0.7 * Wr)} ${f(yR - 0.3 * B)} ${f(cx + 0.68 * Wt)} ${f(yT + 0.3 * B)} ${f(cx + 0.66 * Wt)} ${f(yT + 0.7 * ryT)}Z" fill="{{KRAFT_SH}}" stroke="none"/>`);
+  // край донышка (ближняя дуга) и светлый эллипс ножки с тонким кольцом
+  o.push(`<path d="M${f(cx - Wt)} ${f(yT)}A${f(Wt)} ${f(ryT)} 0 0 0 ${f(cx + Wt)} ${f(yT)}" fill="none" stroke="{{KRAFT_SH}}" stroke-width="{{D}}"/>`);
+  o.push(`<ellipse cx="${f(cx)}" cy="${f(yT)}" rx="${f(Wf)}" ry="${f(ryF)}" fill="{{HILITE}}" stroke="{{KRAFT_SH}}" stroke-width="{{D}}"/>`);
+  // блик слева
+  o.push(`<path d="M${f(cx - 0.82 * Wr)} ${f(yR - 0.2 * B)}Q${f(cx - 0.86 * Wr)} ${f(yR - 0.5 * B)} ${f(cx - 0.8 * Wt)} ${f(yT + 0.25 * B)}" fill="none" stroke="{{HILITE}}" stroke-opacity=".75" stroke-width="{{D}}" stroke-linecap="round"/>`);
   return `<g>${o.join('')}</g>`;
 }
 if (process.argv[1] && process.argv[1].endsWith('make-warmer-cups.mjs')) console.log(CUPS.map(cupSvg).join('\n'));
