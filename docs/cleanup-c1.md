@@ -96,3 +96,8 @@
 - после: `64cb85e672c32e1a0948285d20162188f0e5286507555d236f142d09fa1cacb0`
 
 Проверено: `npm run check`, `lint:legacy`, `content:check`, `art:check`, `build` зелёные; `e2e/zones_test.js` (ALL OK) и `e2e/bar_test2.js latte` (served 1, NO_ERRORS) на отладочной сборке.
+
+## C-2
+
+Вопросы 1–3 закрыты: `audit.md`, `audit-systematic.md`, `stage-12-2.md` оставлены как история; `e2e/scene_shot.js` оставлен (нужен для кадров зала в блоке 30); висящие ссылки убраны.
+Поправлено (только тексты): `CLAUDE.md` (абзац Б1-4 отсылает к репликам коуча Б1-5; `src/audio/sfx_data.js` больше не называется путём), `docs/art/styleguide.md` (нет `e2e/art_before_after.js` и `remarks/13-undercounter-before.png`), `docs/art/remarks/README.md` (кадры 04–13 помечены «не сохранён в репозитории»).
