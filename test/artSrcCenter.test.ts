@@ -7,6 +7,7 @@ import PFA from '../art-src/bar/pf-a.svg?raw';
 import PFB from '../art-src/bar/pf-b.svg?raw';
 import INDEX from '../index.html?raw';
 import { geomOf, type CeramicGeom } from '../src/render/world/drinkModel';
+import PAL from '../art-src/palette.json';
 
 /* Блок 29-1 (центр бара): кофемашина и кофемолка в языке эталона. Проверяется, что новая геометрия не уехала от зон и подвижных деталей (якоря в bar.ts и legacy: pf (630,350), чашка (630,478), стрелка (630,257), стоп (740,257), ручка помола (160,332), пф у кофемолки (160,440)). */
 type R = { x: number; y: number; w: number; h: number };
@@ -66,9 +67,9 @@ describe('art-src/bar: кофемашина', () => {
   interface Cup { cx: number; Wr: number; Wt: number; Wf: number; ryR: number; ryT: number; yR: number; yT: number; hx: number[]; hy: number[]; blk: string }
   /* разбор кусков чашек (между <!--cups--> и <!--/cups-->): обод, донышко, светлый эллипс, ручка */
   const cups = (): Cup[] =>
-    MACHINE.slice(MACHINE.indexOf('<!--cups-->'), MACHINE.indexOf('<!--/cups-->')).split('<g>').slice(1).map((blk) => {
+    MACHINE.slice(MACHINE.lastIndexOf('<!--cups-->'), MACHINE.lastIndexOf('<!--/cups-->')).split('<g>').slice(1).map((blk) => {
       const body = /<path d="M([\d.]+) ([\d.]+)C[^"]*A([\d.]+) ([\d.]+) 0 0 1 [\d.]+ ([\d.]+)C[^"]*A([\d.]+) ([\d.]+) 0 0 1 [\d.]+ [\d.]+Z" fill="\{\{PAPER\}\}" stroke-width="\{\{M\}\}"\/>/.exec(blk);
-      const foot = /<ellipse cx="([\d.]+)" cy="([\d.]+)" rx="([\d.]+)" ry="([\d.]+)" fill="\{\{HILITE\}\}" stroke="\{\{KRAFT_SH\}\}"/.exec(blk);
+      const foot = /<ellipse cx="([\d.]+)" cy="([\d.]+)" rx="([\d.]+)" ry="([\d.]+)" fill="\{\{PAPER\}\}" stroke="\{\{KRAFT_SH\}\}"/.exec(blk);
       const hand = /<path d="(M[\d. L]*)Z" fill="\{\{PAPER\}\}" stroke-width="\{\{M\}\}"\/>/.exec(blk);
       if (!body || !foot || !hand) throw new Error('нет обода, донышка или ручки');
       const pts = [...(hand[1] as string).matchAll(/[ML]([\d.]+) ([\d.]+)/g)];
@@ -100,9 +101,46 @@ describe('art-src/bar: кофемашина', () => {
       expect(c.Wf / c.Wr).toBeLessThanOrEqual(0.6);
       expect(c.Wf).toBeLessThan(c.Wt); /* эллипс уже донышка тела */
       for (const bad of ['CER_IN', 'DARK', 'TERRA', 'DUSTY', 'MUSTARD', 'CHOC']) expect(c.blk.includes(bad)).toBe(false);
-      expect(c.blk.split('fill="{{PAPER}}"').length - 1).toBe(2); /* тело и ручка */
+      expect(c.blk.split('fill="{{PAPER}}"').length - 1).toBe(4); /* ручка, тело, плоскость донышка, эллипс ножки: один светлый цвет */
       expect(c.blk).toContain('fill="{{KRAFT_SH}}" stroke="none"'); /* тень справа */
     }
+  });
+  test('в machine.svg ровно три группы чашек и одна пара меток (в комментарии меток нет: сборка режет комментарии по первому закрытию, и остатки старых чашек рисовались под новыми)', () => {
+    expect(MACHINE.split('<g><ellipse').length - 1).toBe(3);
+    expect(MACHINE.split('<!--cups-->').length - 1).toBe(1);
+    expect(MACHINE.split('<!--/cups-->').length - 1).toBe(1);
+  });
+  test('донышко: верхний эллипс залит цветом тела (светлее или равен, по числам палитры), без заливки тона «внутренности» игровой чашки (CER_IN, CER_IN_DP) и без тени внутри; у всех трёх одинаково', () => {
+    const lum = (hex: string): number => { const n = parseInt(hex.slice(1), 16); return 0.2126 * ((n >> 16) & 255) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255); };
+    const col = (t: string): string => (PAL.colors as Record<string, string>)[t] as string;
+    const inner = [PAL.colors.CER_IN, PAL.colors.CER_IN_DP];
+    for (const c of cups()) {
+      const top = /<ellipse cx="[\d.]+" cy="[\d.]+" rx="([\d.]+)" ry="[\d.]+" fill="\{\{(\w+)\}\}" stroke="none"\/>/.exec(c.blk.replace(/<ellipse cx="[\d.]+" cy="[\d.]+" rx="[\d.]+" ry="2.4"[^>]*>/, ''));
+      expect(top).not.toBeNull();
+      const [, rx, tok] = top as RegExpExecArray;
+      expect(num(rx)).toBeCloseTo(c.Wt, 1);
+      expect(lum(col(tok as string))).toBeGreaterThanOrEqual(lum(col('PAPER'))); /* не темнее тела */
+      expect(inner).not.toContain(col(tok as string));
+      expect(tok).toBe('PAPER');
+      /* тень справа (KRAFT_SH) рисуется до донышка, поэтому на верх не заходит */
+      expect(c.blk.indexOf('fill="{{KRAFT_SH}}" stroke="none"')).toBeLessThan(c.blk.indexOf(String(top && top[0])));
+    }
+  });
+  test('ручка: верхний крепёж на 20–25 % высоты стенки от донышка, нижний на 65–70 %, у всех трёх на одной и той же доле (допуск 3 %)', () => {
+    const ups: number[] = [];
+    const lows: number[] = [];
+    for (const c of cups()) {
+      const B = c.yR - c.yT;
+      const n = c.hy.length;
+      const start = ((c.hy[0] as number) + (c.hy[n - 1] as number)) / 2; /* середина полосы у начала: крайние точки смещены на ± полутолщины */
+      const end = ((c.hy[n / 2 - 1] as number) + (c.hy[n / 2] as number)) / 2;
+      ups.push((start - c.yT) / B);
+      lows.push((end - c.yT) / B);
+    }
+    for (const u of ups) { expect(u).toBeGreaterThanOrEqual(0.2); expect(u).toBeLessThanOrEqual(0.25); }
+    for (const l of lows) { expect(l).toBeGreaterThanOrEqual(0.65); expect(l).toBeLessThanOrEqual(0.7); }
+    expect(Math.max(...ups) - Math.min(...ups)).toBeLessThanOrEqual(0.03);
+    expect(Math.max(...lows) - Math.min(...lows)).toBeLessThanOrEqual(0.03);
   });
   test('ручка справа: верхний крепёж у донышка (≈ 1/4 высоты стенки от верха), нижний на ≈ 2/3, петля наружу правее обода', () => {
     for (const c of cups()) {

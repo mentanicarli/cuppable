@@ -1,4 +1,4 @@
-// Генератор SVG-кусков «чашки вверх дном на подогреве» для art-src/bar/machine.svg (блок 29-1д).
+// Генератор SVG-кусков «чашки вверх дном на подогреве» для art-src/bar/machine.svg (блоки 29-1д, 29-1е). Все три чашки строит ОДНА функция cupSvg, различаются только масштабом.
 // Каждая чашка нарисована явным контуром (не отражением игровой геометрии): низ на подносе — обод, самая широкая часть;
 // стенки сужаются к донышку наверху до 72 % ширины обода; донышко — плоский светлый эллипс ≈ 58 % ширины обода с тонким кольцом ножки;
 // ручка справа: верхний крепёж у донышка (1/4 высоты от верха), нижний на 2/3, петля наружу.
@@ -23,7 +23,7 @@ export function cupSvg({ s, h, cx }) {
   // ручка: от донышка к ободу, петля наружу
   const k = s / UNIT, th = 6 * Math.min(k, 1.2), d = th / 2 + 1.5;
   const wallX = (t) => Wt + (Wr - Wt) * t;                       // полуширина стенки на доле высоты от верха
-  const t0 = 0.25, t1 = 0.67;
+  const t0 = 0.22, t1 = 0.68;                                   // крепёж: 22 % и 68 % высоты стенки от донышка
   const c = [[cx + wallX(t0) - 1, yT + t0 * B], [cx + wallX(t0) + 0.62 * Wr, yT + t0 * B - 0.06 * B], [cx + wallX(t1) + 0.55 * Wr, yT + t1 * B + 0.1 * B], [cx + wallX(t1) - 2, yT + t1 * B]];
   const P = (t) => { const u = 1 - t; return [0, 1].map((i) => u*u*u*c[0][i] + 3*u*u*t*c[1][i] + 3*u*t*t*c[2][i] + t*t*t*c[3][i]); };
   const N = 14, sc = [];
@@ -37,9 +37,12 @@ export function cupSvg({ s, h, cx }) {
   o.push(`<path d="${body}" fill="{{PAPER}}" stroke-width="{{M}}"/>`);
   // тень справа
   o.push(`<path d="M${f(cx + 0.66 * Wt)} ${f(yT + 0.7 * ryT)}L${f(cx + Wt)} ${f(yT)}C${f(cx + 1.08 * Wt)} ${f(yT + 0.12 * B)} ${f(cx + 1.03 * Wr)} ${f(yR - 0.5 * B)} ${f(cx + Wr)} ${f(yR)}L${f(cx + 0.68 * Wr)} ${f(yR + 0.73 * ryR)}C${f(cx + 0.7 * Wr)} ${f(yR - 0.3 * B)} ${f(cx + 0.68 * Wt)} ${f(yT + 0.3 * B)} ${f(cx + 0.66 * Wt)} ${f(yT + 0.7 * ryT)}Z" fill="{{KRAFT_SH}}" stroke="none"/>`);
-  // край донышка (ближняя дуга) и светлый эллипс ножки с тонким кольцом
+  // донышко рисуется ПОСЛЕ тени, чтобы тень не заходила на верх: плоскость того же светлого цвета, что тело (PAPER), без тёмного «внутри»;
+  // контур L только по дальней кромке, ближняя кромка и кольцо ножки тонкие (D)
+  o.push(`<ellipse cx="${f(cx)}" cy="${f(yT)}" rx="${f(Wt)}" ry="${f(ryT)}" fill="{{PAPER}}" stroke="none"/>`);
+  o.push(`<path d="M${f(cx - Wt)} ${f(yT)}A${f(Wt)} ${f(ryT)} 0 0 1 ${f(cx + Wt)} ${f(yT)}" fill="none" stroke-width="{{L}}"/>`);
   o.push(`<path d="M${f(cx - Wt)} ${f(yT)}A${f(Wt)} ${f(ryT)} 0 0 0 ${f(cx + Wt)} ${f(yT)}" fill="none" stroke="{{KRAFT_SH}}" stroke-width="{{D}}"/>`);
-  o.push(`<ellipse cx="${f(cx)}" cy="${f(yT)}" rx="${f(Wf)}" ry="${f(ryF)}" fill="{{HILITE}}" stroke="{{KRAFT_SH}}" stroke-width="{{D}}"/>`);
+  o.push(`<ellipse cx="${f(cx)}" cy="${f(yT)}" rx="${f(Wf)}" ry="${f(ryF)}" fill="{{PAPER}}" stroke="{{KRAFT_SH}}" stroke-width="{{D}}"/>`);
   // блик слева
   o.push(`<path d="M${f(cx - 0.82 * Wr)} ${f(yR - 0.2 * B)}Q${f(cx - 0.86 * Wr)} ${f(yR - 0.5 * B)} ${f(cx - 0.8 * Wt)} ${f(yT + 0.25 * B)}" fill="none" stroke="{{HILITE}}" stroke-opacity=".75" stroke-width="{{D}}" stroke-linecap="round"/>`);
   return `<g>${o.join('')}</g>`;
