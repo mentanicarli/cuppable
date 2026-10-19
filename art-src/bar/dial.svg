@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="136 308 48 48" data-part="dial" data-scale="1">
+<!-- Ручка помола кофемолки (блок 29-1): вращается вокруг (160, 332) (bar.ts, grindDeg). -->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<g transform="translate(160 470)">
+<g transform="translate(0 -138)">
+<circle r="17" fill="{{MUSTARD}}" stroke-width="{{M}}"/>
+<circle r="9" fill="{{PAPER}}" stroke-width="{{D}}"/>
+<path d="M0 -14V-3" stroke-width="{{L}}" fill="none"/>
+</g>
+</g>
+</g>
+</svg>

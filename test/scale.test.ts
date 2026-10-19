@@ -147,3 +147,21 @@ describe('шкала: чашка в зале', () => {
     expect(top * cupUnit('barista', 'glass')).toBeLessThan(top * BAR_UNIT.glass);
   });
 });
+
+/* Блок 29-1: кофемашина и кофемолка после перерисовки (docs/art/scale.md, строки «Кофемашина», «Кофемолка»). */
+describe('шкала: кофемашина и кофемолка бара после 29-1', () => {
+  test('кофемашина: ширина корпуса 348 px = 75 см (1,00), высота 138…508 = 370 px против ожидаемых 255 (55 см): 1,45 — вне допуска фона 1,25, но не выше ×1,5; рост ограничен билетом (y 130)', () => {
+    const w = 348;
+    const h = 508 - 138;
+    expect(w / (75 * S_BAR)).toBeCloseTo(1, 2);
+    const r = h / (55 * S_BAR);
+    expect(r).toBeGreaterThan(1.4);
+    expect(r).toBeLessThanOrEqual(1.5);
+    expect(h / 338).toBeCloseTo(1.095, 2); /* прежняя высота 338 px */
+  });
+  test('кофемолка: ширина корпуса 128 px против 116 (1,10), полная высота с крышкой 140…470 = 330 px против 278 (1,19) — в допуске фона', () => {
+    expect(128 / (25 * S_BAR)).toBeGreaterThanOrEqual(0.75);
+    expect(128 / (25 * S_BAR)).toBeLessThanOrEqual(1.25);
+    expect(330 / (60 * S_BAR)).toBeLessThanOrEqual(1.25);
+  });
+});

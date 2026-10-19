@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="60 140 200 350" data-part="grinderBack" data-scale="1">
+<!--
+  Кофемолка, задний слой (блок 29-1): тень на столешнице и стекло воронки. Зерно (бункер, движется) рисует bar.ts между этим слоем и grinderFront в трапеции (-52,-208)…(72,-312) относительно (160, 470); трапеция не менялась.
+-->
+<g stroke-linejoin="round" stroke-linecap="round">
+<g transform="translate(160 470)">
+<ellipse cx="0" cy="3" rx="84" ry="9" fill="{{SHADOW}}" fill-opacity=".25" stroke="none"/>
+<path d="M-52 -208L-72 -312H72L52 -208Z" fill="{{GLASS}}" stroke="none"/>
+</g>
+</g>
+</svg>
