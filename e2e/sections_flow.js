@@ -1,5 +1,5 @@
 /* Б1-2: управление камерой бара — клавиши, стрелки с названиями, перетаскивание, блокировки (часть 1 сценария секций). Отладочная сборка.
-   CHROMIUM_ARGS=--mute-audio node e2e/sections_flow.js out/b11/b12-debug.html [папка кадров, например docs/art/sections/b1-2]
+   CHROMIUM_ARGS=--mute-audio node e2e/sections_flow.js out/b11/b12-debug.html [папка кадров, например out/sections]
    Обычная игра без #dev: ничего нового не срабатывает. #dev: обе боковые секции открыты, всё по правилам. Печатает NO_ERRORS. */
 const { chromium } = require('playwright'); const path = require('path'); const fs = require('fs');
 const PW = require('./pw');

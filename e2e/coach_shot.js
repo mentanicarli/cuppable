@@ -1,5 +1,5 @@
 /* Б1-5: реплики коуча у новых станций (инструмент для глаз + проверка текста). Отладочная сборка.
-   CHROMIUM_ARGS=--mute-audio node e2e/coach_shot.js out/b11/b15-debug.html docs/art/sections/b1-5
+   CHROMIUM_ARGS=--mute-audio node e2e/coach_shot.js out/b11/b15-debug.html out/coach
    1) #dev без листания (плитки в центре), шаг «чай»; 2) обычная игра без #dev, шаг матчи; 3) #dev с листанием, шаг «сок» в секции R с кольцом. */
 const { chromium } = require('playwright'); const path = require('path'); const fs = require('fs');
 const PW = require('./pw');

@@ -6,8 +6,13 @@ out
 *.log
 *.png
 !public/*.png
-!docs/art/drinks/**/*.png
-!docs/art/sections/**/*.png
+# эталонные кадры, на которые ссылаются docs/art/drinks/*.md и docs/design/sections.md
+!docs/art/drinks/scale_decided_x2.5_*.png
+!docs/art/drinks/espresso_demitas_*.png
+!docs/art/drinks/h1-3b/seat_sheet.png
+!docs/art/drinks/h2-4/all56_sheet.png
+!docs/art/drinks/h2-4/places_sheet.png
+!docs/art/sections/*.png
 .DS_Store
 Thumbs.db
 .env*

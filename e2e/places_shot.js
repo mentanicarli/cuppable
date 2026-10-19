@@ -1,8 +1,8 @@
 /* Кадры мест, где рисуется чашка (Н2-4): выдача под звонком, рука баристы, полёт, рука гостя, стол, зал с пузырями. Инструмент для глаз, не тест. Отладочная сборка.
-   CHROMIUM_ARGS=--mute-audio node e2e/places_shot.js dist/artifact.html docs/art/drinks/h2-4 [serve,hand,fly,take,table,hall] */
+   CHROMIUM_ARGS=--mute-audio node e2e/places_shot.js dist/artifact.html out/places [serve,hand,fly,take,table,hall] */
 const { chromium } = require('playwright'); const path = require('path'); const fs = require('fs');
 const PW = require('./pw');
-const out = path.resolve(process.argv[3] || 'docs/art/drinks/h2-4'); fs.mkdirSync(out, { recursive: true });
+const out = path.resolve(process.argv[3] || 'out/places'); fs.mkdirSync(out, { recursive: true });
 const parts = (process.argv[4] || 'serve,hand,fly,take,table,hall').split(','); const on = k => parts.includes(k);
 const SIZES = process.env.SIZES ? JSON.parse(process.env.SIZES) : [[1280, 720]];
 /* напиток, размер, холодный */

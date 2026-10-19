@@ -1,9 +1,9 @@
 /* Скриншоты модели напитка (Н1-3): бар, билет, пузырь, книга, окно «Новый напиток»; 1280×720 и 1024×600, 1× и 2×. Инструмент для глаз, не тест. Отладочная сборка.
-   CHROMIUM_ARGS=--mute-audio node e2e/drink_model_shot.js dist/artifact.html docs/art/drinks/h1-3 [bar,ticket,bubble,book,card,ice]
+   CHROMIUM_ARGS=--mute-audio node e2e/drink_model_shot.js dist/artifact.html out/drinks [bar,ticket,bubble,book,card,ice]
    ice: крупный лёд бамбла 0,3 и 0,6 л в баре (3×). */
 const { chromium } = require('playwright'); const path = require('path'); const fs = require('fs');
 const PW = require('./pw');
-const out = path.resolve(process.argv[3] || 'docs/art/drinks/h1-3'); fs.mkdirSync(out, { recursive: true });
+const out = path.resolve(process.argv[3] || 'out/drinks'); fs.mkdirSync(out, { recursive: true });
 const parts = (process.argv[4] || 'bar,ticket,bubble,book,card,ice').split(','); const on = k => parts.includes(k);
 const SIZES = process.env.SIZES ? JSON.parse(process.env.SIZES) : [[1280, 720], [1024, 600]];
 /* H21=1: кадры Н2-1 (горячие напитки: эспрессо, флэт уайт, чай, латте сакура; книга и окно для двух чаёв и двух латте) */
