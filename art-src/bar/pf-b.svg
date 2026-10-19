@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="28 -4 110 40" data-part="pfB" data-scale="1">
+<!--
+  Портафильтр, шейка и ручка (блок 29-1б): короткая стальная втулка, кольцо, длинная конусная тёмно-коричневая ручка (CHOC: чёрное дерево DARK сливалось с нишей на группе), толще к концу, торец закруглён; уклон 9° вправо-вниз, как у прежней палки. Рамка прежняя (110 × 40, x 28…138). Деревянная часть 86 px = 18,5 см по шкале 4,64; с шейкой ручка 100 px = 1,7 ширины головы (58 px).
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<g transform="rotate(9 34 4)">
+<rect x="34" y="-0.5" width="16" height="9" rx="3" fill="{{STEEL}}" stroke-width="{{M}}"/>
+<rect x="46" y="-3" width="6" height="14" rx="3" fill="{{STEEL_HI}}" stroke-width="{{M}}"/>
+<path d="M50 -0.5L128 -4.5Q136 -4.5 136 4Q136 12.5 128 12.5L50 8.5Z" fill="{{CHOC}}" stroke-width="{{M}}"/>
+<path d="M54 7.2L128 10.2" fill="none" stroke="{{DARK}}" stroke-opacity=".5" stroke-width="{{D}}"/>
+<path d="M56 1L124 -2" fill="none" stroke="{{HILITE}}" stroke-opacity=".3" stroke-width="{{D}}"/>
+</g>
+</g>
+</svg>

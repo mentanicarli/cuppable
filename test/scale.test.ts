@@ -165,3 +165,18 @@ describe('шкала: кофемашина и кофемолка бара пос
     expect(330 / (60 * S_BAR)).toBeLessThanOrEqual(1.25);
   });
 });
+
+/* Блок 29-1б: портафильтр и чашки на подогреве (docs/art/scale.md). */
+describe('шкала: портафильтр и чашки подогрева после 29-1б', () => {
+  test('ручка портафильтра: дерево 86 px = 18,5 см (18–20), с шейкой 100 px; голова 58 px = 12,5 см, корзина ≤ ×2,2 реальной (58 мм): читаемость в нише', () => {
+    expect(86 / S_BAR).toBeGreaterThanOrEqual(18);
+    expect(86 / S_BAR).toBeLessThanOrEqual(20);
+    expect(58 / (6 * S_BAR)).toBeLessThanOrEqual(2.2);
+  });
+  test('чашки подогрева: высота 25 / 31 / 37 px = 5,4 / 6,7 / 8 см против реальных 5,5–8 см, ширина по ободу ≤ ×1,5', () => {
+    for (const [h, real] of [[25, 5.5], [31, 6.7], [37, 8]] as const) {
+      expect(h / S_BAR / real).toBeGreaterThanOrEqual(0.9);
+      expect(h / S_BAR / real).toBeLessThanOrEqual(1.5);
+    }
+  });
+});

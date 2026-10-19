@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-56 -20 112 46" data-part="pfA" data-scale="1">
+<!--
+  Портафильтр, голова (блок 29-1б), вид сбоку, начало координат (0, 0) = якорь портафильтра: кофемолка (160, 440), мат (330, 470), группа (630, 350). Рамка прежняя (112 × 46).
+  Широкая круглая стальная корзина 58 px (12,5 см): овал обода сверху с внутренней кромкой (внутри bar.ts рисует кофе-эллипс cof), ниже юбка сужается книзу, по бокам «ушки» байонета, снизу по центру одинарный носик x −6…6: струя x 627–633 при якоре (630, 350) идёт из него. Низ носика y 24.
+  Свет сверху слева. Контур 3,5 / 3 / 2 px. Подписей нет.
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<rect x="-38" y="-8" width="9" height="6" rx="2.5" fill="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<rect x="29" y="-8" width="9" height="6" rx="2.5" fill="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<path d="M-6 16H6V22Q6 24 4 24H-4Q-6 24 -6 22Z" fill="{{STEEL}}" stroke-width="{{M}}"/>
+<path d="M-29 -5C-29 3 -24 9 -21 14H21C24 9 29 3 29 -5Z" fill="{{STEEL}}" stroke-width="{{M}}"/>
+<path d="M15 -3Q15 5 20 12L22 13C25 8 28 3 28 -3Z" fill="{{STEEL_SH}}" stroke="none"/>
+<path d="M-25 0C-25 5 -22 9 -19 12" fill="none" stroke="{{HILITE}}" stroke-opacity=".8" stroke-width="{{D}}"/>
+<rect x="-22" y="13" width="44" height="4" rx="2" fill="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<ellipse cx="0" cy="-5" rx="29" ry="5.5" fill="{{STEEL_HI}}" stroke-width="{{M}}"/>
+<ellipse cx="0" cy="-4.6" rx="24.5" ry="4" fill="{{STEEL_SH}}" stroke="none"/>
+</g>
+</svg>

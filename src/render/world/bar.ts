@@ -244,14 +244,15 @@ export class BarScene {
     bs.position.set(985 - 1032, 465 - 526);
     R.addChild(this.bell);
 
+    /* струя под портафильтром: голова и носик закрывают её начало, видна от носика */
+    R.addChild(this.stream);
+
     /* портафильтр */
     spr('pfA', this.pf);
-    this.cof.rect(-30, -10, 60, 8).fill(0x4a2e20);
+    this.cof.ellipse(0, -4.2, 23, 3.4).fill(0x4a2e20);
     this.pf.addChild(this.cof);
     spr('pfB', this.pf);
     R.addChild(this.pf);
-
-    R.addChild(this.stream);
 
     /* чашка */
     this.mC.position.set(630, 478);

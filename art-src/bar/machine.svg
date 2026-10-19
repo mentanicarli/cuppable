@@ -1,31 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="436 130 410 392" data-part="machine" data-after="counterFront" data-scale="1">
 <!--
-  Кофемашина на две группы (блок 29-1, пилот центра). Стоит на столешнице, низ поддона y 508. Высота 138…508 = 370 px (было 170…508 = 338, ×1,09; предел сверху — нижний край билета y 130 и зазор 6 px).
+  Кофемашина на две группы (блок 29-1, пилот центра). Стоит на столешнице, низ поддона y 508. Высота 137…508 = 371 px (было 170…508 = 338, ×1,09; предел сверху — нижний край билета y 130 и зазор 6 px).
   Корпус x 456–804 (348 px = 75 см по шкале 4,64, как раньше). Всё, на чём стоят подвижные детали и зоны, осталось на своих местах:
     панель: ручка пара (520, 257) r 21, манометр (630, 257) r 27 (стрелка needle вращается вокруг этой точки), кнопка «стоп» (740, 257) r 21 (зона stop x 716–764, y 231–279);
     ниша: x 474–786, y 300–490, группа x 584–676, y 300–352, прокладка и носики до y 367 (портафильтр (630, 350)), чашка (630, 478), поддон y 486–508;
     кран горячей воды: носик в x 489–526, y 300–345 (зона water x 466–536, y 296–376); паровая трубка: x 791–837, конец (832, 450) (зона steam x 776–876, y 296–466; пар steam стартует из (838, 440)).
-  Сверху подогрев чашек: решётка и три чашки. Свет сверху слева. Контур 3,5 / 3 / 2 px. Подписей нет. Градиентов нет: плоские заливки и полосы света/тени.
+  Сверху подогрев чашек: поднос y 175–197 и три керамические чашки (демитас 26 × 25 px, средняя 34 × 32, большая 40 × 37; ручки справа; полоски по ободу бирюзовая и жёлтая). Верх чашек y ≈ 137. Свет сверху слева. Контур 3,5 / 3 / 2 px. Подписей нет. Градиентов нет: плоские заливки и полосы света/тени.
 -->
 <g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
 <ellipse cx="630" cy="512" rx="196" ry="8" fill="{{SHADOW}}" fill-opacity=".25" stroke="none"/>
-<g stroke-width="{{M}}">
-<path d="M482 160L484 140Q484 138 487 138H505Q508 138 508 140L510 160Z" fill="{{DUSTY}}"/>
-<path d="M516 160L518 144Q518 142 521 142H539Q542 142 542 144L544 160Z" fill="{{MUSTARD}}"/>
-<path d="M550 160L552 140Q552 138 555 138H573Q576 138 576 140L578 160Z" fill="{{SAGE_LT}}"/>
-</g>
-<rect x="446" y="158" width="368" height="32" rx="10" fill="{{STEEL}}" stroke-width="{{L}}"/>
-<path d="M456 164H804" stroke="{{STEEL_HI}}" stroke-width="{{D}}" fill="none"/>
-<path d="M790 161H806Q810 161 810 166V184Q810 187 806 187H790Z" fill="{{STEEL_SH}}" stroke="none"/>
+<g><ellipse cx="501" cy="177" rx="19.6" ry="2.4" fill="{{SHADOW}}" fill-opacity=".25" stroke="none"/><path fill-rule="evenodd" d="M518 148.5C535 146.5 535 168.1 517 165.1Z M520 153C530 151.5 530 163.1 518 161.1Z" fill="{{PAPER}}" stroke-width="{{M}}"/><path d="M480 144C479.4 160 482.8 172.8 484.4 176Q500 179 515.6 176C517.2 172.8 520.6 160 520 144Z" fill="{{PAPER}}" stroke-width="{{M}}"/><path d="M511 147.2L519 145C520.4 160 516.8 172.8 514.6 175Q506.2 177 501.6 176C507.8 166.4 515 156.8 511 147.2Z" fill="{{KRAFT_SH}}" stroke="none"/><path d="M480.6 145A19.4 5 0 0 0 519.4 145L519.4 150.4A19.8 4.8 0 0 1 480.6 150.4Z" fill="{{DUSTY}}" stroke="none"/><ellipse cx="500" cy="144" rx="20" ry="5" fill="{{CER_IN}}" stroke-width="{{M}}"/><ellipse cx="500" cy="145.2" rx="16.8" ry="3" fill="{{CER_IN_DP}}" stroke="none"/></g>
+<g><ellipse cx="557" cy="177" rx="17.3" ry="2.4" fill="{{SHADOW}}" fill-opacity=".25" stroke="none"/><path fill-rule="evenodd" d="M571 152.8C586.5 150.8 586.5 169.8 570 166.8Z M573 157.3C581.5 155.8 581.5 164.8 571 162.8Z" fill="{{PAPER}}" stroke-width="{{M}}"/><path d="M539 149C538.5 162.5 541.4 173.3 542.7 176Q556 179 569.3 176C570.6 173.3 573.5 162.5 573 149Z" fill="{{PAPER}}" stroke-width="{{M}}"/><path d="M565.4 151.7L572 150C573.3 162.5 570.3 173.3 568.3 175Q561.3 177 557.3 176C562.6 167.9 568.8 159.8 565.4 151.7Z" fill="{{KRAFT_SH}}" stroke="none"/><path d="M539.6 150A16.4 4.3 0 0 0 572.4 150L572.4 154.4A16.8 4.1 0 0 1 539.6 154.4Z" fill="{{MUSTARD}}" stroke="none"/><ellipse cx="556" cy="149" rx="17" ry="4.3" fill="{{CER_IN}}" stroke-width="{{M}}"/><ellipse cx="556" cy="150.2" rx="13.8" ry="2.3" fill="{{CER_IN_DP}}" stroke="none"/></g>
+<g><ellipse cx="607" cy="177" rx="14.1" ry="2.4" fill="{{SHADOW}}" fill-opacity=".25" stroke="none"/><path fill-rule="evenodd" d="M617 157.1C630.5 155.1 630.5 171.5 616 168.5Z M619 161.6C625.5 160.1 625.5 166.5 617 164.5Z" fill="{{PAPER}}" stroke-width="{{M}}"/><path d="M593 154C592.6 165 594.8 173.8 595.9 176Q606 179 616.1 176C617.2 173.8 619.4 165 619 154Z" fill="{{PAPER}}" stroke-width="{{M}}"/><path d="M613.1 156.2L618 155C619.3 165 617 173.8 615.1 175Q610.1 177 607 176C611.1 169.4 615.8 162.8 613.1 156.2Z" fill="{{KRAFT_SH}}" stroke="none"/><ellipse cx="606" cy="154" rx="13" ry="3.3" fill="{{CER_IN}}" stroke-width="{{M}}"/><ellipse cx="606" cy="155.2" rx="9.8" ry="1.3" fill="{{CER_IN_DP}}" stroke="none"/></g>
+<rect x="446" y="175" width="368" height="22" rx="9" fill="{{STEEL}}" stroke-width="{{L}}"/>
+<path d="M456 180H804" stroke="{{STEEL_HI}}" stroke-width="{{D}}" fill="none"/>
+<path d="M790 177H806Q810 177 810 182V190Q810 195 806 195H790Z" fill="{{STEEL_SH}}" stroke="none"/>
 <g stroke="{{STEEL_SH}}" stroke-width="{{D}}" fill="none">
-<path d="M606 174H766M606 181H766"/>
+<path d="M640 187H770"/>
 </g>
-<rect x="456" y="186" width="348" height="322" rx="20" fill="{{TERRA}}" stroke-width="{{L}}"/>
-<path d="M772 192H790Q800 192 800 202V490Q800 500 790 500H772Z" fill="{{SHADOW}}" fill-opacity=".16" stroke="none"/>
-<path d="M468 208Q468 196 480 196" fill="none" stroke="{{HILITE}}" stroke-opacity=".5" stroke-width="{{L}}"/>
-<rect x="590" y="195" width="80" height="14" rx="5" fill="{{DARK}}" stroke-width="{{D}}"/>
-<path d="M597 202H610M616 202H628" fill="none" stroke="{{MUSTARD}}" stroke-width="{{D}}"/>
-<circle cx="656" cy="202" r="3" fill="{{SAGE_LT}}" stroke="none"/>
+<rect x="456" y="192" width="348" height="316" rx="20" fill="{{TERRA}}" stroke-width="{{L}}"/>
+<path d="M772 198H790Q800 198 800 208V490Q800 500 790 500H772Z" fill="{{SHADOW}}" fill-opacity=".16" stroke="none"/>
+<path d="M468 214Q468 202 480 202" fill="none" stroke="{{HILITE}}" stroke-opacity=".5" stroke-width="{{L}}"/>
+<circle cx="740" cy="208" r="3" fill="{{SAGE_LT}}" stroke="none"/>
+<circle cx="752" cy="208" r="3" fill="{{MUSTARD}}" stroke="none"/>
+<circle cx="764" cy="208" r="3" fill="{{HILITE}}" stroke="none"/>
 <rect x="476" y="222" width="308" height="70" rx="14" fill="{{HILITE}}" stroke-width="{{M}}"/>
 <circle cx="520" cy="257" r="21" fill="{{MUSTARD}}" stroke-width="{{M}}"/>
 <circle cx="520" cy="257" r="12" fill="{{PAPER}}" stroke-width="{{D}}"/>
