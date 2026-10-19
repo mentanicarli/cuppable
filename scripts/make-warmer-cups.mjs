@@ -14,6 +14,7 @@ export function cupSvg({ s, cx }) {
   const Y = (y) => yR - s * (y + H); // отражение: обод внизу, донце вверху
   const o = [];
   o.push(`<ellipse cx="${f(cx + 1)}" cy="${f(TRAY_TOP + 1.5)}" rx="${f(W * s + 4)}" ry="2.4" fill="{{SHADOW}}" fill-opacity=".25" stroke="none"/>`);
+  o.push(`<ellipse cx="${f(cx)}" cy="${f(TRAY_TOP + 1)}" rx="${f(W * s - 2)}" ry="1.6" fill="{{SHADOW}}" fill-opacity=".4" stroke="none"/>`);
   // ручка справа: полоса толщиной th = 6·min(k, 1,2) px с контуром M (как у игровой: INK th + 2M, PAPER th)
   const th = 6 * Math.min(k, 1.2), d = th / 2 + 1.5;
   const hx = W - 3, y0 = -H * 0.8, y1 = -H * 0.26;
@@ -34,7 +35,11 @@ export function cupSvg({ s, cx }) {
   o.push(`<path d="M${f(X(W * 0.55))} ${f(Y(-H * 0.98))}L${f(X(W))} ${f(Y(-H))}C${f(X(W * 1.03))} ${f(Y(-H * 0.5))} ${f(X(Wb * 1.1))} ${f(Y(-H * 0.1))} ${f(X(Wb))} ${f(Y(yb))}Q${f(X(Wb * 0.4))} ${f(Y(1))} ${f(X(Wb * 0.15))} ${f(Y(0))}C${f(X(Wb * 0.5))} ${f(Y(-H * 0.3))} ${f(X(W * 0.72))} ${f(Y(-H * 0.62))} ${f(X(W * 0.55))} ${f(Y(-H * 0.98))}Z" fill="{{KRAFT_SH}}" stroke="none"/>`);
   // донце сверху: плоский эллипс (донце видно сверху, внутри ничего)
   const by = Y(yb);
-  o.push(`<ellipse cx="${f(cx)}" cy="${f(by)}" rx="${f(Wb * s)}" ry="${f(0.23 * Wb * s)}" fill="{{PAPER}}" stroke-width="{{M}}"/>`);
+  const bw = Wb * s, bh = 0.23 * Wb * s;
+  // донце: светлая плоскость (без тёмного входа), контур только по дальней кромке; внутри узкий светлый эллипс с тонким кольцом ножки (меньше диаметра донца и тела)
+  o.push(`<ellipse cx="${f(cx)}" cy="${f(by)}" rx="${f(bw)}" ry="${f(bh)}" fill="{{PAPER}}" stroke="none"/>`);
+  o.push(`<path d="M${f(cx - bw)} ${f(by)}A${f(bw)} ${f(bh)} 0 0 1 ${f(cx + bw)} ${f(by)}" fill="none" stroke-width="{{M}}"/>`);
+  o.push(`<ellipse cx="${f(cx)}" cy="${f(by)}" rx="${f(bw * 0.58)}" ry="${f(bh * 0.58)}" fill="{{HILITE}}" stroke="{{KRAFT_SH}}" stroke-width="{{D}}"/>`);
   // блик слева (как у игровой: белая дуга)
   o.push(`<path d="M${f(X(-W * 0.82))} ${f(Y(-H * 0.8))}Q${f(X(-W * 0.88))} ${f(Y(-H * 0.45))} ${f(X(-Wb * 0.88))} ${f(Y(-H * 0.2))}" fill="none" stroke="{{HILITE}}" stroke-opacity=".75" stroke-width="{{D}}" stroke-linecap="round"/>`);
   return `<g>${o.join('')}</g>`;

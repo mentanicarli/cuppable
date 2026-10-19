@@ -71,7 +71,7 @@ describe('art-src/bar: кофемашина', () => {
   const cups = (): { s: number; cx: number; rimY: number; baseY: number; baseRy: number; baseRx: number; blk: string }[] =>
     cupBlocks().map((blk) => {
       const arc = /A([\d.]+) ([\d.]+) 0 0 1 ([\d.]+) ([\d.]+)Z/.exec(blk);
-      const base = /<ellipse cx="([\d.]+)" cy="([\d.]+)" rx="([\d.]+)" ry="([\d.]+)" fill="\{\{PAPER\}\}" stroke-width="\{\{M\}\}"\/>/.exec(blk);
+      const base = /<ellipse cx="([\d.]+)" cy="([\d.]+)" rx="([\d.]+)" ry="([\d.]+)" fill="\{\{PAPER\}\}" stroke="none"\/>/.exec(blk);
       if (!arc || !base) throw new Error('нет обода или донца');
       return { s: num(arc[1]) / game.W, cx: num(base[1]), rimY: num(arc[4]), baseY: num(base[2]), baseRy: num(base[4]), baseRx: num(base[3]), blk };
     });
@@ -109,6 +109,18 @@ describe('art-src/bar: кофемашина', () => {
       expect(c.blk.split('fill="{{PAPER}}"').length - 1).toBe(3);
       expect(c.blk).toContain('fill="{{KRAFT_SH}}"');
       for (const bad of ['DUSTY', 'MUSTARD', 'TERRA', 'CER_IN']) expect(c.blk.includes(bad)).toBe(false);
+    }
+  });
+  test('перевёрнутая чашка: ширина у подноса (обод) строго больше ширины у донышка; донце уже тела; внутри донца узкий светлый эллипс с кольцом; входа (тёмной полости) нет; ручка у нижнего края выше всего ниже донца', () => {
+    for (const c of cups()) {
+      const rimW = (/A([\d.]+) ([\d.]+) 0 0 1 [\d.]+ [\d.]+Z/.exec(c.blk) as RegExpExecArray)[1];
+      expect(num(rimW)).toBeGreaterThan(c.baseRx); /* основание шире донышка */
+      const foot = /<ellipse cx="[\d.]+" cy="[\d.]+" rx="([\d.]+)" ry="([\d.]+)" fill="\{\{HILITE\}\}" stroke="\{\{KRAFT_SH\}\}"/.exec(c.blk);
+      expect(foot).not.toBeNull();
+      expect(num((foot as RegExpExecArray)[1])).toBeLessThan(c.baseRx); /* светлый эллипс уже донца, донце уже тела */
+      expect(c.baseRx).toBeLessThan(num(rimW));
+      expect(c.blk).not.toContain('CER_IN');
+      expect(c.blk).not.toContain('{{DARK}}');
     }
   });
   test('размеры чашек: высота 45 / 39 / 33 px = 9,8 / 8,3 / 7,1 см, ширина 55 / 47 / 40 px; не больше ×1,5 от реальных 9 см, зазор между ручкой и соседней чашкой ≥ 6 px', () => {
@@ -179,11 +191,16 @@ describe('art-src/bar: портафильтр', () => {
     expect(24).toBeLessThanOrEqual(-20 + 46);
   });
   test('голова: широкая корзина 58 px (12,5 см), овал обода с внутренней кромкой, ушки байонета по бокам, юбка уже обода', () => {
-    expect(PFA).toContain('<ellipse cx="0" cy="-10" rx="29" ry="5.5"');
-    expect(PFA).toContain('<ellipse cx="0" cy="-9.6" rx="24.5" ry="4"');
-    expect((PFA.match(/<rect x="-38" y="-13" width="9"/g) ?? []).length + (PFA.match(/<rect x="29" y="-13" width="9"/g) ?? []).length).toBe(2);
+    expect(PFA).toContain('<ellipse cx="0" cy="-12" rx="29" ry="5.5"');
+    expect(PFA).toContain('<ellipse cx="0" cy="-11.6" rx="24.5" ry="4"');
+    expect((PFA.match(/<rect x="-38" y="-15" width="9"/g) ?? []).length + (PFA.match(/<rect x="29" y="-15" width="9"/g) ?? []).length).toBe(2);
     expect(58 / 4.64).toBeGreaterThan(11);
     expect(58 / 4.64).toBeLessThan(14);
+  });
+  test('голова: отношение высоты (верх обода … низ пояска) к ширине около 0,6', () => {
+    const h = 16 - (-12 - 5.5);
+    expect(h / 58).toBeGreaterThanOrEqual(0.55);
+    expect(h / 58).toBeLessThanOrEqual(0.65);
   });
   test('ручка: тёмно-коричневая (CHOC), конусная, 86 px дерева = 18,5 см (18–20 см), с шейкой 100 px = 1,7 ширины головы; целиком в рамке', () => {
     expect(PFB).toContain('fill="{{CHOC}}"');

@@ -249,7 +249,7 @@ export class BarScene {
 
     /* портафильтр */
     spr('pfA', this.pf);
-    this.cof.ellipse(0, -9.2, 23, 3.4).fill(0x4a2e20);
+    this.cof.ellipse(0, -11.2, 23, 3.4).fill(0x4a2e20);
     this.pf.addChild(this.cof);
     spr('pfB', this.pf);
     R.addChild(this.pf);
