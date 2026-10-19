@@ -28,6 +28,7 @@ const tag = process.argv[4] || 'r2';
     await p.waitForTimeout(800);
     await shot('center_rest', 0, 0, 1280, 720);
     await shot('warmer', 436, 124, 390, 100);
+    await shot('cup_game', 560, 395, 140, 110);
     await shot('fragment', 40, 120, 860, 410);
     const PF = { grinder: { x: 160, y: 440 }, mat: { x: 330, y: 470 }, group: { x: 630, y: 350 } };
     await over({ pf: PF.grinder, cof: true, dose: 30 }); await shot('pf_grinder', 60, 330, 260, 190);
@@ -56,10 +57,16 @@ const tag = process.argv[4] || 'r2';
       const q = s => [...document.querySelectorAll(s)].filter(e => e.getBoundingClientRect().width > 0 && getComputedStyle(e).visibility !== 'hidden').map(e => ({ s, ...rc(e), t: e.textContent.slice(0, 40) }));
       return [...q('#bTk'), ...q('#bTk .tkDrop'), ...q('#bFloat > *'), ...q('#toast')];
     });
-    const warmer = { x: 446, y: 137, w: 368, h: 60 }; /* поднос и чашки */
+    const warmer = { x: 446, y: 138, w: 368, h: 68 }; /* поднос и чашки */
     const ov = r => { const x = Math.max(0, Math.min(r.x + r.w, warmer.x + warmer.w) - Math.max(r.x, warmer.x)), y = Math.max(0, Math.min(r.y + r.h, warmer.y + warmer.h) - Math.max(r.y, warmer.y)); return Math.round(x * y); };
     console.log(suffix, 'перекрытие с подносом и чашками (px² при 1280×720):'); rep.forEach(r => console.log('  ', r.s, JSON.stringify({ x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.w), h: Math.round(r.h) }), 'пересечение', ov(r), r.t.replace(/\s+/g, ' ')));
     await shot('toast_ticket', 0, 0, 1280, 330);
+    if (suffix === '2x') {
+      /* сравнение: чашки подогрева и игровая керамика в баре рядом (одна форма, перевёрнутая) */
+      const img = n => 'data:image/png;base64,' + fs.readFileSync(`${out}/${tag}_${n}_2x.png`).toString('base64');
+      const c = await ctx.newPage(); await c.setContent(`<body style=margin:0;background:#fff8ec><div style='display:flex;align-items:flex-end;gap:24px;padding:12px'><img src='${img('warmer')}'><img src='${img('cup_game')}'></div>`); await c.waitForTimeout(300);
+      await c.locator('div').screenshot({ path: `${out}/${tag}_compare_cups_2x.png` }); await c.close();
+    }
     await ctx.close();
   }
   console.log(errs.length ? errs.slice(0, 5).join('\n') : 'NO_ERRORS'); await b.close();

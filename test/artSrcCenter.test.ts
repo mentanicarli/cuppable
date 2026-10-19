@@ -6,6 +6,7 @@ import DIAL from '../art-src/bar/dial.svg?raw';
 import PFA from '../art-src/bar/pf-a.svg?raw';
 import PFB from '../art-src/bar/pf-b.svg?raw';
 import INDEX from '../index.html?raw';
+import { geomOf, type CeramicGeom } from '../src/render/world/drinkModel';
 
 /* Блок 29-1 (центр бара): кофемашина и кофемолка в языке эталона. Проверяется, что новая геометрия не уехала от зон и подвижных деталей (якоря в bar.ts и legacy: pf (630,350), чашка (630,478), стрелка (630,257), стоп (740,257), ручка помола (160,332), пф у кофемолки (160,440)). */
 type R = { x: number; y: number; w: number; h: number };
@@ -33,12 +34,12 @@ const inside = (a: R, b: R): boolean => a.x >= b.x && a.y >= b.y && a.x + a.w <=
 const pt = (x: number, y: number, r: R): boolean => x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
 
 describe('art-src/bar: кофемашина', () => {
-  const body = rectAt(MACHINE, 456, 192);
+  const body = rectAt(MACHINE, 456, 201);
   const panel = rectAt(MACHINE, 476, 222);
   const niche = rectAt(MACHINE, 474, 300);
   const group = rectAt(MACHINE, 584, 300);
   const tray = rectAt(MACHINE, 466, 486);
-  const warmer = rectAt(MACHINE, 446, 175);
+  const warmer = rectAt(MACHINE, 446, 184);
   test('корпус 348 px = 75 см (шкала 4,64), панель и ниша внутри корпуса, группа внутри ниши', () => {
     expect(body.w).toBe(348);
     expect(inside(panel, body)).toBe(true);
@@ -60,32 +61,68 @@ describe('art-src/bar: кофемашина', () => {
     expect(niche.y).toBeLessThan(385);
     expect(tray.y).toBeGreaterThanOrEqual(486);
   });
+  const cupBlocks = (): string[] => {
+    const inner = MACHINE.slice(MACHINE.indexOf('<!--cups-->'), MACHINE.indexOf('<!--/cups-->'));
+    return inner.split('<g>').slice(1);
+  };
+  const game = geomOf({ material: 'ceramic', ml: 200, k: 1 }) as CeramicGeom;
+  const num = (x: string | undefined): number => +(x ?? 'NaN');
+  /* на каждую чашку: s (масштаб от игровой керамики 0,2 л в px), центр, обод */
+  const cups = (): { s: number; cx: number; rimY: number; baseY: number; baseRy: number; baseRx: number; blk: string }[] =>
+    cupBlocks().map((blk) => {
+      const arc = /A([\d.]+) ([\d.]+) 0 0 1 ([\d.]+) ([\d.]+)Z/.exec(blk);
+      const base = /<ellipse cx="([\d.]+)" cy="([\d.]+)" rx="([\d.]+)" ry="([\d.]+)" fill="\{\{PAPER\}\}" stroke-width="\{\{M\}\}"\/>/.exec(blk);
+      if (!arc || !base) throw new Error('нет обода или донца');
+      return { s: num(arc[1]) / game.W, cx: num(base[1]), rimY: num(arc[4]), baseY: num(base[2]), baseRy: num(base[4]), baseRx: num(base[3]), blk };
+    });
   test('высота: верх чашек ≥ 136 (под билетом y 130), низ поддона y 508, рост к прежним 338 px не больше ×1,10', () => {
-    const tops = [...MACHINE.matchAll(/<ellipse cx="[\d.]+" cy="([\d.]+)" rx="(\d+)" ry="([\d.]+)" fill="\{\{CER_IN\}\}"/g)].map((m) => +(m[1] as string) - +(m[3] as string));
-    expect(tops).toHaveLength(3);
-    const top = Math.min(...tops);
-    expect(top).toBeGreaterThanOrEqual(136);
+    const cs = cups();
+    expect(cs).toHaveLength(3);
+    const top = Math.min(...cs.map((c) => c.baseY - c.baseRy));
+    expect(top - 1.5).toBeGreaterThanOrEqual(136); /* с контуром */
     expect(tray.y + tray.h).toBe(508);
     expect((508 - top) / 338).toBeLessThanOrEqual(1.1);
     expect(warmer.x).toBeGreaterThanOrEqual(436);
     expect(warmer.x + warmer.w).toBeLessThanOrEqual(436 + vb(MACHINE).w);
   });
-  test('три керамические чашки на подносе: разные размеры (демитас < средняя < большая), 25–42 px по высоте (6–9 см, допуск ×1,5), ручка справа у всех, цвет керамики PAPER, на подносе', () => {
-    const rims = [...MACHINE.matchAll(/<ellipse cx="([\d.]+)" cy="([\d.]+)" rx="(\d+)" ry="([\d.]+)" fill="\{\{CER_IN\}\}"/g)].map((m) => ({ cx: +(m[1] as string), cy: +(m[2] as string), w: 2 * +(m[3] as string), ry: +(m[4] as string) }));
-    const sorted = [...rims].sort((p, q) => p.w - q.w);
-    expect(sorted[0]?.w).toBeLessThan(sorted[1]?.w ?? 0);
-    expect(sorted[1]?.w).toBeLessThan(sorted[2]?.w ?? 0);
-    const handles = MACHINE.match(/fill-rule="evenodd"/g) ?? [];
-    expect(handles).toHaveLength(3);
-    for (const r of rims) {
-      const h = 175 + 1 - (r.cy - r.ry) - 0; /* от верха обода до низа (основание на подносе y 176) */
-      expect(h / 4.64).toBeGreaterThanOrEqual(5);
-      expect(h / 4.64).toBeLessThanOrEqual(9.5);
-      expect(r.cy + 0).toBeLessThan(175);
+  test('чашки подогрева = игровая керамика (geomOf, k = 1), перевёрнутая: пропорции, состав деталей, ручка справа, один цвет; допуск 1 %', () => {
+    const cs = cups();
+    expect(cs.map((c) => c.s)).toEqual([...cs.map((c) => c.s)].sort((p, q) => q - p)); /* большая, средняя, маленькая */
+    for (const c of cs) {
+      const W = game.W * c.s;
+      /* обод: полуоси как у игровой (отношение ryR / W) */
+      const arc = /A([\d.]+) ([\d.]+) 0 0 1/.exec(c.blk) as RegExpExecArray;
+      expect(num(arc[2]) / num(arc[1])).toBeCloseTo(game.ryR / game.W, 2);
+      /* донце: ширина Wb игровой, высота корпуса (обод → донце) в тех же отношениях */
+      const baseRx = c.baseRx;
+      expect(Math.abs(baseRx / W - game.Wb / game.W)).toBeLessThan(0.01);
+      expect(Math.abs((c.rimY - c.baseY) / (2 * W) - (game.H + game.yb) / (2 * game.W))).toBeLessThan(0.01);
+      /* перевёрнутость: донце выше обода, обод внизу сидит на подносе (низ дуги на 1 px ниже верха подноса) */
+      expect(c.baseY).toBeLessThan(c.rimY);
+      expect(c.rimY + num(arc[2])).toBeCloseTo(185, 0);
+      /* ручка справа: самая правая точка многоугольника правее обода, левее обода ничего лишнего */
+      const poly = /<path d="(M[^"]*L[^"]*)Z" fill="\{\{PAPER\}\}" stroke-width="\{\{M\}\}"\/>/.exec(c.blk) as RegExpExecArray;
+      const xs = [...(poly[1] as string).matchAll(/[ML]([\d.]+) ([\d.]+)/g)].map((m) => num(m[1]));
+      expect(Math.max(...xs)).toBeGreaterThan(c.cx + W);
+      expect(Math.min(...xs)).toBeGreaterThan(c.cx);
+      /* состав: ручка, корпус, тень (KRAFT_SH), донце, блик; цвета керамики одинаковые у всех, без полосок и жидкости */
+      expect(c.blk.split('fill="{{PAPER}}"').length - 1).toBe(3);
+      expect(c.blk).toContain('fill="{{KRAFT_SH}}"');
+      for (const bad of ['DUSTY', 'MUSTARD', 'TERRA', 'CER_IN']) expect(c.blk.includes(bad)).toBe(false);
     }
-    expect(MACHINE.split('fill="{{PAPER}}" stroke-width="{{M}}"/>').length - 1).toBeGreaterThanOrEqual(6); /* корпус и ручка каждой чашки */
-    expect(MACHINE).toContain('fill="{{DUSTY}}" stroke="none"');
-    expect(MACHINE).toContain('fill="{{MUSTARD}}" stroke="none"');
+  });
+  test('размеры чашек: высота 45 / 39 / 33 px = 9,8 / 8,3 / 7,1 см, ширина 55 / 47 / 40 px; не больше ×1,5 от реальных 9 см, зазор между ручкой и соседней чашкой ≥ 6 px', () => {
+    const cs = cups();
+    const hs = cs.map((c) => c.rimY + game.ryR * c.s - (c.baseY - c.baseRy));
+    expect(hs.map(Math.round)).toEqual([45, 39, 33]);
+    for (const h of hs) expect(h / 4.64).toBeLessThanOrEqual(9 * 1.5);
+    expect(Math.round(cs.map((c) => 2 * game.W * c.s)[0] as number)).toBe(55);
+    const edges = cs.map((c) => {
+      const poly = /<path d="(M[^"]*L[^"]*)Z" fill="\{\{PAPER\}\}" stroke-width="\{\{M\}\}"\/>/.exec(c.blk) as RegExpExecArray;
+      const xs = [...(poly[1] as string).matchAll(/[ML]([\d.]+) ([\d.]+)/g)].map((m) => num(m[1]));
+      return { l: c.cx - game.W * c.s, r: Math.max(...xs) };
+    });
+    for (let i = 1; i < edges.length; i++) expect((edges[i] as { l: number }).l - (edges[i - 1] as { r: number }).r).toBeGreaterThanOrEqual(9); /* 6 px видимого зазора + контуры 3 px */
   });
   test('паровая трубка кончается в (832, 450), кран воды внутри зоны water', () => {
     expect(MACHINE).toContain('V450H827');
@@ -142,9 +179,9 @@ describe('art-src/bar: портафильтр', () => {
     expect(24).toBeLessThanOrEqual(-20 + 46);
   });
   test('голова: широкая корзина 58 px (12,5 см), овал обода с внутренней кромкой, ушки байонета по бокам, юбка уже обода', () => {
-    expect(PFA).toContain('<ellipse cx="0" cy="-5" rx="29" ry="5.5"');
-    expect(PFA).toContain('<ellipse cx="0" cy="-4.6" rx="24.5" ry="4"');
-    expect((PFA.match(/<rect x="-?38" y="-8" width="9"/g) ?? []).length + (PFA.match(/<rect x="29" y="-8" width="9"/g) ?? []).length).toBe(2);
+    expect(PFA).toContain('<ellipse cx="0" cy="-10" rx="29" ry="5.5"');
+    expect(PFA).toContain('<ellipse cx="0" cy="-9.6" rx="24.5" ry="4"');
+    expect((PFA.match(/<rect x="-38" y="-13" width="9"/g) ?? []).length + (PFA.match(/<rect x="29" y="-13" width="9"/g) ?? []).length).toBe(2);
     expect(58 / 4.64).toBeGreaterThan(11);
     expect(58 / 4.64).toBeLessThan(14);
   });
