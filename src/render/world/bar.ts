@@ -114,6 +114,9 @@ export class BarScene {
   private tex = new Map<string, Texture>();
   private res = 1;
   private pf = new Container();
+  /* портафильтр в группе (29-1ж): корзина вжата под плиту головки, ручка короче и толще; головка рисуется поверх корзины */
+  private pfG = new Container();
+  private groupHead!: Sprite;
   private cof = new Graphics();
   private dial = new Container();
   private hopRect = new Graphics();
@@ -253,6 +256,12 @@ export class BarScene {
     this.pf.addChild(this.cof);
     spr('pfB', this.pf);
     R.addChild(this.pf);
+    spr('pfGA', this.pfG);
+    spr('pfGB', this.pfG);
+    this.pfG.visible = false;
+    R.addChild(this.pfG);
+    this.groupHead = spr('groupHead');
+    this.groupHead.visible = false;
 
     /* чашка */
     this.mC.position.set(630, 478);
@@ -535,6 +544,12 @@ export class BarScene {
 
   paint(f: BarFrame): void {
     this.pf.position.set(f.pf.x, f.pf.y);
+    this.pfG.position.set(f.pf.x, f.pf.y);
+    /* состояние «в группе»: портафильтр правее середины между матом (330) и группой (630); в пути вид переключается один раз */
+    const inGroup = f.pf.x > 480;
+    this.pf.visible = !inGroup;
+    this.pfG.visible = inGroup;
+    this.groupHead.visible = inGroup;
     this.cof.visible = f.cof;
     this.dial.rotation = (f.grindDeg * Math.PI) / 180;
     if (f.dose !== this.lastHop) {

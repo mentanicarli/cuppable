@@ -5,6 +5,9 @@ import GRIND_B from '../art-src/bar/grinder-back.svg?raw';
 import DIAL from '../art-src/bar/dial.svg?raw';
 import PFA from '../art-src/bar/pf-a.svg?raw';
 import PFB from '../art-src/bar/pf-b.svg?raw';
+import PFGA from '../art-src/bar/pf-g-a.svg?raw';
+import PFGB from '../art-src/bar/pf-g-b.svg?raw';
+import GHEAD from '../art-src/bar/group-head.svg?raw';
 import INDEX from '../index.html?raw';
 import { geomOf, type CeramicGeom } from '../src/render/world/drinkModel';
 import PAL from '../art-src/palette.json';
@@ -258,5 +261,53 @@ describe('art-src/bar: портафильтр', () => {
   });
   test('нет подписей, градиентов и url(#)', () => {
     for (const s of [PFA, PFB]) for (const bad of ['<text', 'linearGradient', 'url(#']) expect(s.includes(bad)).toBe(false);
+  });
+});
+
+describe('art-src/bar: портафильтр в группе (29-1ж)', () => {
+  const hash = (t: string): number => { let x = 0; for (const c of t.replace(/\r\n/g, '\n')) x = (x * 31 + c.charCodeAt(0)) >>> 0; return x; };
+  test('состояния «плита» и «кофемолка» (pf-a, pf-b) не менялись с r6: контрольная сумма исходников', () => {
+    expect(hash(PFA)).toBe(1723222016);
+    expect(hash(PFB)).toBe(2678296025);
+  });
+  test('корзина в группе: верх (y 5) заходит под нижнюю плиту головки (низ плиты y 346 + 14 − 350 = 10) на 4–6 px; овала обода и входа нет; низ корзины под плитой', () => {
+    const plate = rectAt(GHEAD, 596, 346);
+    const plateBottom = plate.y + plate.h - 350; /* относительно якоря (630, 350) */
+    expect(plateBottom).toBe(10);
+    expect(PFGA).toContain('M-29 5V16Q-29 25 -21 25H21Q29 25 29 16V5Z');
+    const tuck = plateBottom - 5;
+    expect(tuck).toBeGreaterThanOrEqual(4);
+    expect(tuck).toBeLessThanOrEqual(6);
+    expect(PFGA.includes('<ellipse')).toBe(false); /* ни обода, ни входа */
+    expect(PFGA).toContain('<rect x="-31" y="12" width="62" height="4.5"'); /* светлая полоса воротника под плитой */
+    expect(PFGA).toContain('fill="{{STEEL_HI}}" stroke-width="{{D}}"'); /* шов контуром D */
+  });
+  test('носик по оси струи (x −6…6 вокруг 630 = 627–633), низ носика выше обода чашки 0,6 л (абс. y 385); рамка внутри кадра', () => {
+    expect(PFGA).toContain('M-6 25H6V30Q6 32 4 32H-4Q-6 32 -6 30Z');
+    expect(350 + 32).toBeLessThan(385);
+    expect(vb(PFGA)).toEqual({ x: -56, y: 2, w: 112, h: 34 });
+  });
+  test('ручка в группе: длина ≤ 70 px, толщина у головы ≥ 9 px, сужение к концу ≤ 30 %, угол ≤ 4° вниз, цвет CHOC', () => {
+    expect(PFGB).toContain('rotate(3 29 15)');
+    expect(PFGB).toContain('M41 9.5L92 11Q99 11 99 15Q99 19 92 19L41 20.5Z');
+    const length = 99 - 29;
+    const thickHead = 20.5 - 9.5;
+    const thickEnd = 19 - 11;
+    expect(length).toBeLessThanOrEqual(70);
+    expect(thickHead).toBeGreaterThanOrEqual(9);
+    expect((thickHead - thickEnd) / thickHead).toBeLessThanOrEqual(0.3);
+    expect(3).toBeLessThanOrEqual(4);
+    expect(PFGB).toContain('fill="{{CHOC}}"');
+    const a = (3 * Math.PI) / 180;
+    expect(15 + length * Math.sin(a) + 5).toBeLessThanOrEqual(36);
+    expect(29 + length * Math.cos(a) + 2).toBeLessThanOrEqual(28 + vb(PFGB).w);
+  });
+  test('головка поверх корзины: те же фигуры и координаты, что в machine.svg (корпус группы, плита), без носика группы; нет подписей и градиентов', () => {
+    for (const piece of ['<rect x="584" y="300" width="92" height="52" rx="10" fill="{{STEEL}}" stroke-width="{{M}}"/>', '<rect x="596" y="346" width="68" height="14" rx="6" fill="{{STEEL_SH}}" stroke-width="{{M}}"/>', '<path d="M650 301H667Q674 301 674 308V344Q674 351 667 351H650Z" fill="{{STEEL_SH}}" stroke="none"/>']) {
+      expect(GHEAD).toContain(piece);
+      expect(MACHINE).toContain(piece);
+    }
+    expect(GHEAD.includes('x="618"')).toBe(false);
+    for (const t of [PFGA, PFGB, GHEAD]) for (const bad of ['<text', 'linearGradient', 'url(#']) expect(t.includes(bad)).toBe(false);
   });
 });

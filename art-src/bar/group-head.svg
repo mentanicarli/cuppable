@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="580 296 100 70" data-part="groupHead" data-after="pfB" data-scale="1">
+<!--
+  Головка группы поверх портафильтра (блок 29-1ж): те же фигуры, что в machine.svg (корпус группы, тень, блик, плита-прокладка до y 360), но рисуются ПОСЛЕ корзины в состоянии «в группе», чтобы верх корзины был под плитой. Носик группы (y 358–367) сюда не входит: он под корзиной. Пиксели совпадают с machine.svg (тест).
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<rect x="584" y="300" width="92" height="52" rx="10" fill="{{STEEL}}" stroke-width="{{M}}"/>
+<path d="M650 301H667Q674 301 674 308V344Q674 351 667 351H650Z" fill="{{STEEL_SH}}" stroke="none"/>
+<path d="M592 308H616" stroke="{{STEEL_HI}}" stroke-width="{{L}}" fill="none"/>
+<rect x="596" y="346" width="68" height="14" rx="6" fill="{{STEEL_SH}}" stroke-width="{{M}}"/>
+</g>
+</svg>

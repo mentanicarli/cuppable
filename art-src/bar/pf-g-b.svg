@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="28 2 76 34" data-part="pfGB" data-after="pfB" data-scale="1">
+<!--
+  Портафильтр в группе, шейка и ручка (блок 29-1ж): короче и толще, почти горизонтально. Общая длина от корзины 70 px (шейка 12 + кольцо + дерево 58), толщина у головы 11 px, у конца 8 px (сужение 27 %), угол 3° вниз. Цвет CHOC, как у ручки на плите и у кофемолки.
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<g transform="rotate(3 29 15)">
+<rect x="29" y="11" width="12" height="8" rx="3" fill="{{STEEL}}" stroke-width="{{M}}"/>
+<rect x="38" y="8.5" width="5" height="13" rx="2.5" fill="{{STEEL_HI}}" stroke-width="{{M}}"/>
+<path d="M41 9.5L92 11Q99 11 99 15Q99 19 92 19L41 20.5Z" fill="{{CHOC}}" stroke-width="{{M}}"/>
+<path d="M46 19.2L92 17.8" fill="none" stroke="{{DARK}}" stroke-opacity=".5" stroke-width="{{D}}"/>
+<path d="M46 11.2L90 12.2" fill="none" stroke="{{HILITE}}" stroke-opacity=".3" stroke-width="{{D}}"/>
+</g>
+</g>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-56 2 112 34" data-part="pfGA" data-after="pfB" data-scale="1">
+<!--
+  Портафильтр в группе, корзина (блок 29-1ж): состояние «зафиксирован». Начало координат (0, 0) = якорь (630, 350), тот же, что у pfA. Верх корзины y 5 заходит под нижнюю плиту головки группы (низ плиты y 10) на 5 px: головку поверх рисует часть groupHead, обода и входа не видно. Под плитой светлая полоса воротника y 12–16,5 с тонкой тёмной линией-швом (контур D) сверху и снизу.
+  Корзина ø 58 px, цилиндр со скруглённым низом (низ y 25), носик по центру x −6…6, низ y 32 (абс. 382, выше обода чашки 0,6 л y 385); струя x 627–633 идёт из него.
+  Свет сверху слева. Контур 3,5 / 3 / 2 px. Подписей нет.
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<path d="M-6 25H6V30Q6 32 4 32H-4Q-6 32 -6 30Z" fill="{{STEEL}}" stroke-width="{{M}}"/>
+<path d="M-29 5V16Q-29 25 -21 25H21Q29 25 29 16V5Z" fill="{{STEEL}}" stroke-width="{{M}}"/>
+<path d="M15 6V25H21Q28 25 28 16V6Z" fill="{{STEEL_SH}}" stroke="none"/>
+<path d="M-24 17V21" fill="none" stroke="{{HILITE}}" stroke-opacity=".85" stroke-width="{{L}}"/>
+<rect x="-31" y="12" width="62" height="4.5" rx="2" fill="{{STEEL_HI}}" stroke-width="{{D}}"/>
+</g>
+</svg>
