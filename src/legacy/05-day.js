@@ -2,7 +2,7 @@
 function interval() { const v = MENUAPI.arrivalInterval({ day: G.day, rating: G.rating, t: D.t, wifi: !!G.wifi }); return SBX.on ? v / SBX.rate : v; }
 function startDay() {
   G.phase = 'day'; paused = false; scr.hidden = true;
-  WORLD.clearActors(); ACT.clear();
+  clearDayVisuals(); WORLD.clearActors(); ACT.clear();
   D = { t: 0, customers: [], nextArr: 4, closing: false, closeT: 0, cup: null, hold: null, rushShown: false, idc: 0, focus: G.fresh.slice(), focusDone: new Set(), stats: { served: 0, lost: 0, revenue: 0, tips: 0, costs: 0, perfect: 0 } };
   if (SBX.on) { SBX.log = []; SBX.clock = 0; }
   BR = null; renderCup(); lastHud = ''; updateHud(); stopLoops(); stage.classList.remove('inbar');

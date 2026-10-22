@@ -24,3 +24,4 @@ Thumbs.db
 *.seq.html
 
 public/music/manifest.json
+!docs/art/fixes/31-1/*.png
