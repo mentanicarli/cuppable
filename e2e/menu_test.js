@@ -35,7 +35,7 @@ const id = process.argv[4]; const out = process.argv[3];
       await p.waitForTimeout(120); continue;
     }
     const zone = await p.evaluate(t => window.__dbg.MENUAPI.TASK_ZONE[t], t);
-    await p.click(`[data-z=${zone}]`, { force: true }); await p.waitForTimeout(350);
+    await require('./pw').clickZone(p, zone); await p.waitForTimeout(350);
     const inset = await p.evaluate(() => window.__dbg.BR.inset); if (inset !== t) { console.log('FAIL: inset', inset, 'expected', t, await p.evaluate(() => document.querySelector('.bmsg') && document.querySelector('.bmsg').textContent)); continue; }
     await p.screenshot({ path: out + '_' + (++shotN) + t + '_a.png' });
     if (t === 'brew') {
@@ -58,7 +58,7 @@ const id = process.argv[4]; const out = process.argv[3];
   }
   await p.screenshot({ path: out + '_9ready.png' });
   console.log('ready', await p.evaluate(() => window.__dbg.BR && window.__dbg.BR.ready));
-  await p.click('[data-z=bell]', { force: true }); await p.waitForTimeout(900);
+  await require('./pw').clickZone(p, 'bell'); await p.waitForTimeout(900);
   console.log('money', money0, '->', await p.evaluate(() => window.__dbg.G.money), 'served', await p.evaluate(() => window.__dbg.D.stats.served));
   console.log(errs.length ? 'ERRORS ' + JSON.stringify(errs) : 'NO_ERRORS');
   await b.close();

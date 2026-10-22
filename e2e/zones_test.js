@@ -3,7 +3,7 @@
 const { chromium } = require('playwright'); const path = require('path'); const fs = require('fs');
 const pw = require('./pw');
 let fails = 0; const ok = (c, m) => { console.log((c ? 'ok   ' : 'FAIL ') + m); if (!c) fails++; };
-const HOOK = 'window.__dbg = { get G() { return G; }, get D() { return D; }, get BR() { return BR; } }';
+const HOOK = 'window.__dbg = { get G() { return G; }, get D() { return D; }, get BR() { return BR; }, CAM, camGo }';
 (async () => {
   const src = fs.readFileSync(path.resolve(process.argv[2]), 'utf8').replace('newGame(); updateHud(); showTitle();', 'newGame(); updateHud(); showTitle(); ' + HOOK);
   const tmp = path.resolve(process.argv[2]).replace('.html', '.dbg.html'); fs.writeFileSync(tmp, src);
@@ -25,7 +25,9 @@ const HOOK = 'window.__dbg = { get G() { return G; }, get D() { return D; }, get
   await pw.startNew(p); await openBar();
   ok(await p.evaluate(() => window.__dbg.G.day === 1 && window.__dbg.G.rank === 1 && !window.__dbg.G.eq_ice), 'день 1, ранг 1, оборудования нет');
   ok(await p.evaluate(z => z.every(k => getComputedStyle(document.querySelector('#bZones [data-z="' + k + '"]')).pointerEvents === 'none'), ZONES), 'все зоны отсутствующего оборудования: pointer-events none');
-  for (const z of ZONES) { const c = await center(z); await p.mouse.click(c.x, c.y); }
+  /* зоны боковых станций лежат в закрытых секциях (камера туда не идёт): кликаем только центр, у боковых проверено pointer-events none */
+  for (const z of ZONES.filter(k => ['ice', 'food', 'micro'].includes(k))) { const c = await center(z); await p.mouse.click(c.x, c.y); }
+  ok(await p.evaluate(() => !window.__dbg.camGo('L', true) && !window.__dbg.camGo('R', true) && window.__dbg.CAM.sec === 'C'), 'без покупок боковых секций нет: камера остаётся в центре');
   for (const [x, y] of [[100, 600], [300, 680], [850, 650], [1200, 650], [60, 690]]) { const s = await p.evaluate(() => { const r = document.querySelector('#barSvg').getBoundingClientRect(); return { x: r.x, y: r.y, k: r.width / 1280 }; }); await p.mouse.click(s.x + x * s.k, s.y + y * s.k); }
   await p.waitForTimeout(300);
   ok((await msgs()).length === 0, 'клики по пустому столу: подсказок нет ' + JSON.stringify(await msgs()));
@@ -47,12 +49,14 @@ const HOOK = 'window.__dbg = { get G() { return G; }, get D() { return D; }, get
   await p.click('#devBtn'); await p.waitForTimeout(300);
   const own = await p.evaluate(z => Object.fromEntries(z.map(k => [k, !!window.__dbg.G['eq_' + k]])), ['whipper', 'ice', 'blender']);
   ok(own.whipper, 'на дне 30 сифон куплен: ' + JSON.stringify(own));
+  await pw.goToStation(p, 'whipper'); /* сифон в «Холодном баре» */
   ok(await p.evaluate(() => getComputedStyle(document.querySelector('#bZones [data-z="whipper"]')).pointerEvents !== 'none'), 'зона сифона активна');
   const w = await center('whipper'); await p.mouse.click(w.x, w.y); await p.waitForTimeout(300);
   ok((await msgs()).includes('Сифон не нужен'), 'ненужный сифон: «Сифон не нужен» ' + JSON.stringify(await msgs()));
   /* после покупки молока и заказа латте зона молока обрабатывается */
   ok(await p.evaluate(() => window.__dbg.G.milk), 'на дне 30 молоко куплено');
   await p.evaluate(() => { const d = window.__dbg.BR.done; d.grind = d.tamp = d.shot = true; });
+  await pw.goToStation(p, 'milk'); await p.waitForTimeout(100);
   const m1 = await center('milk'); await p.mouse.click(m1.x, m1.y); await p.waitForTimeout(400);
   ok(await p.evaluate(() => window.__dbg.BR.inset === 'milk'), 'клик по холодильнику при заказе латте открывает молоко ' + JSON.stringify(await msgs()) + ' ' + await p.evaluate(() => JSON.stringify({ i: window.__dbg.BR.inset, t: window.__dbg.BR.tasks, d: window.__dbg.BR.done })));
   await p.screenshot({ path: out + '_late.png' });

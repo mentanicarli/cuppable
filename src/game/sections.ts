@@ -105,10 +105,10 @@ export function cameraAt(from: number, to: number, elapsed: number, duration: nu
 /* ---------- управление камерой (Б1-2) ---------- */
 
 /**
- * Листание для игрока. Пока боковые секции — заглушки (до блока 30), оно включено только в #dev; блок 30 переключит константу.
+ * Листание для игрока (с 30-3 включено; в #dev оно есть всегда).
  * Через эту функцию проходят клавиши, перетаскивание и стрелки (legacy: `sectionsPlayable()` в 06-bar.js).
  */
-export const SECTIONS_PLAYABLE_FOR_PLAYER = false;
+export const SECTIONS_PLAYABLE_FOR_PLAYER = true;
 export const sectionsPlayable = (dev: boolean): boolean => dev || SECTIONS_PLAYABLE_FOR_PLAYER;
 
 /** Секция, у которой камера стоит ровно на остановке; между остановками — null. */
@@ -156,10 +156,8 @@ export function dragTarget(startCam: number, dx: number, vx: number, open: Secti
 /* ---------- подсказки: «в какой секции станция» (Б1-3) ---------- */
 
 /**
- * Зоны боковых станций живут в боковых секциях, когда включено листание (Б1-4): эффективный флаг равен `sectionsPlayable(dev)`,
- * то есть сейчас только `#dev`, а блок 30 включит его для игрока той же константой. Пока флаг выключен, плитки боковых станций
- * в центре, «в какой секции станция» для игрока = центр. Всё, что зависит от секции станции (точка, подсветка стрелки, тосты, кольцо),
- * читает её только через `stationSection`.
+ * Зоны боковых станций живут в боковых секциях (с 30-3 плиток в центре нет): флаг равен `sectionsPlayable(dev)`. Всё, что зависит
+ * от секции станции (точка, подсветка стрелки, тосты, кольцо), читает её только через `stationSection`.
  */
 export const zonesInSideSections = (dev: boolean): boolean => sectionsPlayable(dev);
 

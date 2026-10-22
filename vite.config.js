@@ -22,7 +22,7 @@ import { sectionNavHTML, navArrows, navLabelHTML } from '/src/ui/sectionNav';
 import { minimapHTML, minimapCells, minimapFill, minimapLabel } from '/src/ui/minimap';
 import { titleHTML, paceScreenHTML, howtoHTML, settingsHTML, confirmHTML, pauseHTML } from '/src/ui/menus';
 import { panelHTML, panelUpdate, readoutFill, readoutTime, readoutBrew } from '/src/ui/stationPanel';\n${process.env.CUPPABLE_DEBUG ? 'window.__MENUAPI = MENUAPI;\n' : ''}(() => {\n'use strict';\n`;
-      return head + files.map(f => `/* ===== ${f} ===== */\n` + readFileSync(resolve(LEGACY, f), 'utf8')).join('\n') + `\n})();\n`;
+      return head + files.map(f => `/* ===== ${f} ===== */\n` + readFileSync(resolve(LEGACY, f), 'utf8')).join('\n') + `\n${process.env.CUPPABLE_DEBUG ? 'window.__cam = { go: camGo, get sec() { return CAM.sec; } };\n' : ''}})();\n`;
     }
   };
 }

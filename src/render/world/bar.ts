@@ -167,7 +167,6 @@ export class BarScene {
   private iceMaker = new Container();
   private showcase = new Container();
   private subs = new Map<string, Container>();
-  private eq = new Map<string, Container>();
   /* модель напитка (Н1-2): слои снизу вверх — back (блюдце, корпус), живая жидкость под маской, лёд, front (контур) */
   private mC = new Container();
   private mBack = new Sprite();
@@ -353,13 +352,6 @@ export class BarScene {
     R.addChild(micro);
     /* кромка столешницы с тенью: поверх блоков, под плитками оборудования, чтобы блоки уходили под неё */
     spr('counterNose');
-    ids.filter((k) => k.startsWith('eq_')).forEach((k) => {
-      const c = new Container();
-      spr(k, c);
-      txt(k, c);
-      R.addChild(c);
-      this.eq.set(k.slice(3), c);
-    });
     this.setUpgrades({ milk: false, ice: false, eq: {}, snacks: false, pastry: false, dessert: false, deli: false, micro: false });
     this.root.visible = false;
   }
@@ -467,7 +459,6 @@ export class BarScene {
     this.subs.get('scDessert')!.visible = u.dessert;
     this.subs.get('scDeli')!.visible = u.deli;
     this.subs.get('scMicro')!.visible = u.micro;
-    this.eq.forEach((c, k) => (c.visible = !!u.eq[k]));
   }
 
   /** Описание модели по ссылке заказа; нет такого размера или варианта — null (рисуется по-старому). */

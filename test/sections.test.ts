@@ -37,13 +37,27 @@ describe('секции: карта станций', () => {
 
   test('зоны index.html покрыты, боковые зоны по ключам оборудования', () => {
     const ids = [...INDEX.matchAll(/data-z="(\w+)"/g)].map((m) => m[1] as string);
-    expect(ids.length).toBeGreaterThan(15);
+    expect(ids).toHaveLength(15); /* 30-3: без девяти боковых */
     for (const z of ids) expect(sectionOfZone(z), z).toBeDefined();
     for (const [sec, eq] of Object.entries(SECTION_EQ)) for (const k of eq) expect(sectionOfZone(k)).toBe(sec);
   });
 
+  test('30-3: в центре нет зон и плиток девяти боковых станций, остальные зоны на месте', () => {
+    const side = [...SECTION_EQ.L, ...SECTION_EQ.R];
+    const ids = [...INDEX.matchAll(/data-z="(\w+)"/g)].map((m) => m[1] as string);
+    const lit = zonePosKeys();
+    for (const k of side) {
+      expect(ids, `index.html: ${k}`).not.toContain(k);
+      expect(lit, `ZONE_POS: ${k}`).not.toContain(k);
+    }
+    for (const k of ['grind', 'tamp', 'shot', 'water', 'steam', 'milk', 'pour', 'syr1', 'syr2', 'syr3', 'ice', 'food', 'micro', 'bell', 'stop']) expect(ids, k).toContain(k);
+    /* центры боковых зон ZONE_POS берёт из SIDE_ZONES всегда */
+    expect(BAR).toMatch(/MENUAPI\.SIDE_ZONES\.forEach\(z => \{ ZONE_POS\[z\.id\] = MENUAPI\.sideZoneCenter\(z\); \}\);/);
+    expect(SIDE_ZONES.map((z) => z.id).sort()).toEqual([...side].sort());
+  });
+
   test('станция без потерь: у каждой станции есть зона из ZONE_POS или TASK_ZONE', () => {
-    const known = new Set([...zonePosKeys(), ...Object.values(TASK_ZONE)]);
+    const known = new Set([...zonePosKeys(), ...SIDE_ZONES.map((z) => z.id), ...Object.values(TASK_ZONE)]);
     for (const s of STATIONS) expect(s.zones.some((z) => known.has(z)), s.id).toBe(true);
     expect(sectionOfStation('boba')).toBe('R');
     expect(sectionOfStation('нет')).toBeUndefined();
@@ -126,9 +140,9 @@ describe('секции: управление камерой (Б1-2)', () => {
   const onlyR = { L: false, C: true, R: true } as const;
   const none = { L: false, C: true, R: false } as const;
 
-  test('листание для игрока выключено, в #dev включено', () => {
-    expect(SECTIONS_PLAYABLE_FOR_PLAYER).toBe(false);
-    expect(sectionsPlayable(false)).toBe(false);
+  test('листание включено игроку (30-3) и в #dev', () => {
+    expect(SECTIONS_PLAYABLE_FOR_PLAYER).toBe(true);
+    expect(sectionsPlayable(false)).toBe(true);
     expect(sectionsPlayable(true)).toBe(true);
   });
 
@@ -194,7 +208,7 @@ describe('секции: подсказки и тосты (Б1-3)', () => {
   test('в таблице раздела 11 19 станций', () => expect(rows).toHaveLength(19));
 
   test('зоны в боковых секциях включены вместе с листанием', () => {
-    expect(zonesInSideSections(false)).toBe(false);
+    expect(zonesInSideSections(false)).toBe(true);
     expect(zonesInSideSections(true)).toBe(true);
   });
 

@@ -162,7 +162,7 @@ if (parts.length > 1 && !process.env.ART_MISC_CHILD) {
     await hideUi('#hud,#bTk,#bCoach,#toast,#bFloat,#tint'); await p.waitForTimeout(600);
     await shot('recog_bar_full');
     const bp = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../src/assets/art/bar-parts.json'), 'utf8'));
-    for (const k of ['showcase', 'ice', 'milk', 'steam', 'pitBack', 'bell', 'grinderBack', 'tamper', 'scSnacks', 'scPastry', 'scDessert', 'scDeli', 'scMicro', 'eq_tea', 'eq_matcha', 'eq_powders', 'eq_juice', 'eq_whipper', 'eq_foamer', 'eq_blender', 'eq_boba', 'eq_shaker']) {
+    for (const k of ['showcase', 'ice', 'milk', 'steam', 'pitBack', 'bell', 'grinderBack', 'tamper', 'scSnacks', 'scPastry', 'scDessert', 'scDeli', 'scMicro']) {
       const bx = bp[k].box; await shot('recog_bar_' + k, { x: Math.max(0, 16 + bx.x - 8), y: Math.max(0, 16 + bx.y - 8), width: Math.min(1280, bx.w + 16), height: Math.min(720, bx.h + 16) });
     }
     console.log('recog crops done');

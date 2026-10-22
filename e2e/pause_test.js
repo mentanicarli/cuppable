@@ -32,7 +32,7 @@ const out = process.argv[3] || 'out/pause';
   /* одна проверка: подготовка → открыть станцию → зажать → пауза → всё скрыто и стоит → отпустить → продолжить → всё на месте */
   async function scenario(name, how, prep, zone, holdAt, beforeHold) {
     await p.evaluate(prep);
-    await p.click(`[data-z=${zone}]`, { force: true }); await p.waitForTimeout(500); await require('./pw').dismissCard(p); /* первое открытие станции показывает «Зачем это нужно»: окно держит CARDON и забирает клавишу P */
+    await require('./pw').clickZone(p, zone); await p.waitForTimeout(500); await require('./pw').dismissCard(p); /* первое открытие станции показывает «Зачем это нужно»: окно держит CARDON и забирает клавишу P */
     if (beforeHold) await beforeHold();
     let held = false;
     if (holdAt) { const [x, y] = await ic(...holdAt); await p.mouse.move(x, y); await p.mouse.down(); held = true; await p.waitForTimeout(700); }

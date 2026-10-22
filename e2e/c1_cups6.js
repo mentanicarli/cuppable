@@ -12,7 +12,7 @@ const pal = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../art-src/palet
   const errs = [];
   const ctx = await b.newContext({ viewport: { width: 1312, height: 752 }, deviceScaleFactor: 1 }); const p = await ctx.newPage();
   await p.route(/fonts\.googleapis\.com/, r => r.fulfill({ status: 200, contentType: 'text/css', body: PW.css })); PW.watch(p, errs);
-  await p.goto('about:blank'); await p.goto(PW.url(tmp) + '#dev-nosec'); await p.waitForSelector('[data-sandbox]', { timeout: 60000 }); await p.waitForTimeout(400);
+  await p.goto('about:blank'); await p.goto(PW.url(tmp) + '#dev'); await p.waitForSelector('[data-sandbox]', { timeout: 60000 }); await p.waitForTimeout(400);
   await p.evaluate(() => window.__sandbox.start({ day: 14, profile: 'medium' })); await p.waitForSelector('#screen', { state: 'hidden', timeout: 20000 });
   const game = await p.evaluate(() => window.__dbg.WORLD.drinkArt({ id: 'cappuccino', size: '0.2', cold: false }, 1));
   const parts = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../src/assets/art/bar-parts.json'), 'utf8'));

@@ -27,7 +27,7 @@ let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' 
   const coach = (p) => p.evaluate(() => { const c = document.querySelector('#bCoach'); return c && !c.hidden ? c.querySelector('p').textContent : ''; });
   const shot = async (p, n) => { await p.evaluate(() => window.scrollTo(0, 0)); await p.locator('#stage').screenshot({ path: `${out}/${n}.png`, timeout: 120000 }); };
   /* 1: чай, #dev без листания */
-  { const { ctx, p } = await open('#dev-nopixi-lowfx-nosec', true); await order(p, 'tea_sencha', '0.3', false);
+  { const { ctx, p } = await open('#dev-nopixi-lowfx', true); await order(p, 'tea_sencha', '0.3', false);
     const t = await coach(p); ok(t === 'Нажмите «Чайная станция», заварите чай и выньте его вовремя.', 'шаг «чай»: реплика коуча: ' + t); await shot(p, 'b15_1_coach_tea'); await ctx.close(); }
   /* 2: матча, обычная игра */
   { const { ctx, p } = await open('', false); await order(p, 'matcha_latte', '0.3', false);

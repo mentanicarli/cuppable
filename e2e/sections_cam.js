@@ -32,7 +32,7 @@ let fails = 0; const ok = (c, m) => { if (!c) { fails++; console.log('FAIL ' + m
     ok(await p.evaluate(() => !window.__sec), 'без #dev window.__sec нет');
     await p.evaluate(() => { __dbg.G.eq_tea = true; __dbg.applyUpgrades(); }); await p.waitForTimeout(800);
     const n = await p.evaluate(() => __dbg.WORLD.barSideTextures());
-    ok(n === 0, 'после покупки чая без листания текстур боковых секций по-прежнему нет (' + n + ')'); ok(await p.evaluate(() => __dbg.CAM.sec === 'C' && __dbg.CAM.x === 0), 'камера осталась в центре (навигации нет)');
+    ok(n === 2, 'после покупки чая секция L строится: фон и чайная станция, 2 текстуры (' + n + ')'); ok(await p.evaluate(() => __dbg.CAM.sec === 'C' && __dbg.CAM.x === 0), 'камера осталась в центре (навигации нет)');
     await ctx.close(); }
   /* 2) #dev */
   const { ctx, p } = await open('#dev', 2, true);

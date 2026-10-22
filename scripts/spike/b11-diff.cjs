@@ -28,7 +28,7 @@ async function shoot(file, dsf, keys, name) {
   await p.evaluate(() => __dbg.barOpen(__dbg.D.customers[0]));
   await p.waitForTimeout(900); await PW.dismissCard(p);
   /* время суток держим на месте, интерфейс скрыт */
-  await p.evaluate(() => { setInterval(() => { __dbg.D.t = 100; }, 16); document.querySelectorAll('#hud,#bTk,#bCoach,#toast,#bFloat,#bGoal,#frontHint').forEach(e => { e.style.visibility = 'hidden'; }); });
+  await p.evaluate(() => { setInterval(() => { __dbg.D.t = 100; }, 16); document.querySelectorAll('#hud,#bTk,#bCoach,#toast,#bFloat,#bGoal,#frontHint,#miniMap,#secNav').forEach(e => { e.style.visibility = 'hidden'; }); });
   await p.waitForTimeout(2500);
   const f = path.join(OUT, `${name}_${dsf}x.png`);
   await p.evaluate(() => window.scrollTo(0, 0));
@@ -37,28 +37,28 @@ async function shoot(file, dsf, keys, name) {
   await b.close();
   return { f, errs, state };
 }
-async function diff(fa, fb) {
+async function diff(fa, fb, rects) {
   const b = await chromium.launch(); const p = await b.newPage();
-  const r = await p.evaluate(async ([x, y]) => {
+  const r = await p.evaluate(async ([x, y, rects]) => {
     const load = s => new Promise(res => { const i = new Image(); i.onload = () => res(i); i.src = s; });
     const [ia, ib] = await Promise.all([load(x), load(y)]);
     if (ia.width !== ib.width || ia.height !== ib.height) return { size: false };
     const c = document.createElement('canvas'); c.width = ia.width; c.height = ia.height; const g = c.getContext('2d', { willReadFrequently: true });
     g.drawImage(ia, 0, 0); const da = g.getImageData(0, 0, c.width, c.height).data; g.clearRect(0, 0, c.width, c.height); g.drawImage(ib, 0, 0); const db = g.getImageData(0, 0, c.width, c.height).data;
-    let n = 0, mx = 0, x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1; for (let i = 0; i < da.length; i += 4) { const d = Math.max(Math.abs(da[i] - db[i]), Math.abs(da[i + 1] - db[i + 1]), Math.abs(da[i + 2] - db[i + 2]), Math.abs(da[i + 3] - db[i + 3])); if (d) { n++; if (d > mx) mx = d; const q = i / 4, X = q % c.width, Y = (q - X) / c.width; if (X < x0) x0 = X; if (X > x1) x1 = X; if (Y < y0) y0 = Y; if (Y > y1) y1 = Y; } }
-    return { size: true, px: n, max: mx, box: n ? [x0, y0, x1, y1].join(',') : '', total: da.length / 4 };
-  }, ['data:image/png;base64,' + fs.readFileSync(fa).toString('base64'), 'data:image/png;base64,' + fs.readFileSync(fb).toString('base64')]);
+    const K = c.width / 1280, RS = (rects || []).map(r => r.map(v => v * K)); let outside = 0, n = 0, mx = 0, x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1; for (let i = 0; i < da.length; i += 4) { const d = Math.max(Math.abs(da[i] - db[i]), Math.abs(da[i + 1] - db[i + 1]), Math.abs(da[i + 2] - db[i + 2]), Math.abs(da[i + 3] - db[i + 3])); if (d) { n++; if (d > mx) mx = d; const q = i / 4, X = q % c.width, Y = (q - X) / c.width; if (RS.length && !RS.some(r => X >= r[0] && X <= r[2] && Y >= r[1] && Y <= r[3])) outside++; if (X < x0) x0 = X; if (X > x1) x1 = X; if (Y < y0) y0 = Y; if (Y > y1) y1 = Y; } }
+    return { size: true, px: n, outside, max: mx, box: n ? [x0, y0, x1, y1].join(',') : '', total: da.length / 4 };
+  }, ['data:image/png;base64,' + fs.readFileSync(fa).toString('base64'), 'data:image/png;base64,' + fs.readFileSync(fb).toString('base64'), JSON.parse(process.env.RECTS || '[]')]);
   await b.close(); return r;
 }
 (async () => {
   let bad = 0; const errs = [];
-  for (const dsf of [1, 2]) for (const [name, keys] of Object.entries(SETS)) {
+  for (const dsf of (process.env.DSFS || '1,2').split(',').map(Number)) for (const [name, keys] of Object.entries(SETS)) { if (process.env.ONLY && !process.env.ONLY.split(',').includes(name)) continue;
     const a = await shoot(A, dsf, keys, name + '_before'), c = await shoot(B, dsf, keys, name + '_after');
     errs.push(...a.errs, ...c.errs);
     const d = await diff(a.f, c.f); let noise = null;
     if (process.env.NOISE) { const a2 = await shoot(A, dsf, keys, name + '_before2'); noise = await diff(a.f, a2.f); }
-    if (!d.size || d.px) bad++;
-    console.log(`${name} ${dsf}x: ${d.size ? d.px + ' px отличаются (макс. канал ' + d.max + ', рамка ' + d.box + ') из ' + d.total : 'РАЗМЕР РАЗНЫЙ'}; текстур боковых секций после: ${c.state.side}${noise ? '; шум до/до: ' + noise.px + ' px, рамка ' + noise.box : ''}`);
+    if (!d.size || (process.env.RECTS ? d.outside : d.px)) bad++;
+    console.log(`${name} ${dsf}x: ${d.size ? d.px + ' px отличаются' + (process.env.RECTS ? ' (вне прямоугольников: ' + d.outside + ')' : '') + ' (макс. канал ' + d.max + ', рамка ' + d.box + ') из ' + d.total : 'РАЗМЕР РАЗНЫЙ'}; текстур боковых секций после: ${c.state.side}${noise ? '; шум до/до: ' + noise.px + ' px, рамка ' + noise.box : ''}`);
   }
   console.log(errs.length ? errs.slice(0, 5).join('\n') : 'NO_ERRORS'); console.log(bad ? 'ЕСТЬ РАЗНИЦА: ' + bad : 'РАЗНИЦА 0 px ВО ВСЕХ КАДРАХ'); process.exit(bad ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(1); });

@@ -1,6 +1,6 @@
 /* Б1-2: управление камерой бара — клавиши, стрелки с названиями, перетаскивание, блокировки (часть 1 сценария секций). Отладочная сборка.
    CHROMIUM_ARGS=--mute-audio node e2e/sections_flow.js out/b11/b12-debug.html [папка кадров, например out/sections]
-   Обычная игра без #dev: ничего нового не срабатывает. #dev: обе боковые секции открыты, всё по правилам. Печатает NO_ERRORS. */
+   Обычная игра (30-3: листание включено игроку): без покупок боковых секций стрелок нет и камера стоит; #dev: обе боковые секции открыты, всё по правилам. Печатает NO_ERRORS. */
 const { chromium } = require('playwright'); const path = require('path'); const fs = require('fs');
 const PW = require('./pw');
 const shots = process.argv[3] ? path.resolve(process.argv[3]) : null; if (shots) fs.mkdirSync(shots, { recursive: true });
@@ -35,14 +35,14 @@ let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' 
   const stageXY = async (p, x, y) => { const r = await p.evaluate(() => { const r = document.querySelector('#stage').getBoundingClientRect(); return [r.left, r.top, r.width / 1280]; }); return [r[0] + x * r[2], r[1] + y * r[2]]; };
   const navTxt = (p) => p.evaluate(() => [...document.querySelectorAll('.secNavBtn')].filter(e => !e.hidden).map(e => e.textContent.replace(/\s+/g, ' ').trim() + '|' + e.getAttribute('aria-label')));
 
-  /* ---------- обычная игра без #dev: ничего нового ---------- */
+  /* ---------- обычная игра без покупок боковых секций: листать некуда ---------- */
   { const { ctx, p } = await open('', false);
-    ok(await p.evaluate(() => !document.querySelector('#secNav') && !window.__sec), 'без #dev: стрелок нет, __sec нет');
+    ok(await p.evaluate(() => !window.__sec && [...document.querySelectorAll('.secNavBtn')].every(e => e.hidden) && document.querySelector('#miniMap').hidden), 'без #dev и без покупок: __sec нет, стрелки и мини-карта скрыты');
     for (const k of ['KeyD', 'ArrowRight', 'KeyA', 'ArrowLeft']) await key(p, k, 300);
-    await at(p, 'C', 0, 'без #dev: A/D/←/→ камеру не двигают');
-    ok(await p.evaluate(() => document.documentElement.classList.contains('kbd')), 'без #dev: стрелки по-прежнему включают html.kbd (поведение прежнее)');
+    await at(p, 'C', 0, 'без покупок: A/D/←/→ камеру не двигают');
+    ok(await p.evaluate(() => !document.documentElement.classList.contains('kbd')), 'в баре ←/→ листают, а не включают кольцо фокуса html.kbd');
     const [x, y] = await stageXY(p, 790, 210); await p.mouse.move(x, y); await p.mouse.down(); await p.mouse.move(x - 150, y, { steps: 6 }); await p.mouse.move(x - 400, y, { steps: 6 }); await p.mouse.up(); await p.waitForTimeout(500);
-    await at(p, 'C', 0, 'без #dev: перетаскивание камеру не двигает');
+    await at(p, 'C', 0, 'без покупок: перетаскивание камеру не двигает');
     await shot(p, 'b12_6_center_no_dev');
     await ctx.close(); }
 
@@ -179,11 +179,11 @@ let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' 
     await p.evaluate(() => { __dbg.G.tutorialSeen = window.__MENUAPI.freshSeen(); }); await p.evaluate(() => __dbg.resetBar()); await p.evaluate(() => __dbg.barOpen(__dbg.D.customers[0])); await p.waitForTimeout(700); cs = await cards(); ok(cs.includes('Как листать бар'), '«Показать подсказки заново» (сброс tutorialSeen) возвращает экран: ' + JSON.stringify(cs));
     await seenNo(); await p.evaluate(() => { __dbg.G.tutOff = true; }); await p.evaluate(() => __dbg.resetBar()); await p.evaluate(() => __dbg.barOpen(__dbg.D.customers[0])); await p.waitForTimeout(700); cs = await cards(); ok(cs.length === 0, 'подсказки выключены: экрана нет');
     await ctx.close(); }
-  /* обычная игра: кадр бара без #dev (мини-карты, точки, стрелок, тостов нет) */
+  /* обычная игра: покупки боковых секций открывают стрелки и мини-карту, камера не двигается, тостов без нужного шага нет */
   { const { ctx, p } = await open('', false, { width: 1312, height: 752 }, shots2 ? 2 : 1);
-    ok(await p.evaluate(() => !document.querySelector('#miniMap') && !document.querySelector('#secNav')), 'без #dev: мини-карты и стрелок в DOM нет');
+    ok(await p.evaluate(() => !!document.querySelector('#miniMap') && !!document.querySelector('#secNav')), 'обычная игра: мини-карта и стрелки есть в DOM');
     await p.evaluate(() => { __dbg.G.eq_matcha = true; __dbg.G.eq_juice = true; __dbg.G.hints = true; __dbg.applyUpgrades(); __dbg.G.tutOff = true; }); await p.waitForTimeout(500);
-    await p.keyboard.press('Space'); await p.waitForTimeout(500); await p.keyboard.up('Space'); ok((await p.evaluate(() => [...document.querySelectorAll('#bFloat .bmsg')].map(e => e.textContent))).every(x => !/Станция «/.test(x)), 'без #dev: тостов «станция в секции» нет');
+    await p.keyboard.press('Space'); await p.waitForTimeout(500); await p.keyboard.up('Space'); ok((await p.evaluate(() => [...document.querySelectorAll('#bFloat .bmsg')].map(e => e.textContent))).every(x => !/Станция «/.test(x)), 'тостов «станция в секции» без нужного шага нет'); await at(p, 'C', 0, 'покупка камеру не двигает');
     if (shots2) { await p.evaluate(() => window.scrollTo(0, 0)); await p.locator('#stage').screenshot({ path: `${shots2}/b13_7_center_no_dev.png`, timeout: 120000 }); }
     await ctx.close(); }
   /* матрица наложений: мини-карта и подсвеченная стрелка (развёрнутый билет тоже), 1280×720 и 1024×600 */
@@ -284,11 +284,11 @@ let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' 
     await p.evaluate(() => { __dbg.camGo('R', true); }); await p.waitForTimeout(400);
     if (shots3) { await p.evaluate(() => window.scrollTo(0, 0)); await p.locator('#stage').screenshot({ path: `${shots3}/b14_7_right_frames.png`, timeout: 120000 }); }
     await ctx.close(); }
-  /* обычная игра: никаких боковых зон */
+  /* обычная игра: зоны боковых станций только в своих секциях, в центре плиток нет */
   { const { ctx, p } = await open('', false, { width: 1312, height: 752 }, shots3 ? 2 : 1);
-    ok(await p.evaluate(() => !document.querySelector('#bZones [data-sec]') && document.querySelector('#barSvg').getAttribute('viewBox') === '0 0 1280 720'), 'без #dev: боковых зон нет, viewBox прежний');
+    ok(await p.evaluate(() => !!document.querySelector('#bZones [data-sec]') && document.querySelector('#barSvg').getAttribute('viewBox') === '0 0 1280 720'), 'группы боковых зон есть, камера в центре: viewBox 0 0 1280 720');
     await p.evaluate(() => { const G = __dbg.G; ['tea', 'matcha', 'powders', 'juice', 'whipper', 'foamer', 'blender', 'boba', 'shaker'].forEach(k => { G['eq_' + k] = true; }); __dbg.applyUpgrades(); });
-    ok(await p.evaluate(() => ['tea', 'matcha', 'boba', 'shaker'].every(z => document.querySelector(`#bZones [data-z=${z}]`).style.pointerEvents !== 'none')), 'без #dev: плитки боковых станций в центре кликабельны, как раньше');
+    ok(await p.evaluate(() => document.querySelectorAll('#bZones > [data-z=tea], #bZones > [data-z=matcha], #bZones > [data-z=boba], #bZones > [data-z=shaker]').length === 0 && ['tea', 'matcha', 'boba', 'shaker'].every(z => document.querySelector(`#bZones [data-z=${z}]`).style.pointerEvents === 'none')), 'плиток боковых станций в центре нет, а их зоны при камере в центре не активны');
     if (shots3) { await p.evaluate(() => window.scrollTo(0, 0)); await p.locator('#stage').screenshot({ path: `${shots3}/b14_8_center_no_dev.png`, timeout: 120000 }); }
     await ctx.close(); }
   ok(!errs.length, errs.length ? errs.slice(0, 4).join(' | ') : 'ошибок страницы нет'); console.log(fails ? 'FAILS ' + fails : 'NO_ERRORS'); await b.close(); process.exit(fails ? 1 : 0);

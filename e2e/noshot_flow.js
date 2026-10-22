@@ -13,7 +13,7 @@ const CASES = [['matcha_latte', '0.6', false], ['matcha_coconut', '0.4', false],
   let fails = 0; const ok = (c, m) => { console.log((c ? 'OK   ' : 'FAIL ') + m); if (!c) fails++; };
   await pw.sandboxStart(p, pw.url(tmp), { day: 40, profile: 'confident' }); await p.waitForTimeout(400);
   const ic = async (x, y) => { const r = await p.evaluate(() => { const r = document.querySelector('#bi').getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; }); return [r[0] + x * r[2] / 440, r[1] + y * r[3] / 450]; };
-  const zone = z => p.click(`[data-z=${z}]`, { force: true });
+  const zone = z => pw.clickZone(p, z);
   const waitFor = (fn, arg, to = 40000) => p.waitForFunction(fn, arg, { timeout: to, polling: 30 });
   const done = async () => { const [x, y] = await ic(353, 384); await p.mouse.click(x, y); await p.waitForTimeout(250); };
   const hold = async (fn, arg) => { const [x, y] = await ic(155, 384); await p.mouse.move(x, y); await p.mouse.down(); await waitFor(fn, arg); await p.mouse.up(); };

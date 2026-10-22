@@ -1,4 +1,5 @@
 import { CASE_EQ, MICROWAVE } from './food';
+import { SECTION_NAMES, sectionOfStation } from './sections';
 import { DRINKS, DRINK_NEEDS, ENGINE, EQUIPMENT, drinkById } from './menu';
 
 /** Короткие подсказки для нового оборудования: 1–2 шага простым языком. */
@@ -100,7 +101,9 @@ export function purchaseToast(eq: string): string | null {
   if (!(eq in TUTORIALS)) return null;
   const d = exampleDrink(eq);
   const tail = d ? `Попробуйте на заказе: ${d}` : 'Попробуйте на заказе с едой';
-  return `Новое: ${equipmentName(eq)}. ${tail}`;
+  const sec = sectionOfStation(eq);
+  const where = sec && sec !== 'C' ? ` Станция в секции «${SECTION_NAMES[sec]}»: нажмите стрелку с этим названием.` : '';
+  return `Новое: ${equipmentName(eq)}. ${tail}${tail.endsWith('.') ? '' : '.'}${where}`;
 }
 
 /** Текст коуча для станции: где она и что делать. */
