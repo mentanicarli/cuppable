@@ -13,6 +13,7 @@ out
 !docs/art/drinks/h2-4/all56_sheet.png
 !docs/art/drinks/h2-4/places_sheet.png
 !docs/art/sections/*.png
+!docs/art/sides/s0/*.png
 .DS_Store
 Thumbs.db
 .env*
