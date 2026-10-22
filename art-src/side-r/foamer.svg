@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="359 318 133 202" data-part="foamer" data-scale="1.1">
+<!--
+  Миксер для пенок (30-2), секция R. Проектная рамка 418, 350, 104 × 156 (кувшин, ручка справа): стальной кувшин с крышкой и ручкой на светлой моторной базе с кнопкой и иконкой пузырьков. ×1,10 через transform обёртки.
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<g data-wrap="foamer" transform="translate(364.6 506) scale(1.1) translate(-418 -506)">
+<ellipse cx="470" cy="508" rx="52" ry="4" fill="{{SHADOW}}" fill-opacity=".22" stroke="none"/>
+<g data-item="foamer" data-box="420 342 106 164">
+<path d="M424 478H516Q520 478 520 484V500Q520 506 514 506H426Q420 506 420 500V484Q420 478 424 478Z" fill="{{PAPER}}" stroke-width="{{M}}"/>
+<rect x="428" y="498" width="84" height="6" rx="2" fill="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<circle cx="470" cy="491" r="8" fill="{{MUSTARD}}" stroke-width="{{M}}"/>
+<path d="M426 484H510" fill="none" stroke="{{HILITE}}" stroke-opacity="0.6" stroke-width="{{D}}"/>
+<g data-icon="foam"><circle cx="449" cy="490" r="2.6" fill="{{TERRA}}" stroke-width="{{D}}"/><circle cx="456" cy="486" r="2" fill="{{TERRA}}" stroke-width="{{D}}"/><circle cx="452" cy="495" r="1.8" fill="{{TERRA}}" stroke-width="{{D}}"/></g>
+<path d="M434 384L430 474H508L504 384Z" fill="{{STEEL}}" stroke-width="{{M}}"/>
+<path d="M440 392L437 468" fill="none" stroke="{{HILITE}}" stroke-opacity="0.7" stroke-width="{{M}}"/>
+<path d="M498 392L502 466" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<path d="M504 396Q526 398 526 424Q526 448 506 452" fill="none" stroke-width="{{L}}"/>
+<path d="M504 396Q522 398 522 424Q522 444 506 448" fill="none" stroke="{{STEEL_HI}}" stroke-width="{{D}}"/>
+<path d="M434 384Q420 380 424 388L434 392Z" fill="{{STEEL}}" stroke-width="{{D}}"/>
+<path d="M432 384Q432 372 468 372Q504 372 504 384Z" fill="{{STEEL_SH}}" stroke-width="{{M}}"/>
+<rect x="448" y="342" width="40" height="31" rx="6" fill="{{TERRA}}" stroke-width="{{M}}"/>
+<circle cx="468" cy="358" r="5" fill="{{MUSTARD}}" stroke-width="{{D}}"/>
+<path d="M454 349H472" fill="none" stroke="{{HILITE}}" stroke-opacity="0.6" stroke-width="{{D}}"/>
+</g>
+</g>
+</g>
+</svg>

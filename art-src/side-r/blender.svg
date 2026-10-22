@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="489 258 162 262" data-part="blender" data-scale="1.1">
+<!--
+  Блендер (30-2), секция R. Проектная рамка 552, 288, 130 × 220: высокий прозрачный кувшин с делениями, пестиком и крышкой, ручка справа, светлая моторная база с поворотником и лезвиями. ×1,10 через transform обёртки.
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<g data-wrap="blender" transform="translate(497 506) scale(1.1) translate(-552 -506)">
+<ellipse cx="612" cy="508" rx="64" ry="4" fill="{{SHADOW}}" fill-opacity=".22" stroke="none"/>
+<g data-item="blender" data-box="552 288 133 218">
+<path d="M556 506V478Q556 470 564 470H660Q668 470 668 478V506Z" fill="{{PAPER}}" stroke-width="{{M}}"/>
+<path d="M572 470L578 432H646L652 470Z" fill="{{PAPER}}" stroke-width="{{M}}"/>
+<rect x="552" y="498" width="120" height="8" rx="3" fill="{{STEEL_SH}}" stroke-width="{{M}}"/>
+<circle cx="612" cy="486" r="9" fill="{{TERRA}}" stroke-width="{{M}}"/>
+<path d="M612 480V486" fill="none" stroke="{{PAPER}}" stroke-width="{{D}}"/>
+<path d="M570 476V498" fill="none" stroke="{{HILITE}}" stroke-opacity="0.7" stroke-width="{{M}}"/>
+<path d="M584 428L568 312H650L636 428Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
+<path d="M572 340L580 428H642L646 340Z" fill="{{GLASS_DP}}" stroke="none" fill-opacity="0.35"/>
+<path d="M576 322L588 420" fill="none" stroke="{{HILITE}}" stroke-opacity="0.8" stroke-width="{{M}}"/>
+<path d="M590 340H600M590 360H600M590 380H600M590 400H600" fill="none" stroke-width="{{D}}"/>
+<rect x="603" y="318" width="10" height="92" rx="3" fill="{{PAPER}}" stroke-width="{{D}}"/>
+<path d="M590 428H632L628 436H594Z" fill="{{STEEL_SH}}" stroke-width="{{M}}"/>
+<path d="M648 322Q690 322 684 350Q680 392 640 410L636 400Q668 386 670 352Q671 336 646 336Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
+<path d="M560 318Q560 298 609 298Q658 298 658 318Z" fill="{{STEEL}}" stroke-width="{{M}}"/>
+<rect x="588" y="288" width="42" height="12" rx="4" fill="{{STEEL_SH}}" stroke-width="{{M}}"/>
+<path d="M568 312Q572 304 590 303" fill="none" stroke="{{HILITE}}" stroke-opacity="0.7" stroke-width="{{M}}"/>
+</g>
+</g>
+</g>
+</svg>

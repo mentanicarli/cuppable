@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="650 364 326 156" data-part="boba" data-scale="1.1">
+<!--
+  Станция бабл ти (30-2), секция R. Проектная рамка 716, 388, 284 × 122: кастрюля с тёмными шариками и ложкой, высокий стакан с шариками и пучком толстых трубочек, запайщик стаканов, банка с трубочками (пучок x 956–998 входит в зону). ×1,10 через transform обёртки.
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<g data-wrap="boba" transform="translate(658 506) scale(1.1) translate(-716 -506)">
+<ellipse cx="858" cy="508" rx="142" ry="4" fill="{{SHADOW}}" fill-opacity=".22" stroke="none"/>
+<g data-item="boba" data-box="716 384 282 122">
+<path d="M720 452H812Q816 452 816 458V496Q816 506 806 506H726Q716 506 716 496V458Q716 452 720 452Z" fill="{{STEEL}}" stroke-width="{{M}}"/>
+<ellipse cx="766" cy="452" rx="50" ry="8" fill="{{DARK}}" stroke-width="{{M}}"/>
+<path d="M724 462V498" fill="none" stroke="{{HILITE}}" stroke-opacity="0.6" stroke-width="{{M}}"/>
+<rect x="796" y="456" width="24" height="6" rx="3" fill="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<path d="M812 440L824 416" fill="none" stroke-width="{{L}}"/>
+<ellipse cx="809" cy="446" rx="7" ry="4" fill="{{STEEL_HI}}" stroke-width="{{D}}"/>
+<circle cx="742" cy="450" r="4.2" fill="{{CHOC}}" stroke-width="{{D}}"/>
+<circle cx="756" cy="453" r="4.2" fill="{{CHOC}}" stroke-width="{{D}}"/>
+<circle cx="770" cy="449" r="4.2" fill="{{CHOC}}" stroke-width="{{D}}"/>
+<circle cx="784" cy="453" r="4.2" fill="{{CHOC}}" stroke-width="{{D}}"/>
+<circle cx="750" cy="455" r="4.2" fill="{{CHOC}}" stroke-width="{{D}}"/>
+<circle cx="776" cy="455" r="4.2" fill="{{CHOC}}" stroke-width="{{D}}"/>
+<circle cx="764" cy="456" r="4.2" fill="{{CHOC}}" stroke-width="{{D}}"/>
+<circle cx="790" cy="450" r="4.2" fill="{{CHOC}}" stroke-width="{{D}}"/>
+<path d="M826 414L832 506H872L878 414Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
+<path d="M829.5 470H874.5L872.5 504H833.5Z" fill="{{KRAFT}}" stroke="none"/>
+<path d="M833 420L838 500" fill="none" stroke="{{HILITE}}" stroke-opacity="0.8" stroke-width="{{M}}"/>
+<circle cx="842" cy="497" r="4.4" fill="{{CHOC}}" stroke-width="{{D}}"/>
+<circle cx="852" cy="498" r="4.4" fill="{{CHOC}}" stroke-width="{{D}}"/>
+<circle cx="862" cy="497" r="4.4" fill="{{CHOC}}" stroke-width="{{D}}"/>
+<circle cx="847" cy="489" r="4.4" fill="{{CHOC}}" stroke-width="{{D}}"/>
+<circle cx="857" cy="489" r="4.4" fill="{{CHOC}}" stroke-width="{{D}}"/>
+<circle cx="867" cy="490" r="4.4" fill="{{CHOC}}" stroke-width="{{D}}"/>
+<circle cx="852" cy="481" r="4.4" fill="{{CHOC}}" stroke-width="{{D}}"/>
+<ellipse cx="852" cy="414" rx="26" ry="4" fill="{{GLASS_DP}}" stroke-width="{{D}}"/>
+<rect x="838" y="396" width="8" height="26" rx="3" fill="{{PINK}}" stroke-width="{{M}}"/>
+<rect x="850" y="392" width="8" height="30" rx="3" fill="{{MUSTARD}}" stroke-width="{{M}}"/>
+<rect x="862" y="396" width="8" height="26" rx="3" fill="{{SAGE}}" stroke-width="{{M}}"/>
+<path d="M884 506V458Q884 452 890 452H936Q942 452 942 458V506Z" fill="{{TERRA}}" stroke-width="{{M}}"/>
+<rect x="890" y="462" width="46" height="8" rx="3" fill="{{PAPER}}" stroke-width="{{D}}"/>
+<path d="M896 452V440Q896 434 902 434H934Q940 434 940 440V452Z" fill="{{STEEL}}" stroke-width="{{M}}"/>
+<rect x="918" y="476" width="12" height="12" rx="3" fill="{{MUSTARD}}" stroke-width="{{D}}"/>
+<path d="M890 478V500" fill="none" stroke="{{HILITE}}" stroke-opacity="0.5" stroke-width="{{M}}"/>
+<path d="M956 436H998V500Q998 506 992 506H962Q956 506 956 500Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
+<path d="M961 442V498" fill="none" stroke="{{HILITE}}" stroke-opacity="0.7" stroke-width="{{M}}"/>
+<rect x="962" y="392" width="8" height="106" rx="3" fill="{{PINK}}" stroke-width="{{D}}"/>
+<rect x="970" y="384" width="8" height="106" rx="3" fill="{{MUSTARD}}" stroke-width="{{D}}"/>
+<rect x="978" y="390" width="8" height="106" rx="3" fill="{{SAGE}}" stroke-width="{{D}}"/>
+<rect x="986" y="386" width="8" height="106" rx="3" fill="{{DUSTY}}" stroke-width="{{D}}"/>
+<ellipse cx="977" cy="436" rx="21" ry="3.5" fill="{{GLASS_DP}}" stroke-width="{{D}}"/>
+</g>
+</g>
+</g>
+</svg>

@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="6 263 183 257" data-part="juice" data-scale="1.1">
+<!--
+  Холодильник соков и тоника (30-2), секция R. Проектная рамка 66, 292, 152 × 214: тёмный настольный бутылочный холодильник со стеклянной дверцей, три полки с бутылками сока и тоника, снежинка-иконка на панели, ножки. Проектные размеры ×1,10 через transform обёртки (data-wrap).
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<g data-wrap="juice" transform="translate(14 506) scale(1.1) translate(-66 -506)">
+<ellipse cx="142" cy="508" rx="80" ry="4" fill="{{SHADOW}}" fill-opacity=".22" stroke="none"/>
+<g data-item="juice" data-box="66 292 152 214">
+<rect x="72" y="496" width="22" height="10" rx="3" fill="{{STEEL_SH}}" stroke-width="{{M}}"/>
+<rect x="190" y="496" width="22" height="10" rx="3" fill="{{STEEL_SH}}" stroke-width="{{M}}"/>
+<rect x="66" y="292" width="152" height="206" rx="9" fill="{{DARK}}" stroke-width="{{M}}"/>
+<rect x="76" y="326" width="132" height="160" rx="4" fill="{{GLASS}}" stroke-width="{{M}}"/>
+<path d="M78 328H206V334H78Z" fill="{{GLASS_DP}}" stroke="none"/>
+<path d="M80 410H204" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<path d="M80 458H204" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<g data-icon="snow"><path d="M142 298V320M133 301L151 317M151 301L133 317" fill="none" stroke="{{PAPER}}" stroke-width="{{D}}"/></g>
+<rect x="82" y="348" width="22" height="60" rx="3" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<path d="M83 367.4H103V405Q103 407 100 407H86Q83 407 83 405Z" fill="{{MUSTARD}}" stroke="none"/>
+<rect x="89.04" y="341" width="7.92" height="9" rx="1.5" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<rect x="88.04" y="338" width="9.92" height="5" rx="1.5" fill="{{TERRA}}" stroke-width="{{D}}"/>
+<rect x="108" y="348" width="22" height="60" rx="3" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<path d="M109 367.4H129V405Q129 407 126 407H112Q109 407 109 405Z" fill="{{SAGE_LT}}" stroke="none"/>
+<rect x="115.04" y="341" width="7.92" height="9" rx="1.5" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<rect x="114.04" y="338" width="9.92" height="5" rx="1.5" fill="{{SAGE}}" stroke-width="{{D}}"/>
+<rect x="134" y="348" width="22" height="60" rx="3" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<path d="M135 367.4H155V405Q155 407 152 407H138Q135 407 135 405Z" fill="{{PINK}}" stroke="none"/>
+<rect x="141.04" y="341" width="7.92" height="9" rx="1.5" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<rect x="140.04" y="338" width="9.92" height="5" rx="1.5" fill="{{TERRA}}" stroke-width="{{D}}"/>
+<rect x="160" y="348" width="22" height="60" rx="3" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<path d="M161 367.4H181V405Q181 407 178 407H164Q161 407 161 405Z" fill="{{MUSTARD}}" stroke="none"/>
+<rect x="167.04" y="341" width="7.92" height="9" rx="1.5" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<rect x="166.04" y="338" width="9.92" height="5" rx="1.5" fill="{{SAGE}}" stroke-width="{{D}}"/>
+<rect x="186" y="348" width="18" height="60" rx="3" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<path d="M187 367.4H203V405Q203 407 200 407H190Q187 407 187 405Z" fill="{{GLASS_DP}}" stroke="none"/>
+<rect x="191.76" y="341" width="6.48" height="9" rx="1.5" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<rect x="190.76" y="338" width="8.48" height="5" rx="1.5" fill="{{DUSTY}}" stroke-width="{{D}}"/>
+<rect x="82" y="422" width="20" height="36" rx="3" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<path d="M83 431.32H101V455Q101 457 98 457H86Q83 457 83 455Z" fill="{{TERRA}}" stroke="none"/>
+<rect x="88.4" y="415" width="7.2" height="9" rx="1.5" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<rect x="87.4" y="412" width="9.2" height="5" rx="1.5" fill="{{DARK}}" stroke-width="{{D}}"/>
+<rect x="106" y="422" width="20" height="36" rx="3" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<path d="M107 431.32H125V455Q125 457 122 457H110Q107 457 107 455Z" fill="{{BAKE}}" stroke="none"/>
+<rect x="112.4" y="415" width="7.2" height="9" rx="1.5" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<rect x="111.4" y="412" width="9.2" height="5" rx="1.5" fill="{{DARK}}" stroke-width="{{D}}"/>
+<rect x="130" y="422" width="20" height="36" rx="3" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<path d="M131 431.32H149V455Q149 457 146 457H134Q131 457 131 455Z" fill="{{SAGE_LT}}" stroke="none"/>
+<rect x="136.4" y="415" width="7.2" height="9" rx="1.5" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<rect x="135.4" y="412" width="9.2" height="5" rx="1.5" fill="{{DARK}}" stroke-width="{{D}}"/>
+<rect x="156" y="422" width="20" height="36" rx="3" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<path d="M157 431.32H175V455Q175 457 172 457H160Q157 457 157 455Z" fill="{{PINK}}" stroke="none"/>
+<rect x="162.4" y="415" width="7.2" height="9" rx="1.5" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<rect x="161.4" y="412" width="9.2" height="5" rx="1.5" fill="{{DARK}}" stroke-width="{{D}}"/>
+<rect x="180" y="422" width="24" height="36" rx="3" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<path d="M181 431.32H203V455Q203 457 200 457H184Q181 457 181 455Z" fill="{{GLASS_DP}}" stroke="none"/>
+<rect x="187.68" y="415" width="8.64" height="9" rx="1.5" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<rect x="186.68" y="412" width="10.64" height="5" rx="1.5" fill="{{DUSTY}}" stroke-width="{{D}}"/>
+<rect x="84" y="468" width="34" height="18" rx="3" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<path d="M85 469.76H117V483Q117 485 114 485H88Q85 485 85 483Z" fill="{{GLASS_DP}}" stroke="none"/>
+<rect x="94.88" y="461" width="12.24" height="9" rx="1.5" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<rect x="93.88" y="458" width="14.24" height="5" rx="1.5" fill="{{DUSTY}}" stroke-width="{{D}}"/>
+<rect x="122" y="468" width="34" height="18" rx="3" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<path d="M123 469.76H155V483Q155 485 152 485H126Q123 485 123 483Z" fill="{{GLASS_DP}}" stroke="none"/>
+<rect x="132.88" y="461" width="12.24" height="9" rx="1.5" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<rect x="131.88" y="458" width="14.24" height="5" rx="1.5" fill="{{DUSTY}}" stroke-width="{{D}}"/>
+<rect x="160" y="468" width="34" height="18" rx="3" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<path d="M161 469.76H193V483Q193 485 190 485H164Q161 485 161 483Z" fill="{{GLASS_DP}}" stroke="none"/>
+<rect x="170.88" y="461" width="12.24" height="9" rx="1.5" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<rect x="169.88" y="458" width="14.24" height="5" rx="1.5" fill="{{DUSTY}}" stroke-width="{{D}}"/>
+<path d="M82 334L82 480" fill="none" stroke="{{HILITE}}" stroke-opacity="0.5" stroke-width="{{M}}"/>
+<path d="M70 340V420" fill="none" stroke="{{STEEL_HI}}" stroke-width="{{M}}"/>
+<path d="M180 328L206 328L206 348Z" fill="{{HILITE}}" stroke="none" fill-opacity="0.35"/>
+</g>
+</g>
+</g>
+</svg>

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="192 302 164 218" data-part="whipper" data-scale="1.1">
+<!--
+  Сифон для пены (30-2), секция R. Проектная рамка 262, 328, 134 × 182: стальной сифон-кремер с зарядником, головкой, рычагом и носиком в ведёрке со льдом, второй сифон, три баллончика. ×1,10 через transform обёртки.
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<g data-wrap="whipper" transform="translate(199.2 506) scale(1.1) translate(-262 -506)">
+<ellipse cx="328" cy="508" rx="66" ry="4" fill="{{SHADOW}}" fill-opacity=".22" stroke="none"/>
+<g data-item="whipper" data-box="262.5 328 135 178">
+<path d="M285.46 376Q284.1 384 279 398V449Q279 452 283 452H309Q313 452 313 449V398Q307.9 384 306.54 376Z" fill="{{STEEL}}" stroke-width="{{M}}"/>
+<path d="M284 402V444" fill="none" stroke="{{HILITE}}" stroke-opacity="0.7" stroke-width="{{M}}"/>
+<path d="M308 402V444" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<ellipse cx="296" cy="370" rx="11.54" ry="13" fill="{{STEEL_HI}}" stroke-width="{{M}}"/>
+<rect x="289.2" y="364" width="13.6" height="6" rx="2" fill="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<g transform="rotate(-35 287.5 364)"><rect x="283.5" y="332" width="8" height="30" rx="3" fill="{{STEEL_HI}}" stroke-width="{{M}}"/></g>
+<rect x="301.95" y="338" width="6" height="24" rx="2" fill="{{STEEL}}" stroke-width="{{D}}"/>
+<path d="M298.95 338L310.95 338L308.95 328L300.95 328Z" fill="{{STEEL_HI}}" stroke-width="{{D}}"/>
+<path d="M299.4 362Q316.4 366 317.25 388" fill="none" stroke-width="{{M}}"/>
+<path d="M266 452H342L336 506H272Z" fill="{{STEEL}}" stroke-width="{{M}}"/>
+<ellipse cx="304" cy="452" rx="38" ry="6" fill="{{STEEL_HI}}" stroke-width="{{M}}"/>
+<path d="M270 470H338" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<path d="M273 494H335" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<path d="M274 458L279 500" fill="none" stroke="{{HILITE}}" stroke-opacity="0.6" stroke-width="{{M}}"/>
+<circle cx="267" cy="466" r="4.5" fill="{{STEEL_HI}}" stroke-width="{{D}}"/>
+<circle cx="341" cy="466" r="4.5" fill="{{STEEL_HI}}" stroke-width="{{D}}"/>
+<rect x="274" y="442" width="12" height="12" rx="2" fill="{{PAPER}}" stroke-width="{{D}}"/>
+<rect x="290" y="438" width="13" height="13" rx="2" fill="{{PAPER}}" stroke-width="{{D}}"/>
+<rect x="306" y="441" width="12" height="12" rx="2" fill="{{PAPER}}" stroke-width="{{D}}"/>
+<rect x="320" y="443" width="11" height="11" rx="2" fill="{{PAPER}}" stroke-width="{{D}}"/>
+<rect x="283" y="448" width="10" height="10" rx="2" fill="{{PAPER}}" stroke-width="{{D}}"/>
+<rect x="312" y="447" width="10" height="10" rx="2" fill="{{PAPER}}" stroke-width="{{D}}"/>
+<rect x="344" y="484" width="7" height="22" rx="2" fill="{{STEEL}}" stroke-width="{{D}}"/>
+<rect x="344" y="492" width="7" height="5" rx="1" fill="{{TERRA}}" stroke-width="{{D}}"/>
+<rect x="352" y="484" width="7" height="22" rx="2" fill="{{STEEL}}" stroke-width="{{D}}"/>
+<rect x="352" y="492" width="7" height="5" rx="1" fill="{{TERRA}}" stroke-width="{{D}}"/>
+<rect x="360" y="484" width="7" height="22" rx="2" fill="{{STEEL}}" stroke-width="{{D}}"/>
+<rect x="360" y="492" width="7" height="5" rx="1" fill="{{TERRA}}" stroke-width="{{D}}"/>
+<path d="M371.32 396Q370.2 404 366 418V503Q366 506 370 506H390Q394 506 394 503V418Q389.8 404 388.68 396Z" fill="{{STEEL}}" stroke-width="{{M}}"/>
+<path d="M371 422V498" fill="none" stroke="{{HILITE}}" stroke-opacity="0.7" stroke-width="{{M}}"/>
+<path d="M389 422V498" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<ellipse cx="380" cy="390" rx="9.68" ry="13" fill="{{STEEL_HI}}" stroke-width="{{M}}"/>
+<rect x="374.4" y="384" width="11.2" height="6" rx="2" fill="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<g transform="rotate(-35 373 384)"><rect x="369" y="352" width="8" height="30" rx="3" fill="{{STEEL_HI}}" stroke-width="{{M}}"/></g>
+<rect x="384.9" y="358" width="6" height="24" rx="2" fill="{{STEEL}}" stroke-width="{{D}}"/>
+<path d="M381.9 358L393.9 358L391.9 348L383.9 348Z" fill="{{STEEL_HI}}" stroke-width="{{D}}"/>
+<path d="M382.8 382Q396.8 386 397.5 408" fill="none" stroke-width="{{M}}"/>
+</g>
+</g>
+</g>
+</svg>

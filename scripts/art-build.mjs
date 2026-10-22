@@ -15,7 +15,7 @@ const SRC = join(ROOT, 'art-src');
 const OUT = join(ROOT, 'src/assets/art');
 const PARTS = join(OUT, 'bar-parts.json');
 /** папка art-src → отдельный файл частей боковой секции (30-1) */
-const SIDE_FILES = { 'side-l': 'bar-parts-left.json' };
+const SIDE_FILES = { 'side-l': 'bar-parts-left.json', 'side-r': 'bar-parts-right.json' };
 const check = process.argv.includes('--check');
 const pal = JSON.parse(readFileSync(join(SRC, 'palette.json'), 'utf8'));
 

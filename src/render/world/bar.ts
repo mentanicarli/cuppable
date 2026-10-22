@@ -1,11 +1,12 @@
 import { Container, Graphics, Sprite, Text, type Texture } from 'pixi.js';
 import PARTS from '../../assets/art/bar-parts.json';
 import PARTS_L from '../../assets/art/bar-parts-left.json';
+import PARTS_R from '../../assets/art/bar-parts-right.json';
 import { raster } from './svg';
 import { TexCache, modelTexKey } from './texCache';
 import { BAR_UNIT, drinkPx, geomOf, glassHalfWidth, type CeramicGeom, type GlassGeom } from './drinkModel';
 import { specOf, type DrinkSpec, type ModelRef } from '../../game/drinkModel';
-import { SECTION_CAM, SECTION_NAMES, SECTION_W, SIDE_ZONES, stationOfZone, type SectionsOpen } from '../../game/sections';
+import { SECTION_CAM, SECTION_W, type SectionsOpen } from '../../game/sections';
 import PAL from '../../../art-src/palette.json';
 import { counterTopSvg, wallSvg, type Fmt } from '../../game/backdrop';
 
@@ -14,10 +15,10 @@ interface TextSpec { t: string; x: number; y: number; size: number; weight: stri
 interface Part { svg: string; box: Box; texts: TextSpec[] }
 
 const P = PARTS as unknown as Record<string, Part>;
-/** Части левой секции (блок 30-1): секция-локальные координаты 0…1280 × 0…720. */
-const PL = PARTS_L as unknown as Record<string, Part>;
-/** Предметы секции L: часть → покупка `eq_<id>` (видны только купленные). */
-export const SIDE_L_ITEMS: readonly string[] = ['tea', 'matcha', 'powders'];
+/** Части боковых секций (блоки 30-1, 30-2): секция-локальные координаты 0…1280 × 0…720. */
+const PS: Record<'L' | 'R', Record<string, Part>> = { L: PARTS_L as unknown as Record<string, Part>, R: PARTS_R as unknown as Record<string, Part> };
+/** Предметы боковых секций: часть → покупка `eq_<id>` (видны только купленные). */
+export const SIDE_ITEMS: Readonly<Record<'L' | 'R', readonly string[]>> = { L: ['tea', 'matcha', 'powders'], R: ['juice', 'whipper', 'foamer', 'blender', 'boba', 'shaker'] };
 
 /** Слой жидкости в чашке: от дна вверх, y/h в координатах чашки. */
 export interface CupRect { y: number; h: number; col: string }
@@ -89,23 +90,14 @@ class ModelTex {
 }
 
 /** Боковая секция (Б1-1): плашка-заглушка вместо будущего арта (этап 30). Текстуры живут, пока секция открыта и камера на ней или на соседней остановке. */
-interface SideSection { c: Container; tex: Texture | null; label: Text | null; names: Text[]; loading: boolean; items: Map<string, { sp: Sprite; tex: Texture }>; itemLoading: Set<string> }
+interface SideSection { c: Container; tex: Texture | null; loading: boolean; items: Map<string, { sp: Sprite; tex: Texture }>; itemLoading: Set<string> }
 
 /** Цвета и толщины палитры для общей функции стены и столешницы (src/game/backdrop.ts). */
 const PAL_FMT: Fmt = { col: (n) => (PAL.colors as Record<string, string>)[n] as string, w: (n) => String(PAL.stroke[n]) };
 
-/** Заглушка фона боковой секции (блок 29-4): стена и столешница той же функцией и теми же числами, что у центра (полосы шаг 130 со смещением 40 / 80, стыки досок через 640), поэтому на стыке секций нет шва; фасад тумбы и нос плиты те же части, что в центре. Плашка с подписью и штриховые рамки станций остаются до блока 30. */
-function placeholderSvg(id: 'L' | 'R'): string {
-  const C = PAL.colors;
-  return wallSvg(id, PAL_FMT) + counterTopSvg(PAL_FMT) + (P.counterFront as Part).svg + (P.counterNose as Part).svg
-    + `<rect x="${SECTION_W / 2 - 220}" y="170" width="440" height="90" rx="22" fill="${C.PAPER}" stroke="${C.INK}" stroke-width="3.5" stroke-dasharray="14 9"/>`
-    /* штриховые рамки на месте зон станций, чтобы по заглушке можно было играть (убираются в блоке 30 вместе с заглушкой) */
-    + SIDE_ZONES.filter((z) => z.section === id).map((z) => `<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" rx="14" fill="${C.PAPER}" fill-opacity="0.55" stroke="${C.INK}" stroke-width="3" stroke-dasharray="10 7"/>`).join('');
-}
-
-/** Фон левой секции (30-1): стена, столешница, декор (полка с банками, окно, растение), фасад и нос плиты одной текстурой; предметы станций отдельными спрайтами. */
-function sideBackdrop(id: 'L'): string {
-  return wallSvg(id, PAL_FMT) + counterTopSvg(PAL_FMT) + PL.decor!.svg + (P.counterFront as Part).svg + (P.counterNose as Part).svg;
+/** Фон боковой секции (30-1, 30-2): стена и столешница (`backdrop.ts`, ритм полос и досок непрерывен со стыками), декор, фасад тумбы и нос плиты одной текстурой; предметы станций отдельными спрайтами. */
+function sideBackdrop(id: 'L' | 'R'): string {
+  return wallSvg(id, PAL_FMT) + counterTopSvg(PAL_FMT) + (PS[id].decor as Part).svg + (P.counterFront as Part).svg + (P.counterNose as Part).svg;
 }
 
 /** Уровень в питчере (29-3): стенки непрозрачные, жидкость видна в овале у обода (чем выше, тем больше заполнен овал; обрезка ближним краем обода) и в шкале на корпусе слева от центра (полоска растёт вместе с уровнем). Координаты от якоря питчера (940, 514). */
@@ -150,8 +142,8 @@ export class BarScene {
   private eqOwned: Record<string, boolean> = {};
   private sOpen: SectionsOpen = { L: false, C: true, R: false };
   private side: Record<'L' | 'R', SideSection> = {
-    L: { c: new Container(), tex: null, label: null, names: [], loading: false, items: new Map(), itemLoading: new Set() },
-    R: { c: new Container(), tex: null, label: null, names: [], loading: false, items: new Map(), itemLoading: new Set() }
+    L: { c: new Container(), tex: null, loading: false, items: new Map(), itemLoading: new Set() },
+    R: { c: new Container(), tex: null, loading: false, items: new Map(), itemLoading: new Set() }
   };
   private tex = new Map<string, Texture>();
   private res = 1;
@@ -391,8 +383,7 @@ export class BarScene {
     for (const id of ['L', 'R'] as const) {
       const s = this.side[id];
       if (s.tex) n++;
-      if (s.label) n++;
-      n += s.names.length + s.items.size;
+      n += s.items.size;
     }
     return n;
   }
@@ -404,7 +395,7 @@ export class BarScene {
       const open = this.sOpen[id];
       /* создаём лениво: секция открыта, камера в ней или на соседней остановке (центр соседствует с обеими) */
       if (open && dist <= SECTION_W && !s.tex && !s.loading) this.buildSide(id);
-      if (!open && (s.tex || s.label)) this.freeSide(id);
+      if (!open && s.tex) this.freeSide(id);
       s.c.visible = open && !!s.tex && dist < SECTION_W;
     }
   }
@@ -412,38 +403,15 @@ export class BarScene {
   private buildSide(id: 'L' | 'R'): void {
     const s = this.side[id];
     s.loading = true;
-    if (id === 'L') {
-      void raster(sideBackdrop('L'), { x: 0, y: 0, w: SECTION_W, h: 720 }, this.res).then((t) => {
-        s.loading = false;
-        if (!this.sOpen[id]) { t.destroy(true); return; }
-        const sp = new Sprite(t);
-        sp.width = SECTION_W;
-        sp.height = 720;
-        s.tex = t;
-        s.c.addChildAt(sp, 0);
-        this.syncSideItems(id);
-        this.syncSides();
-      });
-      return;
-    }
-    void raster(placeholderSvg(id), { x: 0, y: 0, w: SECTION_W, h: 720 }, this.res).then((t) => {
+    void raster(sideBackdrop(id), { x: 0, y: 0, w: SECTION_W, h: 720 }, this.res).then((t) => {
       s.loading = false;
       if (!this.sOpen[id]) { t.destroy(true); return; }
       const sp = new Sprite(t);
       sp.width = SECTION_W;
       sp.height = 720;
-      const label = new Text({ text: SECTION_NAMES[id], style: { fontFamily: 'Caveat, Nunito, cursive', fontSize: 64, fontWeight: '700', fill: PAL.colors.INK, padding: 6 }, resolution: this.fontRes });
-      label.anchor.set(0.5, 0.5);
-      label.position.set(SECTION_W / 2, 215);
-      s.names = SIDE_ZONES.filter((z) => z.section === id).map((z) => {
-        const t = new Text({ text: stationOfZone(z.id)?.name ?? z.id, style: { fontFamily: 'Nunito, sans-serif', fontSize: 18, fontWeight: '700', fill: PAL.colors.INK, padding: 4, align: 'center', wordWrap: true, wordWrapWidth: z.w - 16 }, resolution: this.fontRes });
-        t.anchor.set(0.5, 0.5);
-        t.position.set(z.x + z.w / 2, z.y + z.h / 2);
-        return t;
-      });
       s.tex = t;
-      s.label = label;
-      s.c.addChild(sp, label, ...s.names);
+      s.c.addChildAt(sp, 0);
+      this.syncSideItems(id);
       this.syncSides();
     });
   }
@@ -453,19 +421,17 @@ export class BarScene {
     s.c.removeChildren().forEach((c) => c.destroy());
     s.tex?.destroy(true);
     s.tex = null;
-    s.label = null;
-    s.names = [];
     s.items.forEach((it) => it.tex.destroy(true));
     s.items.clear();
     s.itemLoading.clear();
     s.c.visible = false;
   }
 
-  /** Предметы станций секции L: спрайт создаётся при покупке (текстура лениво), убирается, если не куплен. */
+  /** Предметы станций боковой секции: спрайт создаётся при покупке (текстура лениво), убирается, если не куплен. */
   private syncSideItems(id: 'L' | 'R'): void {
     const s = this.side[id];
-    if (id !== 'L' || !s.tex) return;
-    for (const k of SIDE_L_ITEMS) {
+    if (!s.tex) return;
+    for (const k of SIDE_ITEMS[id]) {
       const owned = !!this.eqOwned[k];
       const have = s.items.get(k);
       if (!owned && have) {
@@ -474,7 +440,7 @@ export class BarScene {
         s.items.delete(k);
       } else if (owned && !have && !s.itemLoading.has(k)) {
         s.itemLoading.add(k);
-        const p = PL[k] as Part;
+        const p = PS[id][k] as Part;
         void raster(p.svg, p.box, this.res).then((t) => {
           s.itemLoading.delete(k);
           if (!s.tex || !this.eqOwned[k] || s.items.has(k)) { t.destroy(true); return; }
@@ -492,6 +458,7 @@ export class BarScene {
   setUpgrades(u: BarUpgrades): void {
     this.eqOwned = u.eq;
     this.syncSideItems('L');
+    this.syncSideItems('R');
     this.fridge.visible = u.milk;
     this.iceMaker.visible = u.ice;
     this.showcase.visible = u.snacks || u.pastry || u.dessert || u.deli;

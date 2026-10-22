@@ -10,6 +10,7 @@ import { BAR_UNIT, geomOf } from '../src/render/world/drinkModel';
 import { CUP_TOP_PX, cupUnit } from '../src/render/world/cupPlan';
 import { cupScale } from '../src/game/volumes';
 import PARTS_L from '../src/assets/art/bar-parts-left.json';
+import PARTS_R from '../src/assets/art/bar-parts-right.json';
 import { parseItems, union } from './helpers/sideArt';
 
 /* Этап 12.3(2): соотношения размеров по шкале docs/art/scale.md. Бар: 4,64 px/см (кофемашина 75 см = 348 px). Допуск у фона 0,75–1,25. */
@@ -206,9 +207,15 @@ describe('шкала: станции боковых секций (×1,10)', () =
   const groups = [
     { src: 'L', part: 'tea', cm: [49, 26], px: [243.1, 127.6] },
     { src: 'L', part: 'matcha', cm: [55, 14], px: [292.6, 81.4] },
-    { src: 'L', part: 'powders', cm: [81, 22], px: [413.6, 129.8] }
+    { src: 'L', part: 'powders', cm: [81, 22], px: [413.6, 129.8] },
+    { src: 'R', part: 'juice', cm: [33, 46], px: [167.2, 235.4] },
+    { src: 'R', part: 'whipper', cm: [29, 38], px: [148.5, 195.8] },
+    { src: 'R', part: 'foamer', cm: [22, 35], px: [116.6, 180.4] },
+    { src: 'R', part: 'blender', cm: [27, 46], px: [146.3, 239.8] },
+    { src: 'R', part: 'boba', cm: [61, 26], px: [310.2, 134.2] },
+    { src: 'R', part: 'shaker', cm: [32, 21], px: [162.8, 112.8] }
   ] as const;
-  const partsOf = (src: string): Record<string, { svg: string }> => PARTS_L as unknown as Record<string, { svg: string }>;
+  const partsOf = (src: string): Record<string, { svg: string }> => (src === 'L' ? PARTS_L : PARTS_R) as unknown as Record<string, { svg: string }>;
   for (const g of groups) {
     test(`${g.part}: размер группы = план ×1,10 (±4 px) и в допуске 0,75–1,5 от реальных ${g.cm[0]} × ${g.cm[1]} см`, () => {
       const u = union(parseItems(partsOf(g.src)[g.part]?.svg ?? '').map((i) => i.final));

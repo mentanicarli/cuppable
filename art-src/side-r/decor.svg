@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 520" data-part="decor" data-scale="1.1">
+<!--
+  Декор правой секции (30-2): полка со стаканами (проектная рамка 706, 176, 296 × 80; верх y 176) и ведёрко со льдом и полотенцем (проектная 1182, 424, 78 × 82). Окна нет (решение владельца). ×1,10 через transform обёрток data-wrap; рисуется в одной текстуре с фоном.
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<g data-wrap="glassShelf" transform="translate(706 176) scale(1.1) translate(-706 -176)">
+<g data-item="glassShelf" data-box="706 176 296 80">
+<rect x="706" y="246" width="296" height="10" rx="3" fill="{{WOOD}}" stroke-width="{{M}}"/>
+<path d="M712 249H996" fill="none" stroke="{{WOOD_HI}}" stroke-width="{{D}}"/>
+<path d="M718 186L722 246H750L754 186Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
+<path d="M719.5 213H752.5L748.5 244.5H723.5Z" fill="{{MUSTARD}}" stroke="none"/>
+<path d="M722 191L726 240" fill="none" stroke="{{HILITE}}" stroke-opacity="0.8" stroke-width="{{D}}"/>
+<rect x="737.8" y="178" width="4" height="64" rx="1.5" fill="{{TERRA}}" stroke-width="{{D}}"/>
+<path d="M764 202L767 246H801L804 202Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
+<path d="M768 207L771 240" fill="none" stroke="{{HILITE}}" stroke-opacity="0.8" stroke-width="{{D}}"/>
+<path d="M816 188L820 246H846L850 188Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
+<path d="M817.5 214.1H848.5L844.5 244.5H821.5Z" fill="{{PINK}}" stroke="none"/>
+<path d="M820 193L824 240" fill="none" stroke="{{HILITE}}" stroke-opacity="0.8" stroke-width="{{D}}"/>
+<path d="M860 206L864 246H900L904 206Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
+<path d="M864 211L868 240" fill="none" stroke="{{HILITE}}" stroke-opacity="0.8" stroke-width="{{D}}"/>
+<path d="M916 184L920 246H948L952 184Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
+<path d="M917.5 211.9H950.5L946.5 244.5H921.5Z" fill="{{SAGE_LT}}" stroke="none"/>
+<path d="M920 189L924 240" fill="none" stroke="{{HILITE}}" stroke-opacity="0.8" stroke-width="{{D}}"/>
+<rect x="935.8" y="176" width="4" height="66" rx="1.5" fill="{{MUSTARD}}" stroke-width="{{D}}"/>
+<path d="M962 192L966 246H988L992 192Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
+<path d="M966 197L970 240" fill="none" stroke="{{HILITE}}" stroke-opacity="0.8" stroke-width="{{D}}"/>
+</g>
+</g>
+<g data-wrap="iceBucket" transform="translate(1171.4 506) scale(1.1) translate(-1182 -506)">
+<ellipse cx="1221" cy="508" rx="40" ry="4" fill="{{SHADOW}}" fill-opacity=".22" stroke="none"/>
+<g data-item="iceBucket" data-box="1180.5 424 81 82">
+<path d="M1186 452H1256L1248 506H1194Z" fill="{{STEEL}}" stroke-width="{{M}}"/>
+<ellipse cx="1221" cy="452" rx="35" ry="6" fill="{{STEEL_HI}}" stroke-width="{{M}}"/>
+<path d="M1194 460L1199 500" fill="none" stroke="{{HILITE}}" stroke-opacity="0.7" stroke-width="{{M}}"/>
+<path d="M1196 486H1246" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<path d="M1197 494H1245" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<circle cx="1185" cy="462" r="4.5" fill="{{STEEL_HI}}" stroke-width="{{D}}"/>
+<circle cx="1257" cy="462" r="4.5" fill="{{STEEL_HI}}" stroke-width="{{D}}"/>
+<rect x="1196" y="430" width="13" height="13" rx="2.5" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<rect x="1210" y="424" width="14" height="14" rx="2.5" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<rect x="1226" y="428" width="13" height="13" rx="2.5" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<rect x="1240" y="433" width="12" height="12" rx="2.5" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<rect x="1204" y="438" width="11" height="11" rx="2.5" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<rect x="1230" y="438" width="11" height="11" rx="2.5" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<path d="M1200 448Q1196 470 1203 490L1226 490Q1228 470 1222 448Z" fill="{{PAPER}}" stroke-width="{{M}}"/>
+<path d="M1200 466H1224M1201 476H1225" fill="none" stroke="{{TERRA}}" stroke-width="{{D}}"/>
+<path d="M1196 450H1228" fill="none" stroke-width="{{M}}"/>
+</g>
+</g>
+</g>
+</svg>

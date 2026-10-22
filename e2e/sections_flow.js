@@ -255,7 +255,7 @@ let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' 
       for (const [t, n] of [[0, 'b14_3_ring_move_000'], [0.15, 'b14_4_ring_move_150'], [0.3, 'b14_5_ring_move_300']]) { await p.evaluate((t) => { const x = window.__MENUAPI.cameraAt(0, -1280, t); __dbg.CAM.moving = false; __dbg.CAM.x = x; __dbg.camPush(); }, t); await p.waitForTimeout(300); await sh3(n); }
     }
     await p.evaluate(() => { __dbg.camGo('L', true); }); await p.waitForTimeout(500);
-    const rp = await p.evaluate(() => __dbg.ringTarget()); ok(rp && Math.abs(rp[0] - (-1055)) < 1 && Math.abs(rp[1] - 438) < 1, `${vp.width}: в L кольцо на станции чая в мировых координатах ${JSON.stringify(rp)}`);
+    const rp = await p.evaluate(() => __dbg.ringTarget()); ok(rp && Math.abs(rp[0] - (-1037.5)) < 1 && Math.abs(rp[1] - 437) < 1, `${vp.width}: в L кольцо на станции чая в мировых координатах ${JSON.stringify(rp)}`);
     await sh3('b14_1_left_ring');
     /* клик по зоне станции в своей секции: окно, камера стоит; Esc, камера снова свободна */
     const zc = await p.evaluate(() => { const r = document.querySelector('#bZones [data-sec="L"] [data-z="tea"]').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; });
