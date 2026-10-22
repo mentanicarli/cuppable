@@ -13,9 +13,9 @@ function spawn() {
   const c = { id: ++D.idc, type, drink, max, pat: max, leaving: false, lastW: -1, look: ART.look(type), wk: 0, ty: 0, mood: 'neutral', arrived: false, walkOn: false, order, strong: order.strong, syrup: order.syrup ? order.syrup.shelf : null, pumps: order.syrup ? order.syrup.pumps : 1, art: Math.random() < .5 ? 'heart' : 'leaf' };
   const tags = [];
   const multi = Object.keys(MENUAPI.drinkById[order.id].sizes).length > 1;
-  if (multi && order.size !== '0.2') tags.push({ text: String(order.size).replace('.', ',') + ' л', color: '#8FA58A' });
-  if (order.shots > 1) tags.push({ text: order.shots === 2 ? '2 шота' : order.shots + ' шотов', color: '#7A5A4A' });
-  if (order.strong) tags.push({ text: 'крепкий', color: '#C4694A' });
+  if (multi && order.size !== '0.2') tags.push({ text: String(order.size).replace('.', ',') + ' л', color: MENUAPI.TAG_BG.size });
+  if (order.shots > 1) tags.push({ text: order.shots === 2 ? '2 шота' : order.shots + ' шотов', color: MENUAPI.TAG_BG.shots });
+  if (order.strong) tags.push({ text: 'крепкий', color: MENUAPI.TAG_BG.strong });
   if (c.syrup) tags.push({ text: SYR[c.syrup].name.toLowerCase() + (c.pumps ? ' ×' + c.pumps : ''), color: SYR[c.syrup].col });
   const slot = SLOTS[Math.min(D.customers.length, SLOTS.length - 1)];
   c.px = -110; c.tx = slot; c.x = slot; c.ph = Math.random() * 6.28; c.walk = Math.random() * 6;

@@ -435,7 +435,8 @@ bi.addEventListener('pointerup', bUp); bi.addEventListener('pointercancel', bUp)
 UI.close.addEventListener('click', () => { if (!paused) closeInset(); });
 UI.coach.addEventListener('click', e => { const b = e.target.closest('[data-tutskip]'); if (b && !paused) { markSeen(b.dataset.tutskip); coachKey = ''; COACH.text = ''; } const r = e.target.closest('[data-coachrep]'); if (r && !paused) { const h = COACH.prev || COACH.text; if (h) COACH.rep = { html: h, until: COACH.clk + coachMin(h) }; } });
 $('#bZones').addEventListener('click', e => { if (paused) return; const r = e.target.closest('[data-z]'); if (r) zoneClick(r.dataset.z); });
-UI.tk.addEventListener('click', e => { if (paused) return; const b = e.target.closest('[data-t]'); if (b && BR) zoneClick(b.dataset.t === 'syrup' ? SYR[BR.c.syrup].z : b.dataset.t); const h = e.target.closest('[data-hint]'); if (h) { G.hints = !G.hints; G.tutOff = !G.hints; coachKey = ''; tkKey = ''; } const m = e.target.closest('[data-tkmore]'); if (m) { tkOpen = !tkOpen; tkKey = ''; } const q = e.target.closest('[data-back]'); if (q) barShow(false); });
+UI.tk.addEventListener('click', e => { if (paused) return; const b = e.target.closest('[data-t]'); if (b && BR) zoneClick(b.dataset.t === 'syrup' ? SYR[BR.c.syrup].z : b.dataset.t); const h = e.target.closest('[data-hint]'); if (h) { G.hints = !G.hints; G.tutOff = !G.hints; coachKey = ''; tkKey = ''; } const m = e.target.closest('[data-tkmore]'); if (m) { tkOpen = !tkOpen; tkKey = ''; } });
+$('#bBack').addEventListener('click', () => { if (!paused) barShow(false); });
 function barKey(c) {
   if (!BR) return false;
   if (!stage.classList.contains('inbar')) { if (c === 'Space') { barShow(true); return true; } return false; }

@@ -1,4 +1,4 @@
-import { Container, Graphics, Rectangle, Sprite, Text, Texture } from 'pixi.js';
+import { CanvasTextMetrics, Container, Graphics, Rectangle, Sprite, Text, TextStyle, Texture } from 'pixi.js';
 import { BONE, GUEST_K, HEAD_BOX, JOINT, personParts, wrapCell, wrapPart, type Gaze, type Look, type MoodId, type PersonParts } from './art';
 import { Seq, Spring, Spring2, clamp, damp, ease, ik2 } from './anim';
 import { Ribbon, frameSprite } from './ribbon';
@@ -8,6 +8,7 @@ import { drinkIconPx } from './drinkModel';
 import { TexCache, modelTexKey } from './texCache';
 import { cupTexture } from './cupTex';
 import { specOf, type ModelRef } from '../../game/drinkModel';
+import { readableOn } from '../../game/contrast';
 
 const INK = 0x4a2f25;
 const RAD = Math.PI / 180;
@@ -65,6 +66,23 @@ const SLOT = { cx: -41, cy: 347, w: 42, h: 45 };
 const PAT_X = -12;
 const PAT_Y = 328;
 const PAT_W = 66;
+/** Область названия в пузыре: от правого края иконки (зазор ≥ 4 с запасом на сжатие растра) до правого края карточки (с зазором 4); не больше двух строк. */
+export const NAME_BOX = { x0: SLOT.cx + SLOT.w / 2 + 6, x1: 60, cy: 356, maxH: 28, lines: 2 };
+const NAME_FONT = 'Nunito, system-ui, sans-serif';
+
+/** Подбирает размер шрифта и перенос (по пробелам, затем по дефису): название целиком, ≤ 2 строк, шире области не выходит, без «…». */
+export function fitBubbleTitle(title: string, w: number): { text: string; size: number } {
+  const hy = title.replace(/-/g, '-\n');
+  for (let fs = 11; fs >= 7; fs -= 0.5) {
+    const style = new TextStyle({ fontFamily: NAME_FONT, fontSize: fs, fontWeight: '800', align: 'center', wordWrap: true, wordWrapWidth: w, lineHeight: fs + 1 });
+    for (const text of hy === title ? [title] : [title, hy]) {
+      const m = CanvasTextMetrics.measureText(text, style);
+      if (m.lines.length <= NAME_BOX.lines && m.maxLineWidth <= w) return { text, size: fs };
+    }
+  }
+  return { text: hy, size: 7 };
+}
+
 
 /** Рука или нога: лента из атласа по ломаной и конец (кисть, ступня). */
 export class Limb {
@@ -158,6 +176,8 @@ export class Actor {
   private readonly bubble = new Container();
   /** теги заказа («крепкий», сироп…) над пузырём: показываем только первому в очереди, чтобы теги соседей не накладывались (подробности всегда в билете) */
   private readonly tagsC = new Container();
+  private nameT: Text | null = null;
+  private iconSpr: Sprite | null = null;
   private bubbleOn = false;
   private bubbleK = 0;
   private readonly barG = new Graphics();
@@ -1173,7 +1193,7 @@ export class Actor {
     o.tags.forEach((t, i) => {
       const w = ws[i] as number;
       const g = new Graphics().roundRect(tx, 296, w, 18, 9).fill(t.color).stroke({ width: 2, color: INK });
-      const tt = new Text({ text: t.text, style: { fontFamily: 'Nunito, system-ui, sans-serif', fontSize: 11, fontWeight: '800', fill: '#FFF8EC' }, resolution: o.res });
+      const tt = new Text({ text: t.text, style: { fontFamily: 'Nunito, system-ui, sans-serif', fontSize: 11, fontWeight: '800', fill: readableOn(t.color) }, resolution: o.res });
       tt.anchor.set(0.5, 0.5);
       tt.position.set(tx + w / 2, 305.5);
       this.tagsC.addChild(g, tt);
@@ -1186,12 +1206,14 @@ export class Actor {
     card.roundRect(PAT_X, PAT_Y, PAT_W, 10, 5).fill('#E7D6BC').stroke({ width: 2, color: INK });
     b.addChild(card, this.barG);
     this.setPatience(1);
-    const name = new Text({ text: o.title, style: { fontFamily: 'Nunito, system-ui, sans-serif', fontSize: 11, fontWeight: '800', fill: '#4A2F25', align: 'center', wordWrap: true, wordWrapWidth: 78, lineHeight: 12 }, resolution: o.res });
+    const nw = NAME_BOX.x1 - NAME_BOX.x0, fit = fitBubbleTitle(o.title, nw);
+    const name = new Text({ text: fit.text, style: { fontFamily: NAME_FONT, fontSize: fit.size, fontWeight: '800', fill: '#4A2F25', align: 'center', wordWrap: true, wordWrapWidth: nw, lineHeight: fit.size + 1 }, resolution: o.res });
     name.anchor.set(0.5, 0.5);
-    name.position.set(PAT_X + PAT_W / 2, 356);
-    if (name.height > 28) name.scale.set(28 / name.height);
+    name.position.set((NAME_BOX.x0 + NAME_BOX.x1) / 2, NAME_BOX.cy);
+    this.nameT = name;
     b.addChild(name);
     const ic = new Sprite();
+    this.iconSpr = ic;
     b.addChild(ic);
     const spec = o.model ? this.modelSpecOf(o.model) : null;
     if (spec) {
@@ -1220,6 +1242,21 @@ export class Actor {
       return;
     }
     /* напиток без модели (не должно случаться: legacy берёт modelRefOf) — слот остаётся пустым */
+  }
+
+  /** Рамки названия, иконки и карточки в координатах пузыря (для проверки: название не пересекает иконку и не выходит из карточки). */
+  bubbleLayout(): { name: { x0: number; y0: number; x1: number; y1: number }; icon: { x0: number; y0: number; x1: number; y1: number } | null; card: { x0: number; y0: number; x1: number; y1: number }; lines: number } | null {
+    const n = this.nameT;
+    if (!n) return null;
+    const nb = n.getLocalBounds();
+    const ic = this.iconSpr;
+    const hasIc = !!ic && ic.texture !== Texture.EMPTY && ic.width > 0;
+    return {
+      name: { x0: n.x + nb.minX * n.scale.x, y0: n.y + nb.minY * n.scale.y, x1: n.x + nb.maxX * n.scale.x, y1: n.y + nb.maxY * n.scale.y },
+      icon: hasIc && ic ? { x0: ic.x, y0: ic.y, x1: ic.x + ic.width, y1: ic.y + ic.height } : null,
+      card: { x0: -64, y0: 318, x1: 64, y1: 376 },
+      lines: n.text.split('\n').length
+    };
   }
 
   private modelSpecOf(m: ModelRef): ReturnType<typeof specOf> | null {

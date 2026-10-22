@@ -110,7 +110,9 @@ function drawTicket() {
   if (key === tkKey) return; tkKey = key;
   const next = cs.find(x => x.cur && !x.done && !blockMsg(x.t));
   const o = c.order, multi = MENUAPI.drinkById[o.id] && Object.keys(MENUAPI.drinkById[o.id].sizes).length > 1;
-  const tags = (multi && o.size !== '0.2' ? `<i style="background:#8FA58A">${sizeTxt(o)}</i>` : '') + (B.shots > 1 ? `<i style="background:#7A5A4A">${B.shots === 2 ? '2 шота' : B.shots + ' шотов'}</i>` : '') + (c.strong ? '<i style="background:#C4694A">крепкий</i>' : '') + (c.order && c.order.food ? `<i style="background:#C98B5A">${c.order.food.heat ? 'разогреть' : 'еда'}</i>` : '') + (c.syrup ? `<i style="background:${SYR[c.syrup].col};color:#4A2F25">${SYR[c.syrup].name.toLowerCase()} ×${c.pumps}</i>` : '');
+  /* плашки: цвет текста считает readableOn (контраст ≥ 4,5 на любом фоне) */
+  const tg = (txt, bg) => `<i style="background:${bg};color:${MENUAPI.readableOn(bg)}">${txt}</i>`;
+  const tags = (multi && o.size !== '0.2' ? tg(sizeTxt(o), MENUAPI.TAG_BG.size) : '') + (B.shots > 1 ? tg(B.shots === 2 ? '2 шота' : B.shots + ' шотов', MENUAPI.TAG_BG.shots) : '') + (c.strong ? tg('крепкий', MENUAPI.TAG_BG.strong) : '') + (c.order && c.order.food ? tg(c.order.food.heat ? 'разогреть' : 'еда', MENUAPI.TAG_BG.food) : '') + (c.syrup ? tg(SYR[c.syrup].name.toLowerCase() + ' ×' + c.pumps, SYR[c.syrup].col) : '');
   const chips = cs.map(x => `<button type="button" data-t="${x.t}" class="${x.done ? 'done' : x === next ? 'next' : !x.cur || blockMsg(x.t) ? 'lock' : ''}">${x.done ? '✓ ' : ''}${x.label}</button>`).join('<b>›</b>');
   const bar = f > .5 ? '#93A684' : f > .25 ? '#E8B04A' : '#C4694A';
   /* компактный билет (контракт раскладки, стайлгайд разд. 14): одна строка (гость, напиток, размер, текущий шаг); все шаги и реплика гостя раскрываются кнопкой и сворачиваются при открытии станции */
@@ -120,9 +122,9 @@ function drawTicket() {
   /* иконка-модель в слоте 49 × 42 px (компактный уровень, Н2-4: все 56 видов; modelRefOf даёт ссылку всегда) */
   const mRef = MENUAPI.modelRefOf(o.id, o.size, !!o.cold), mSvg = WORLD.drinkIcon(mRef, 49, 42), mIcon = mSvg ? `<span class="tkIcon model" aria-hidden="true">${mSvg}</span>` : '';
   UI.tk.innerHTML = `<div class="tkWho"><span>${WHO[c.type] || 'Гость'} · №${c.id}</span><div class="tkBar"><u style="width:${(f * 100).toFixed(0)}%;background:${bar}"></u></div></div>
-<div class="tkMain">${mIcon}<b class="tkName">${NAME[B.drink]}</b>${tags}</div>
+<div class="tkMain">${mIcon}<b class="tkName${NAME[B.drink].length > 24 ? ' long' : ''}">${NAME[B.drink]}</b>${tags}</div>
 <div class="tkNow">${now}<button type="button" class="tkMore" data-tkmore="1" aria-expanded="${tkOpen}" title="Все шаги и реплика гостя">${tkOpen ? '▴' : '▾'}</button></div>
-<div class="tkBtns"><button type="button" data-hint="1" class="${G.hints ? 'on' : ''}" title="Подсказки">?</button><button type="button" data-back="1" title="К залу (Tab)">К залу</button></div>${tkOpen ? `<div class="tkDrop"><div class="tkSay">«${c.order ? c.order.line : ''}»</div><div class="tkSteps${cs.length > 7 ? ' many' : ''}">${chips}</div></div>` : ''}`;
+<div class="tkBtns"><button type="button" data-hint="1" class="${G.hints ? 'on' : ''}" title="Подсказки">?</button></div>${tkOpen ? `<div class="tkDrop"><div class="tkSay">«${c.order ? c.order.line : ''}»</div><div class="tkSteps${cs.length > 7 ? ' many' : ''}">${chips}</div></div>` : ''}`;
 }
 /* Подсказки новых станций и шагов (молоко, пар, заливка, сироп): пока не пройдены и пока игрок не выключил подсказки (настройкой или кнопкой «?») */
 const tutOffNow = () => (SET.hintsSet && !SET.hints) || G.tutOff;
