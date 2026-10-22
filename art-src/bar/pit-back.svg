@@ -1,11 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="880 420 130 110" data-part="pitBack" data-scale="1">
 <!--
-  Питчер, задний слой (блок 29-2): тень и задняя стенка корпуса. Якорь (940, 514). Молоко (bar.ts, pitMilk) рисуется между этим слоем и pitFront в маске pmask (−30,−80)…(26,−4), поэтому корпус от −34 до 34 шире маски на 4 px (стенка). Корпус 68 × 82 px, с носиком и ручкой 120 × 94: по плану 46 × 65 ×1,5.
+  Питчер, задний слой (блок 29-3): только тень под корпусом. Якорь (940, 514). Жидкость больше не видна сквозь стенки: уровень рисуется овалом у обода и шкалой на корпусе поверх pitFront (BarScene, PitLevel).
 -->
 <g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
 <g transform="translate(940 514)">
-<ellipse cx="0" cy="4" rx="40" ry="7" fill="{{SHADOW}}" fill-opacity=".25" stroke="none"/>
-<path d="M-34 -80H34L28 -2Q0 6 -28 -2Z" fill="{{STEEL_HI}}" stroke="none"/>
+<ellipse cx="0" cy="3" rx="40" ry="6.5" fill="{{SHADOW}}" fill-opacity=".25" stroke="none"/>
 </g>
 </g>
 </svg>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="230 78 208 144" data-part="corkBoard" data-after="static" data-scale="1">
+<!--
+  Пробковая доска (блок 29-3): деревянная рама 196 × 132 (x 236–432, y 84–216), пробка плоской заливкой TOP с пятнами, четыре записки разных цветов с кнопками. Билет перекрывает верх доски (фон). Контур 3,5 / 3 / 2 px.
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<rect x="236" y="84" width="196" height="132" rx="10" fill="{{WOOD}}" stroke-width="{{L}}"/>
+<path d="M246 89H422" fill="none" stroke="{{WOOD_HI}}" stroke-width="{{D}}"/>
+<rect x="244" y="92" width="180" height="116" rx="6" fill="{{TOP}}" stroke-width="{{M}}"/>
+<g stroke="none" fill-opacity=".55">
+<ellipse cx="262" cy="196" rx="5" ry="3" fill="{{WOOD_HI}}"/>
+<ellipse cx="300" cy="108" rx="4" ry="2.5" fill="{{KRAFT_SH}}"/>
+<ellipse cx="338" cy="186" rx="6" ry="3" fill="{{WOOD_HI}}"/>
+<ellipse cx="404" cy="112" rx="5" ry="3" fill="{{KRAFT_SH}}"/>
+<ellipse cx="414" cy="190" rx="4" ry="2.5" fill="{{WOOD_HI}}"/>
+<ellipse cx="318" cy="150" rx="3" ry="2" fill="{{KRAFT_SH}}"/>
+<ellipse cx="372" cy="132" rx="4" ry="2.5" fill="{{WOOD_HI}}"/>
+</g>
+<g stroke-width="{{D}}">
+<rect x="254" y="102" width="52" height="64" fill="{{PAPER}}" transform="rotate(-4 280 134)"/>
+<path d="M262 118h34M262 128h28M262 138h34M262 148h20" fill="none" stroke="{{KRAFT_DP}}" transform="rotate(-4 280 134)"/>
+<rect x="320" y="100" width="46" height="46" fill="{{GLASS}}" transform="rotate(3 343 123)"/>
+<path d="M330 124h26M330 134h18" fill="none" stroke="{{DUSTY}}" transform="rotate(3 343 123)"/>
+<rect x="360" y="148" width="54" height="50" fill="{{MUSTARD}}" transform="rotate(-3 387 173)"/>
+<path d="M370 164h34M370 174h28M370 184h22" fill="none" stroke="{{BAKE_SH}}" transform="rotate(-3 387 173)"/>
+<rect x="266" y="170" width="64" height="28" fill="{{PINK}}" transform="rotate(2 298 184)"/>
+<path d="M274 184h46" fill="none" stroke="{{TERRA}}"/>
+<circle cx="280" cy="106" r="3.5" fill="{{TERRA}}"/>
+<circle cx="343" cy="104" r="3.5" fill="{{DUSTY}}"/>
+<circle cx="387" cy="152" r="3.5" fill="{{TERRA}}"/>
+<circle cx="298" cy="173" r="3.5" fill="{{SAGE}}"/>
+</g>
+</g>
+</svg>

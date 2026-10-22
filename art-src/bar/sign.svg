@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="920 40 284 132" data-part="sign" data-after="static" data-scale="1">
+<!--
+  Вывеска (блок 29-3): рама, подвесы и тёмная плашка в языке эталона (контур 3,5 / 3 / 2 px). Размер 924–1196 × 44–166 прежний. Штриховой вордмарк Cuppable (контуры 12 / 9 / 7, бренд) остаётся отдельной частью wordmark без изменений и рисуется поверх плашки; подпись «Кофе между парами» рисует Pixi-текстом static.
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<rect x="974" y="44" width="4" height="36" rx="2" fill="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<rect x="1142" y="44" width="4" height="36" rx="2" fill="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<rect x="924" y="78" width="272" height="88" rx="16" fill="{{WOOD}}" stroke-width="{{L}}"/>
+<path d="M938 83H1182" fill="none" stroke="{{WOOD_HI}}" stroke-width="{{L}}"/>
+<path d="M934 154Q934 162 942 162H1178Q1186 162 1186 154" fill="none" stroke="{{WOOD_SH}}" stroke-width="{{L}}"/>
+<rect x="932" y="86" width="256" height="72" rx="11" fill="{{DARK}}" stroke-width="{{M}}"/>
+<path d="M944 92H1176" fill="none" stroke="{{HILITE}}" stroke-opacity=".15" stroke-width="{{D}}"/>
+<circle cx="936" cy="90" r="2.5" fill="{{STEEL_HI}}" stroke-width="{{D}}"/>
+<circle cx="1184" cy="90" r="2.5" fill="{{STEEL_HI}}" stroke-width="{{D}}"/>
+<circle cx="936" cy="154" r="2.5" fill="{{STEEL_HI}}" stroke-width="{{D}}"/>
+<circle cx="1184" cy="154" r="2.5" fill="{{STEEL_HI}}" stroke-width="{{D}}"/>
+</g>
+</svg>

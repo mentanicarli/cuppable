@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="1058 236 206 278" data-part="milk" data-scale="1">
 <!--
   Холодильник с молоком (блок 29-2): маленький холодильник: корпус 190 × 262 (41 × 56 см по шкале 4,64; реальный настольный 45 × 60), дверца с рамкой, внутри верхняя полка с двумя пакетами молока (гребень, этикетка, листок), нижний ящик, вертикальная ручка, ножки. Подпись «молоко» рисует Pixi-текстом на пакете, как раньше (x 1123, y 353). Зона milk (1066–1256 × 244–506) и ZONE_POS.milk не менялись.
-  Внизу справа от холодильника в блок входит край полки сиропов (рисуется поверх корпуса, как раньше): тот же разметкой и заливкой, что полка в static (старая полка 29-3 заменит её без шва).
+  В блок входит край полки сиропов (рисуется поверх корпуса, как раньше): те же фигуры и заливка, что в части syrupShelf (блок 29-3), поэтому шва нет.
 -->
 <g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
 <g transform="translate(1066 244)">
@@ -23,9 +23,11 @@
 <path d="M44 184l12 10M72 180l12 14M100 186l12 10M128 182l10 12" stroke="{{HILITE}}" stroke-opacity=".7" stroke-width="{{D}}" fill="none"/>
 <rect x="166" y="96" width="9" height="64" rx="4.5" fill="{{STEEL_SH}}" stroke-width="{{M}}"/>
 </g>
-<g transform="translate(870 296)">
-<rect x="-8" y="0" width="212" height="12" rx="4" fill="url(#gWoodFront)" stroke-width="{{M}}"/>
-<path d="M192 12V30" fill="none" stroke-width="{{M}}"/>
+<g>
+<path d="M1062 308V326L1046 308Z" fill="{{WOOD_SH}}" stroke-width="{{M}}"/>
+<rect x="862" y="296" width="212" height="12" rx="4" fill="{{WOOD}}" stroke-width="{{M}}"/>
+<path d="M868 299H1068" fill="none" stroke="{{WOOD_HI}}" stroke-width="{{D}}"/>
+<rect x="866" y="308" width="204" height="3" fill="{{SHADOW}}" fill-opacity=".18" stroke="none"/>
 </g>
 <text x="1123" y="353" font-size="9.5" font-weight="800" fill="{{INK}}" font-family="Nunito">молоко</text>
 </g>

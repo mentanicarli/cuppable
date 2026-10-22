@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="854 170 228 162" data-part="syrupShelf" data-after="static" data-scale="1">
+<!--
+  Стойка сиропов (блок 29-3): деревянная полка 862–1074 × 296–308 (доска, блик сверху, тень снизу, два кронштейна) и три стеклянные бутылки 44 × 120 с цветной жидкостью (MUSTARD, BAKE_SH, CHOC), тёмным горлышком и насосом, светлым бликом слева. Центры бутылок x 902 / 968 / 1034 = центры зон syr1…syr3 (ZONE_POS); место подписей (этикетка 36 × 32, центр y 250) прежнее, подписи рисует Pixi-текстом static. Край полки у холодильника молока в части milk нарисован тем же.
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<path d="M874 308V326L890 308Z" fill="{{WOOD_SH}}" stroke-width="{{M}}"/>
+<path d="M1062 308V326L1046 308Z" fill="{{WOOD_SH}}" stroke-width="{{M}}"/>
+<rect x="862" y="296" width="212" height="12" rx="4" fill="{{WOOD}}" stroke-width="{{M}}"/>
+<path d="M868 299H1068" fill="none" stroke="{{WOOD_HI}}" stroke-width="{{D}}"/>
+<rect x="866" y="308" width="204" height="3" fill="{{SHADOW}}" fill-opacity=".18" stroke="none"/>
+<g transform="translate(902 296)">
+<path d="M-8 -104H8V-96H-8Z" fill="{{DARK}}" stroke-width="{{M}}"/>
+<path d="M-22 -70Q-22 -84 -9 -86H9Q22 -84 22 -70V-8Q22 0 14 0H-14Q-22 0 -22 -8Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
+<path d="M-18 -68Q-18 -76 -8 -77H8Q18 -76 18 -68V-8Q18 -4 12 -4H-12Q-18 -4 -18 -8Z" fill="{{MUSTARD}}" stroke="none"/>
+<rect x="-18" y="-62" width="36" height="32" rx="5" fill="{{PAPER}}" stroke-width="{{D}}"/>
+<path d="M-16 -74V-12" fill="none" stroke="{{HILITE}}" stroke-opacity=".7" stroke-width="{{L}}"/>
+<rect x="-9" y="-97" width="18" height="6" rx="2" fill="{{STEEL}}" stroke-width="{{D}}"/>
+<rect x="-3" y="-111" width="6" height="14" rx="2" fill="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<path d="M-9 -120H12Q16 -120 16 -116V-112H-9Z" fill="{{STEEL}}" stroke-width="{{M}}"/>
+</g>
+<g transform="translate(968 296)">
+<path d="M-8 -104H8V-96H-8Z" fill="{{DARK}}" stroke-width="{{M}}"/>
+<path d="M-22 -70Q-22 -84 -9 -86H9Q22 -84 22 -70V-8Q22 0 14 0H-14Q-22 0 -22 -8Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
+<path d="M-18 -68Q-18 -76 -8 -77H8Q18 -76 18 -68V-8Q18 -4 12 -4H-12Q-18 -4 -18 -8Z" fill="{{BAKE_SH}}" stroke="none"/>
+<rect x="-18" y="-62" width="36" height="32" rx="5" fill="{{PAPER}}" stroke-width="{{D}}"/>
+<path d="M-16 -74V-12" fill="none" stroke="{{HILITE}}" stroke-opacity=".7" stroke-width="{{L}}"/>
+<rect x="-9" y="-97" width="18" height="6" rx="2" fill="{{STEEL}}" stroke-width="{{D}}"/>
+<rect x="-3" y="-111" width="6" height="14" rx="2" fill="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<path d="M-9 -120H12Q16 -120 16 -116V-112H-9Z" fill="{{STEEL}}" stroke-width="{{M}}"/>
+</g>
+<g transform="translate(1034 296)">
+<path d="M-8 -104H8V-96H-8Z" fill="{{DARK}}" stroke-width="{{M}}"/>
+<path d="M-22 -70Q-22 -84 -9 -86H9Q22 -84 22 -70V-8Q22 0 14 0H-14Q-22 0 -22 -8Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
+<path d="M-18 -68Q-18 -76 -8 -77H8Q18 -76 18 -68V-8Q18 -4 12 -4H-12Q-18 -4 -18 -8Z" fill="{{CHOC}}" stroke="none"/>
+<rect x="-18" y="-62" width="36" height="32" rx="5" fill="{{PAPER}}" stroke-width="{{D}}"/>
+<path d="M-16 -74V-12" fill="none" stroke="{{HILITE}}" stroke-opacity=".7" stroke-width="{{L}}"/>
+<rect x="-9" y="-97" width="18" height="6" rx="2" fill="{{STEEL}}" stroke-width="{{D}}"/>
+<rect x="-3" y="-111" width="6" height="14" rx="2" fill="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<path d="M-9 -120H12Q16 -120 16 -116V-112H-9Z" fill="{{STEEL}}" stroke-width="{{M}}"/>
+</g>
+</g>
+</svg>

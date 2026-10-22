@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="1106 248 144 118" data-part="plantShelf" data-after="static" data-scale="1">
+<!--
+  Полка с растением и двумя кружками справа (блок 29-3): видна, пока молоко не куплено (после покупки закрыта холодильником). Границы 1112–1244 × 258–342: полка 132 × 12, горшок с тремя листьями слева, две кружки с ручками справа. Контур 3,5 / 3 / 2 px.
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<path d="M1126 342V360M1230 342V360" fill="none" stroke-width="{{M}}"/>
+<rect x="1112" y="330" width="132" height="12" rx="4" fill="{{WOOD}}" stroke-width="{{M}}"/>
+<path d="M1118 334H1240" fill="none" stroke="{{WOOD_HI}}" stroke-width="{{D}}"/>
+<path d="M1145 296Q1132 280 1138 268M1145 296Q1148 272 1146 260M1145 296Q1160 282 1156 268" fill="none" stroke="{{SAGE}}" stroke-width="{{M}}"/>
+<ellipse cx="1138" cy="266" rx="8" ry="5" fill="{{SAGE}}" stroke-width="{{D}}" transform="rotate(-25 1138 266)"/>
+<ellipse cx="1146" cy="259" rx="7" ry="5" fill="{{SAGE_LT}}" stroke-width="{{D}}" transform="rotate(10 1146 259)"/>
+<ellipse cx="1156" cy="267" rx="8" ry="5" fill="{{SAGE}}" stroke-width="{{D}}" transform="rotate(25 1156 267)"/>
+<path d="M1134 330L1130 298H1160L1156 330Z" fill="{{TERRA}}" stroke-width="{{M}}"/>
+<rect x="1127" y="292" width="36" height="8" rx="3" fill="{{RUG}}" stroke-width="{{M}}"/>
+<path d="M1190 330L1188 308H1212L1210 330Z" fill="{{PAPER}}" stroke-width="{{M}}"/>
+<ellipse cx="1200" cy="308" rx="12" ry="3" fill="{{CER_IN}}" stroke-width="{{D}}"/>
+<path d="M1212 313Q1220 313 1219 321Q1218 326 1210 326" fill="none" stroke-width="{{M}}"/>
+<path d="M1222 330L1221 314H1237L1236 330Z" fill="{{MUSTARD}}" stroke-width="{{M}}"/>
+<ellipse cx="1229" cy="314" rx="8" ry="2.5" fill="{{BAKE}}" stroke-width="{{D}}"/>
+<path d="M1237 318Q1243 318 1242 324Q1241 328 1236 327" fill="none" stroke-width="{{M}}"/>
+</g>
+</svg>

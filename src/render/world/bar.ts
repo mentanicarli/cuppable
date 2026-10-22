@@ -99,6 +99,38 @@ function placeholderSvg(id: 'L' | 'R'): string {
     + SIDE_ZONES.filter((z) => z.section === id).map((z) => `<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" rx="14" fill="${C.PAPER}" fill-opacity="0.55" stroke="${C.INK}" stroke-width="3" stroke-dasharray="10 7"/>`).join('');
 }
 
+/** Уровень в питчере (29-3): стенки непрозрачные, жидкость видна в овале у обода (чем выше, тем больше заполнен овал; обрезка ближним краем обода) и в шкале на корпусе слева от центра (полоска растёт вместе с уровнем). Координаты от якоря питчера (940, 514). */
+class PitLevel {
+  readonly root = new Container();
+  private oval = new Graphics();
+  private crema = new Graphics();
+  private mask = new Graphics();
+  private bar = new Graphics();
+  private key = '';
+  constructor() {
+    this.mask.ellipse(0, -79.6, 24, 3.8).fill(0xffffff);
+    this.oval.mask = this.mask;
+    this.root.addChild(this.mask, this.oval, this.crema, this.bar);
+    this.crema.mask = this.mask;
+  }
+  /** f — доля уровня 0…1; col — цвет жидкости; crema — цвет крема (эспрессо) или null. */
+  set(f: number, col: number, crema: number | null): void {
+    const q = Math.round(Math.max(0, Math.min(1, f)) * 100);
+    const k = q + '|' + col + '|' + crema;
+    if (k === this.key) return;
+    this.key = k;
+    const fr = q / 100;
+    this.oval.clear();
+    this.crema.clear();
+    this.bar.clear();
+    if (fr <= 0.01) return;
+    const dy = (1 - fr) * 8;
+    this.oval.ellipse(0, -79.6 + dy, 24, 3.8).fill(col);
+    if (crema !== null) this.crema.ellipse(0, -79.6 + dy, 19, 2.8).fill(crema);
+    this.bar.rect(-11, -15 - fr * 50, 3, fr * 50).fill(col);
+  }
+}
+
 export class BarScene {
   readonly root = new Container();
   /** Весь мир бара: центр в 0…1280, боковые секции по бокам; камера сдвигает `world.x = −cam` (Б1-1). */
@@ -121,11 +153,11 @@ export class BarScene {
   private hopRect = new Graphics();
   private tamper = new Container();
   private needle = new Container();
-  private pitMilk = new Graphics();
+  private pitLvl = new PitLevel();
+  private pitUnderLvl = new PitLevel();
   private bell = new Container();
   private stream = new Graphics();
   private pitUnderG = new Container();
-  private pitCoffee = new Graphics();
   private steam!: Sprite;
   private ring = new Container();
   private fridge = new Container();
@@ -154,7 +186,6 @@ export class BarScene {
   private mTexKey = '';
   private mTexSpec: DrinkSpec | null = null;
   private lastHop = -1;
-  private lastPit = -1;
 
   async build(res: number, fontRes: number): Promise<void> {
     this.res = res;
@@ -191,6 +222,8 @@ export class BarScene {
     };
 
     spr('static');
+    /* вывеска, доска, полка с растением и стойка сиропов (29-3): вырезаны из static; вордмарк бренда отдельной частью поверх плашки; подписи static рисуются выше */
+    for (const id of ['plantShelf', 'corkBoard', 'sign', 'wordmark', 'syrupShelf']) spr(id);
     txt('static', R);
     /* кофемашина: отдельная часть art-src (блок 29-1), раньше была в статике; подвижные детали (портафильтр, стрелка, чашка, пар) лежат выше */
     spr('machine');
@@ -235,13 +268,11 @@ export class BarScene {
     R.addChild(this.needle);
 
     spr('pitBack');
+    spr('pitFront');
     const pm = new Container();
     pm.position.set(940, 514);
-    const pmask = new Graphics().moveTo(-30, -80).lineTo(30, -80).lineTo(26, -4).quadraticCurveTo(0, 4, -26, -4).closePath().fill(0xffffff);
-    pm.addChild(pmask, this.pitMilk);
-    this.pitMilk.mask = pmask;
+    pm.addChild(this.pitLvl.root);
     R.addChild(pm);
-    spr('pitFront');
 
     this.bell.position.set(1032, 526);
     const bs = spr('bell', this.bell);
@@ -271,17 +302,15 @@ export class BarScene {
     this.mC.addChild(this.mBack, this.mLive, this.mDone, this.mIce, this.mFront);
     this.mC.visible = false;
     R.addChild(this.mC);
-    /* питчер раф под группой (29-2): тот же рисунок, что у обычного питчера (pitBack/pitFront из art-src), масштаб 0,92; между слоями эспрессо в той же маске pmask */
+    /* питчер раф под группой (29-2): тот же рисунок, что у обычного питчера (pitBack/pitFront из art-src), масштаб 0,92 (29-3: уровень эспрессо — овал и шкала PitLevel) */
     const pu = this.pitUnderG;
     const rel = (id: string): void => {
       const sp = spr(id, pu);
       sp.position.set((P[id] as Part).box.x - 940, (P[id] as Part).box.y - 514);
     };
     rel('pitBack');
-    const pumask = new Graphics().moveTo(-30, -80).lineTo(30, -80).lineTo(26, -4).quadraticCurveTo(0, 4, -26, -4).closePath().fill(0xffffff);
-    pu.addChild(pumask, this.pitCoffee);
-    this.pitCoffee.mask = pumask;
     rel('pitFront');
+    pu.addChild(this.pitUnderLvl.root);
     pu.scale.set(0.92);
     pu.position.set(630, 482);
     pu.visible = false;
@@ -566,11 +595,7 @@ export class BarScene {
     }
     this.tamper.y = f.tamperUp ? -6 : 0;
     this.needle.rotation = (f.gaugeDeg * Math.PI) / 180;
-    const ph = Math.round(f.pitH * 10) / 10;
-    if (ph !== this.lastPit) {
-      this.lastPit = ph;
-      this.pitMilk.clear().rect(-34, -4 - ph, 68, ph).fill(0xfbf4e8);
-    }
+    this.pitLvl.set(f.pitH / 74, hexNum(PAL.colors.PAPER), null);
     const bs = f.bell ? 1 + f.bell : 1;
     this.bell.scale.set(bs);
     const spec = f.model ? this.modelSpec(f.model) : null;
@@ -580,7 +605,7 @@ export class BarScene {
     this.pitUnderG.visible = !!f.pitUnder;
     if (f.pitUnder) {
       const h = 6 + 54 * f.pitUnder.level;
-      this.pitCoffee.clear().rect(-34, -4 - h, 68, h).fill(0x4a2e20);
+      this.pitUnderLvl.set(h / 74, hexNum(PAL.colors.CHOC), hexNum(PAL.colors.BAKE_SH));
     }
     /* струя */
     this.stream.clear();

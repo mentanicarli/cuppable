@@ -3,8 +3,6 @@ import PARTS from '../src/assets/art/bar-parts.json';
 import PAL from '../art-src/palette.json';
 import TAMPER from '../art-src/bar/tamper.svg?raw';
 import MAT from '../art-src/bar/tamper-mat.svg?raw';
-import PITB from '../art-src/bar/pit-back.svg?raw';
-import PITF from '../art-src/bar/pit-front.svg?raw';
 import BELL from '../art-src/bar/bell.svg?raw';
 import MILK from '../art-src/bar/milk.svg?raw';
 import STEAM from '../art-src/bar/steam.svg?raw';
@@ -35,7 +33,8 @@ describe('29-2: собранные части без остатков стары
     expect(count(svgOf('pitBack'), '<g transform=')).toBe(1);
     expect(count(svgOf('pitFront'), '<g transform=')).toBe(1);
     expect(count(svgOf('bell'), '<g transform=')).toBe(1);
-    expect(count(svgOf('milk'), '<g transform=')).toBe(2); /* холодильник и край полки */
+    expect(count(svgOf('milk'), '<g transform=')).toBe(1); /* холодильник; край полки сиропов — вторая группа без transform (29-3) */
+    expect(count(svgOf('milk'), '<g>')).toBe(1);
     expect(count(svgOf('tamper'), '<rect x="310" y="494"')).toBe(1);
     expect(count(svgOf('tamperMat'), '<ellipse cx="330" cy="510" rx="64"')).toBe(1);
     expect(count(svgOf('steam'), '<path d="M')).toBe(3);
@@ -85,29 +84,6 @@ describe('29-2: темпер и мат', () => {
   });
 });
 
-describe('29-2: питчер', () => {
-  test('корпус 68 × 82 px при плане 46 × 65 (допуск ×1,5), маска молока прежняя; носик слева и ручка справа соразмерны', () => {
-    expect(68 / 46).toBeLessThanOrEqual(1.5);
-    expect(82 / 65).toBeLessThanOrEqual(1.5);
-    expect(PITF).toContain('M-34 -80H34L28 -2Q0 6 -28 -2Z');
-    expect(PITB).toContain('M-34 -80H34L28 -2Q0 6 -28 -2Z');
-    expect(BAR).toContain('moveTo(-30, -80).lineTo(30, -80).lineTo(26, -4)');
-    expect(PITF).toContain('<path d="M-32 -81Q-45 -82 -56 -91Q-46 -66 -30 -58Z"');
-    expect(PITF).toContain('<path d="M33 -72C67 -74 66 -26 33 -28L33 -37C51 -38 52 -62 33 -63Z"');
-    const spoutLen = 56 - 34;
-    const handleLen = 67 - 34;
-    expect(spoutLen / handleLen).toBeGreaterThan(0.6);
-    expect(spoutLen / handleLen).toBeLessThan(1.2);
-  });
-  test('рамки частей прежние (880–1010 × 420–530), нарисованное внутри них; обод овалом; блик слева', () => {
-    expect(vb(PITB)).toEqual({ x: 880, y: 420, w: 130, h: 110 });
-    expect(vb(PITF)).toEqual({ x: 880, y: 420, w: 130, h: 110 });
-    expect(inside({ x: 940 - 57.5, y: 514 - 92.5, w: 57.5 + 68, h: 92.5 + 8 }, vb(PITF))).toBe(true);
-    expect(PITF).toContain('<ellipse cx="0" cy="-80" rx="34" ry="6"');
-    expect(PITF).toContain('stroke="{{HILITE}}"');
-  });
-});
-
 describe('29-2: звонок', () => {
   test('купол шире кнопки, подставка 54 ≤ 56, высота 46 ≤ 48, якорь масштаба (1032, 526), рамка внутри зоны bell', () => {
     expect(BELL).toContain('translate(1032 526)');
@@ -140,11 +116,6 @@ describe('29-2: холодильник молока', () => {
     expect(MILK).toContain('<rect x="10" y="10" width="170" height="242" rx="10"');
     expect(count(MILK, 'height="6" rx="2" fill="{{DARK}}"')).toBe(2);
     expect((parts.milk as { texts: { t: string }[] }).texts.map((t) => t.t)).toEqual(['молоко']);
-  });
-  test('край полки сиропов, который холодильник перекрывает, тот же, что в static (translate(870 296), x −8, ширина 212)', () => {
-    expect(MILK).toContain('translate(870 296)');
-    expect(MILK).toContain('<rect x="-8" y="0" width="212" height="12" rx="4" fill="url(#gWoodFront)"');
-    expect(svgOf('static')).toContain('<rect x="-8" y="0" width="212" height="12" rx="4" fill="url(#gWoodFront)"');
   });
 });
 
