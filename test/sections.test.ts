@@ -215,6 +215,11 @@ describe('30-4: тост «станция в другой секции» гас�
   });
 });
 
+import PARTS_SIDE_L from '../src/assets/art/bar-parts-left.json';
+import PARTS_SIDE_R from '../src/assets/art/bar-parts-right.json';
+import { parseItems, union as sideUnion0 } from './helpers/sideArt';
+const sideUnion = (svg: string): { x: number; y: number; w: number; h: number } => sideUnion0(parseItems(svg).map((i) => i.final));
+
 describe('секции: подсказки и тосты (Б1-3)', () => {
   /* таблица раздела 11 sections.md — источник правды для текстов */
   const rows = SECTIONS_MD.split('\n').filter((l) => /^\| \d+ \| [^|]+ \| [^|]+ \| Станция «/.test(l)).map((l) => l.split('|').map((c) => c.trim()).slice(1, -1));
@@ -244,6 +249,22 @@ describe('секции: подсказки и тосты (Б1-3)', () => {
     }
     expect(sideZoneCenter(SIDE_ZONES[0] as (typeof SIDE_ZONES)[number])).toEqual([-1280 + 117 + 125.5, 364 + 73]);
     expect(sideZoneCenter(SIDE_ZONES[8] as (typeof SIDE_ZONES)[number])).toEqual([1280 + 991 + 81, 383 + 63.5]);
+  });
+
+  test('30-4: зазор между зонами одной секции ≥ 12 px; рамка предмета каждой из девяти станций внутри своей зоны (±1 px), зона не выше 24 px над предметом', () => {
+    const parts = { ...(PARTS_SIDE_L as unknown as Record<string, { svg: string }>), ...(PARTS_SIDE_R as unknown as Record<string, { svg: string }>) };
+    for (const sec of ['L', 'R'] as const) {
+      const zs = SIDE_ZONES.filter((z) => z.section === sec).sort((a, b) => a.x - b.x);
+      for (let i = 0; i < zs.length - 1; i++) expect((zs[i + 1] as { x: number }).x - (zs[i] as { x: number; w: number }).x - (zs[i] as { w: number }).w, `${zs[i]?.id}–${zs[i + 1]?.id}`).toBeGreaterThanOrEqual(12);
+    }
+    for (const z of SIDE_ZONES) {
+      const f = sideUnion(parts[z.id]?.svg ?? '');
+      expect(f.x, `${z.id} слева`).toBeGreaterThanOrEqual(z.x - 1);
+      expect(f.y, `${z.id} сверху`).toBeGreaterThanOrEqual(z.y - 1);
+      expect(f.x + f.w, `${z.id} справа`).toBeLessThanOrEqual(z.x + z.w + 1);
+      expect(f.y + f.h, `${z.id} снизу`).toBeLessThanOrEqual(z.y + z.h + 1);
+      expect(f.y - z.y, `${z.id}: зона не выше предмета больше чем на 24`).toBeLessThanOrEqual(24);
+    }
   });
 
   test('stationToast совпадает с таблицей для всех достижимых from', () => {
