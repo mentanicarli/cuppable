@@ -214,6 +214,12 @@ export function stationToast(station: string, from: SectionId): string | null {
   return from !== 'C' && st.section !== 'C' ? `${head} Сначала откройте «${SECTION_NAMES.C}».` : `${head} Нажмите стрелку с этим названием.`;
 }
 
+/** Тост «станция в другой секции» ещё нужен, пока камера не в секции этой станции; приехала — тост убирается. */
+export function toastStillRelevant(toastStation: string, cameraSection: SectionId): boolean {
+  const sec = sectionOfStation(toastStation);
+  return sec !== undefined && sec !== cameraSection;
+}
+
 /** Задачи шагов бара, у которых зона не совпадает с названием шага берём из TASK_ZONE на стороне вызова; здесь только id зоны или станции. */
 export interface HintView {
   /** ячейка мини-карты, где горит точка «нужная станция» (null — точки нет) */

@@ -202,6 +202,19 @@ describe('секции: управление камерой (Б1-2)', () => {
 import SECTIONS_MD from '../docs/design/sections.md?raw';
 import { SIDE_ZONES, needHint, sideZoneCenter, zonesInSideSections, stationOfZone, stationSection, stationToast } from '../src/game/sections';
 
+import { toastStillRelevant } from '../src/game/sections';
+describe('30-4: тост «станция в другой секции» гаснет по приезде камеры', () => {
+  test('нужен, пока камера не в секции станции', () => {
+    expect(toastStillRelevant('tea', 'C')).toBe(true);
+    expect(toastStillRelevant('tea', 'R')).toBe(true);
+    expect(toastStillRelevant('tea', 'L')).toBe(false);
+    expect(toastStillRelevant('boba', 'R')).toBe(false);
+    expect(toastStillRelevant('shot', 'L')).toBe(true);
+    expect(toastStillRelevant('shot', 'C')).toBe(false);
+    expect(toastStillRelevant('нет такой', 'C')).toBe(false);
+  });
+});
+
 describe('секции: подсказки и тосты (Б1-3)', () => {
   /* таблица раздела 11 sections.md — источник правды для текстов */
   const rows = SECTIONS_MD.split('\n').filter((l) => /^\| \d+ \| [^|]+ \| [^|]+ \| Станция «/.test(l)).map((l) => l.split('|').map((c) => c.trim()).slice(1, -1));

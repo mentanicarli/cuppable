@@ -121,6 +121,7 @@ const PANEL = new Set(['juice', 'tonic', 'powder', 'boba', 'topping', 'whisk', '
 
   /* стрелка в L */
   await p.click('[data-secnav="-1"]:not([hidden])'); await at('L', -1280, 'клик по стрелке: «Чайный бар»');
+  await p.waitForTimeout(500); ok(!(await toasts()).some(x => /Чайный бар/.test(x)), 'камера приехала в Чайный бар: тоста про него нет');
   const rp = await p.evaluate(() => __dbg.ringTarget()); ok(rp && Math.abs(rp[0] + 1037.5) < 1 && Math.abs(rp[1] - 437) < 1, 'кольцо подсказки у чая: ' + JSON.stringify(rp));
   await shot('L_ring_tea');
   /* выходы из L: клавиша D, стрелка */

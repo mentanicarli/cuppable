@@ -117,14 +117,16 @@ function camGo(id, instant) {
   CAM.sec = id; CAM.from = CAM.x; CAM.to = MENUAPI.cameraTarget(id); CAM.t = 0;
   CAM.moving = !instant && CAM.from !== CAM.to;
   if (!CAM.moving) CAM.x = CAM.to;
-  camPush(); zonesSync(); return true;
+  camPush(); zonesSync(); dropStationToasts(); return true;
 }
+/* тост «станция в другой секции» гаснет, когда камера приехала в секцию этой станции; тосты других типов не трогаем */
+function dropStationToasts() { document.querySelectorAll('#bFloat .bmsg[data-station]').forEach(e => { if (!MENUAPI.toastStillRelevant(e.dataset.station, CAM.sec)) e.remove(); }); }
 function camTick(dt) {
   if (!CAM.moving) return;
   CAM.t += dt;
   const done = CAM.t >= MENUAPI.CAM_SECONDS;
   if (done) { CAM.moving = false; CAM.x = CAM.to; } else CAM.x = MENUAPI.cameraAt(CAM.from, CAM.to, CAM.t);
-  camPush(); if (done) zonesSync();
+  camPush(); if (done) { zonesSync(); dropStationToasts(); }
 }
 /* ---------- управление камерой (Б1-2): гейт, клавиши, перетаскивание, стрелки ----------
    Листание включено игроку (30-3): MENUAPI.sectionsPlayable, константа SECTIONS_PLAYABLE_FOR_PLAYER в sections.ts. */
@@ -216,8 +218,8 @@ function barAbort(msg) {
   if (msg) toast(msg);
 }
 function stopLoops() { Object.keys(LP).forEach(k => { LP[k].stop(); delete LP[k]; }); }
-function barMsg(txt, bad) {
-  const d = document.createElement('div'); d.className = 'bmsg' + (bad ? ' bad' : ''); d.textContent = txt; const life = Math.max(4200, txt.length / 15 * 1000); d.style.animationDuration = life + 'ms'; UI.flt.appendChild(d);
+function barMsg(txt, bad, station) {
+  const d = document.createElement('div'); d.className = 'bmsg' + (bad ? ' bad' : ''); d.textContent = txt; if (station) d.dataset.station = station; const life = Math.max(4200, txt.length / 15 * 1000); d.style.animationDuration = life + 'ms'; UI.flt.appendChild(d);
   while (UI.flt.children.length > 2) UI.flt.firstChild.remove();
   setTimeout(() => d.remove(), life);
 }
@@ -312,7 +314,7 @@ function zoneClick(z) {
   if (d[t]) { barMsg(TASK_NAME[t] + ' уже готов'); return; }
   const b = blockMsg(t); if (b) { barMsg(b, true); play('ui_error-soft-thud', .4); return; }
   /* станция в другой секции (Б1-3): окно не открывается, тост по таблице раздела 11, камера на месте */
-  if (sectionsPlayable()) { const zn = MENUAPI.TASK_ZONE[t] || t, sec = MENUAPI.stationSection(zn, zonesInSide), st = MENUAPI.stationOfZone(zn); if (st && sec !== CAM.sec) { const txt = MENUAPI.stationToast(st.id, CAM.sec); if (txt) { barMsg(txt); sndTap(); return; } } }
+  if (sectionsPlayable()) { const zn = MENUAPI.TASK_ZONE[t] || t, sec = MENUAPI.stationSection(zn, zonesInSide), st = MENUAPI.stationOfZone(zn); if (st && sec !== CAM.sec) { const txt = MENUAPI.stationToast(st.id, CAM.sec); if (txt) { barMsg(txt, false, st.id); sndTap(); return; } } }
   if (t === 'tamp') { BR.pf = 'mat'; }
   openInset(t);
 }
