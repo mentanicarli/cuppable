@@ -15,6 +15,7 @@ out
 !docs/art/sections/*.png
 docs/art/refs/sides/
 !docs/art/sides/s2/*.png
+!docs/art/sides/s2b/*.png
 .DS_Store
 Thumbs.db
 .env*

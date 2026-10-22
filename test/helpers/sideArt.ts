@@ -23,3 +23,45 @@ export const union = (bs: Box[]): Box => {
   const x1 = Math.max(...bs.map((b) => b.x + b.w)), y1 = Math.max(...bs.map((b) => b.y + b.h));
   return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
 };
+
+/* ---------- сосуды (30-2б): слои, жидкость, шарики, трубочки, лёд ---------- */
+export interface Glass { id: string; inner: Box; layers: string[]; liquid: Box | null; body: string }
+const nums = (d: string): number[] => (d.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
+
+export function parseGlasses(svg: string): Glass[] {
+  const out: Glass[] = [];
+  for (const m of svg.matchAll(/<g data-glass="(\w+)" data-inner="([^"]+)">([\s\S]*?)<\/g>/g)) {
+    const body = m[3] as string;
+    const [ix, iy, iw, ih] = (m[2] as string).split(' ').map(Number) as [number, number, number, number];
+    const layers = [...body.matchAll(/data-layer="(\w+)"/g)].map((l) => l[1] as string);
+    const lq = /data-layer="liquid" d="([^"]+)"/.exec(body);
+    let liquid: Box | null = null;
+    if (lq) {
+      const v = nums(lq[1] as string);
+      const xs = v.filter((_, i) => i % 2 === 0), ys = v.filter((_, i) => i % 2 === 1);
+      liquid = { x: Math.min(...xs), y: Math.min(...ys), w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) };
+    }
+    out.push({ id: m[1] as string, inner: { x: ix, y: iy, w: iw, h: ih }, layers, liquid, body });
+  }
+  return out;
+}
+
+export const LAYER_RANK: Record<string, number> = { back: 0, liquid: 1, balls: 2, straw: 3, outline: 4, shine: 5 };
+
+/** Верх трубочки (y) и высота выступа над верхом стекла; трубочка — rect с rotate(a cx cy) вокруг нижней точки. */
+export function strawTops(body: string): { w: number; top: number; jar: boolean }[] {
+  const out: { w: number; top: number; jar: boolean }[] = [];
+  for (const m of body.matchAll(/<rect data-layer="straw"[^>]*>/g)) {
+    const tag = m[0];
+    const at = (n: string): number => +((new RegExp(String.raw`\s${n}="([-\d.]+)"`).exec(tag) as RegExpExecArray)[1] as string);
+    const rot = /rotate\(([-\d.]+) /.exec(tag);
+    const y = at('y'), h = at('height'), a = rot ? +(rot[1] as string) : 0;
+    out.push({ w: at('width'), top: y + h - h * Math.cos((a * Math.PI) / 180), jar: tag.includes('data-straw="jar"') });
+  }
+  return out;
+}
+
+export interface Ball { cx: number; cy: number; r: number }
+export function parseBalls(body: string): Ball[] {
+  return [...body.matchAll(/<circle data-layer="balls" data-ball="1" cx="([\d.]+)" cy="([\d.]+)" r="([\d.]+)"/g)].map((m) => ({ cx: +(m[1] as string), cy: +(m[2] as string), r: +(m[3] as string) }));
+}

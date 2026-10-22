@@ -1,20 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="983 385 179 135" data-part="shaker" data-scale="1.1">
 <!--
-  Шейкер (30-2), секция R. Проектная рамка 1012, 408, 150 × 100: большой и малый (перевёрнутый) стальные стаканы бостонского шейкера, джиггер-песочные часы, стрейнер с ручкой. ×1,10 через transform обёртки.
+  Шейкер (30-2б), секция R. Проектная рамка 1014, 403.5, 148 × 102.5: большой и малый (перевёрнутый) стальные стаканы (слои: стенка, контур, блик), джиггер-песочные часы, стрейнер с ручкой. ×1,10 через transform обёртки.
 -->
 <g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
 <g data-wrap="shaker" transform="translate(988.4 506) scale(1.1) translate(-1012 -506)">
 <ellipse cx="1087" cy="508" rx="76" ry="4" fill="{{SHADOW}}" fill-opacity=".22" stroke="none"/>
 <g data-item="shaker" data-box="1014 403.5 148 102.5">
-<path d="M1014 408H1056L1050 506H1020Z" fill="{{STEEL}}" stroke-width="{{M}}"/>
+<g data-glass="tinBig" data-inner="1015.40 409.40 39.20 95.20">
+<path data-layer="back" d="M1014 408L1056 408L1050 506L1020 506Z" fill="{{STEEL}}" stroke="none"/>
+<path data-layer="outline" d="M1014 408L1056 408L1050 506L1020 506Z" fill="none" stroke-width="{{M}}"/>
 <ellipse cx="1035" cy="408" rx="21" ry="4.5" fill="{{STEEL_HI}}" stroke-width="{{M}}"/>
-<path d="M1021 416L1026 498" fill="none" stroke="{{HILITE}}" stroke-opacity="0.7" stroke-width="{{M}}"/>
 <path d="M1048 416L1045 498" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
-<path d="M1068 430H1100L1106 506H1062Z" fill="{{STEEL}}" stroke-width="{{M}}"/>
+<path data-layer="shine" d="M1021 416L1026 498" fill="none" stroke="{{HILITE}}" stroke-opacity=".75" stroke-width="{{M}}"/>
+</g>
+<g data-glass="tinSmall" data-inner="1063.40 431.40 41.20 73.20">
+<path data-layer="back" d="M1068 430L1100 430L1106 506L1062 506Z" fill="{{STEEL}}" stroke="none"/>
+<path data-layer="outline" d="M1068 430L1100 430L1106 506L1062 506Z" fill="none" stroke-width="{{M}}"/>
 <ellipse cx="1084" cy="430" rx="16" ry="3.6" fill="{{STEEL_HI}}" stroke-width="{{M}}"/>
-<path d="M1072 436L1068 498" fill="none" stroke="{{HILITE}}" stroke-opacity="0.7" stroke-width="{{M}}"/>
 <path d="M1098 438L1101 498" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
 <path d="M1064 498H1104" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<path data-layer="shine" d="M1072 436L1068 498" fill="none" stroke="{{HILITE}}" stroke-opacity=".75" stroke-width="{{M}}"/>
+</g>
 <path d="M1112 456H1132L1126 480L1130 506H1114L1118 480Z" fill="{{STEEL}}" stroke-width="{{M}}"/>
 <ellipse cx="1122" cy="456" rx="10" ry="2.6" fill="{{STEEL_HI}}" stroke-width="{{D}}"/>
 <path d="M1116 480H1128" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
