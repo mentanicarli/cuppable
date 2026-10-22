@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="262 492 136 44" data-part="tamperMat" data-after="tamper" data-scale="1">
+<!--
+  Мат под темпером и портафильтром (блок 29-2): тёмный резиновый коврик, эллипс 128 × 22 (x 266–394), центр (330, 510), с толщиной по краю (+4 px) и тонким светлым краем. Раньше два эллипса лежали в static. Отдельная часть, потому что темпер подпрыгивает на 6 px, а мат нет. Контур 3,5 / 3 / 2 px.
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<ellipse cx="333" cy="520" rx="64" ry="11" fill="{{SHADOW}}" fill-opacity=".25" stroke="none"/>
+<path d="M266 510V514A64 11 0 0 0 394 514V510Z" fill="{{DARK}}" stroke-width="{{M}}"/>
+<ellipse cx="330" cy="510" rx="64" ry="11" fill="{{CHOC}}" stroke-width="{{M}}"/>
+<ellipse cx="330" cy="510" rx="58" ry="8.5" fill="none" stroke="{{HILITE}}" stroke-opacity=".3" stroke-width="{{D}}"/>
+</g>
+</svg>

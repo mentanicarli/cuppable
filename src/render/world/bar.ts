@@ -12,7 +12,6 @@ interface TextSpec { t: string; x: number; y: number; size: number; weight: stri
 interface Part { svg: string; box: Box; texts: TextSpec[] }
 
 const P = PARTS as unknown as Record<string, Part>;
-const INK = 0x4a2f25;
 
 /** Слой жидкости в чашке: от дна вверх, y/h в координатах чашки. */
 export interface CupRect { y: number; h: number; col: string }
@@ -225,6 +224,8 @@ export class BarScene {
     d.position.set(136 - 160, 308 - 332);
     R.addChild(this.dial);
 
+    /* мат под темпером (29-2): отдельная часть, стоит на месте, пока темпер подпрыгивает */
+    spr('tamperMat');
     this.tamper.addChild(spr('tamper', this.tamper));
     R.addChild(this.tamper);
 
@@ -244,7 +245,7 @@ export class BarScene {
 
     this.bell.position.set(1032, 526);
     const bs = spr('bell', this.bell);
-    bs.position.set(985 - 1032, 465 - 526);
+    bs.position.set(P.bell!.box.x - 1032, P.bell!.box.y - 526);
     R.addChild(this.bell);
 
     /* струя под портафильтром: голова и носик закрывают её начало, видна от носика */
@@ -270,15 +271,21 @@ export class BarScene {
     this.mC.addChild(this.mBack, this.mLive, this.mDone, this.mIce, this.mFront);
     this.mC.visible = false;
     R.addChild(this.mC);
-    /* питчер из нержавейки под группой (раф): корпус, уровень эспрессо, носик и ручка */
-    const pb = new Graphics();
-    pb.poly([-34, -72, 34, -72, 26, -4, -26, -4]).fill(0xd8d8d0).stroke({ width: 3, color: INK, join: 'round' });
-    pb.moveTo(34, -60).quadraticCurveTo(62, -58, 56, -30).quadraticCurveTo(52, -14, 28, -18).stroke({ width: 7, color: INK, cap: 'round' });
-    pb.moveTo(34, -60).quadraticCurveTo(62, -58, 56, -30).quadraticCurveTo(52, -14, 28, -18).stroke({ width: 3.5, color: 0xc9c8c0, cap: 'round' });
-    this.pitUnderG.addChild(pb, this.pitCoffee);
-    this.pitUnderG.position.set(630, 482);
-    this.pitUnderG.visible = false;
-    R.addChild(this.pitUnderG);
+    /* питчер раф под группой (29-2): тот же рисунок, что у обычного питчера (pitBack/pitFront из art-src), масштаб 0,92; между слоями эспрессо в той же маске pmask */
+    const pu = this.pitUnderG;
+    const rel = (id: string): void => {
+      const sp = spr(id, pu);
+      sp.position.set((P[id] as Part).box.x - 940, (P[id] as Part).box.y - 514);
+    };
+    rel('pitBack');
+    const pumask = new Graphics().moveTo(-30, -80).lineTo(30, -80).lineTo(26, -4).quadraticCurveTo(0, 4, -26, -4).closePath().fill(0xffffff);
+    pu.addChild(pumask, this.pitCoffee);
+    this.pitCoffee.mask = pumask;
+    rel('pitFront');
+    pu.scale.set(0.92);
+    pu.position.set(630, 482);
+    pu.visible = false;
+    R.addChild(pu);
 
     this.steam = spr('steam');
     this.steam.alpha = 0;
@@ -573,7 +580,7 @@ export class BarScene {
     this.pitUnderG.visible = !!f.pitUnder;
     if (f.pitUnder) {
       const h = 6 + 54 * f.pitUnder.level;
-      this.pitCoffee.clear().poly([-26 - (h / 68) * 6 + 6, -4 - h, 26 + (h / 68) * 6 - 6, -4 - h, 26, -6, -26, -6]).fill(0x4a2e20);
+      this.pitCoffee.clear().rect(-34, -4 - h, 68, h).fill(0x4a2e20);
     }
     /* струя */
     this.stream.clear();

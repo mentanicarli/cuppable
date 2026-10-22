@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="880 420 130 110" data-part="pitFront" data-after="pitBack" data-scale="1">
+<!--
+  Питчер, передний слой (блок 29-2): стальной питчер для молока: носик слева, ручка-скоба справа, обод (овал, внутренняя стенка), контур, блик. Якорь (940, 514), корпус как у pitBack. Тот же рисунок рисует питчер раф под группой (BarScene.pitUnderG, масштаб 0,92).
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<g transform="translate(940 514)">
+<path d="M33 -72C67 -74 66 -26 33 -28L33 -37C51 -38 52 -62 33 -63Z" fill="{{STEEL}}" stroke-width="{{M}}"/>
+<path d="M-32 -81Q-45 -82 -56 -91Q-46 -66 -30 -58Z" fill="{{STEEL}}" stroke-width="{{M}}"/>
+<path d="M-34 -80H34L28 -2Q0 6 -28 -2Z" fill="none" stroke-width="{{M}}"/>
+<path d="M24 -76L34 -80L28 -2Q26 0 22 1Z" fill="{{STEEL_SH}}" fill-opacity=".55" stroke="none"/>
+<ellipse cx="0" cy="-80" rx="34" ry="6" fill="{{STEEL_SH}}" stroke-width="{{M}}"/>
+<path d="M-24 -66Q-23 -34 -22 -12" stroke="{{HILITE}}" stroke-opacity=".7" stroke-width="{{L}}" fill="none"/>
+</g>
+</g>
+</svg>

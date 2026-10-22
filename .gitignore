@@ -13,7 +13,6 @@ out
 !docs/art/drinks/h2-4/all56_sheet.png
 !docs/art/drinks/h2-4/places_sheet.png
 !docs/art/sections/*.png
-# кадры приёмки блока 29-1 (удаляются после одобрения владельцем)
 .DS_Store
 Thumbs.db
 .env*
@@ -24,3 +23,5 @@ Thumbs.db
 *.seq.html
 
 public/music/manifest.json
+# кадры приёмки блока 29-2 (удаляются после одобрения владельцем)
+!docs/art/center/c2/*.png

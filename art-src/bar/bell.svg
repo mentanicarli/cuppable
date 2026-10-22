@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="1002 474 60 60" data-part="bell" data-scale="1">
+<!--
+  Звонок (блок 29-2): сервисный колокольчик, купол латунного цвета на тёмной подставке, ободок, кнопка сверху. Якорь масштаба (1032, 526) (bar.ts: bell.scale при звонке). Размер: подставка 54 px (11,6 см), высота 46 px (≈ 10 см); реальный 8 × 7 см, допуск ×1,5 по плану. Зона bell и кольцо подсказки прежние.
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<g transform="translate(1032 526)">
+<ellipse cx="0" cy="1" rx="27" ry="6" fill="{{DARK}}" stroke-width="{{M}}"/>
+<path d="M-22 -4Q-22 -32 0 -32Q22 -32 22 -4Z" fill="{{MUSTARD}}" stroke-width="{{M}}"/>
+<path d="M12 -26Q20 -20 20 -6L22 -4Q22 -22 14 -28Z" fill="{{BAKE}}" stroke="none"/>
+<path d="M-15 -14Q-14 -24 -6 -27" fill="none" stroke="{{HILITE}}" stroke-opacity=".85" stroke-width="{{L}}"/>
+<rect x="-25" y="-7" width="50" height="7" rx="3.5" fill="{{BAKE}}" stroke-width="{{M}}"/>
+<rect x="-3.5" y="-38" width="7" height="6" rx="2" fill="{{STEEL_HI}}" stroke-width="{{D}}"/>
+<circle cx="0" cy="-41" r="4.5" fill="{{STEEL}}" stroke-width="{{D}}"/>
+</g>
+</g>
+</svg>

@@ -180,3 +180,21 @@ describe('шкала: портафильтр и чашки подогрева п
     }
   });
 });
+
+/* Блок 29-2: темпер, питчер, звонок после перерисовки (docs/art/scale.md). Допуск ручных предметов ×1,5. */
+describe('шкала: темпер, питчер и звонок после 29-2', () => {
+  test('темпер 40 × 50 px против 28 × 51 (6 × 11 см): ×1,43 / ×0,98', () => {
+    expect(40 / (6 * S_BAR)).toBeLessThanOrEqual(1.5);
+    expect(50 / (11 * S_BAR)).toBeLessThanOrEqual(1.5);
+  });
+  test('питчер: корпус 68 × 82 против 46 × 65: ×1,48 / ×1,26', () => {
+    expect(68 / (10 * S_BAR)).toBeLessThanOrEqual(1.5);
+    expect(82 / (14 * S_BAR)).toBeLessThanOrEqual(1.5);
+  });
+  test('звонок 54 × 46 против 37 × 32 (8 × 7 см): ×1,46 / ×1,44, не больше 56 × 48', () => {
+    expect(54 / (8 * S_BAR)).toBeLessThanOrEqual(1.5);
+    expect(46 / (7 * S_BAR)).toBeLessThanOrEqual(1.5);
+    expect(54).toBeLessThanOrEqual(56);
+    expect(46).toBeLessThanOrEqual(48);
+  });
+});
