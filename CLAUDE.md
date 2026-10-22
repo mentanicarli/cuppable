@@ -203,7 +203,7 @@ DOM поверх холста: `#bar` (z-index 2: тикет, коуч, инсе
 ```bash
 npm install
 npm run dev            # dev-сервер Vite
-npm run build          # релиз: dist/artifact.html (~1198 КБ = 1 226 879 Б на 2026-10-23, минифицирован; предел 1,5 МБ, решение владельца) + dist/sfx
+npm run build          # релиз: dist/artifact.html (~1200 КБ = 1 228 538 Б на 2026-10-23, минифицирован; предел 1,5 МБ, решение владельца) + dist/sfx
 npm run build:debug    # неминифицированная сборка для отладки/автотестов
 npm run check          # typecheck + lint + тесты vitest (493)
 npm run lint:legacy    # no-undef по склеенному legacy (ловит опечатки в именах)
