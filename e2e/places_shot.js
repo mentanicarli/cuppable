@@ -14,10 +14,11 @@ const DRINKS = [['latte_sakura', '0.4', false], ['orange_bumble', '0.3', true], 
   const args = (process.env.CHROMIUM_ARGS || '').split(' ').filter(Boolean);
   const b = await chromium.launch({ ...(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}), args });
   const errs = [];
-  for (const [W, H] of SIZES) for (const dsf of [1, 2]) {
+  for (const [W, H] of SIZES) for (const dsf of (process.env.DSFS || '1,2').split(',').map(Number)) {
     const tag = `${W}x${H}_${dsf}x`;
     const ctx = await b.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: dsf }); const p = await ctx.newPage();
     await p.route(/fonts\.googleapis\.com/, r => r.fulfill({ status: 200, contentType: 'text/css', body: PW.css })); PW.watch(p, errs);
+    if (process.env.SEED) await p.addInitScript(sd => { let a = sd; Math.random = () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }, Number(process.env.SEED));
     await p.goto('about:blank'); await p.goto(PW.url(tmp) + '#dev'); await p.waitForSelector('[data-sandbox]', { timeout: 60000 }); await p.waitForTimeout(400);
     await p.evaluate(() => window.__sandbox.start({ day: 30, profile: 'medium' })); await p.waitForSelector('#screen', { state: 'hidden', timeout: 20000 });
     await p.waitForFunction(() => window.__dbg && window.__dbg.G, null, { timeout: 30000 });
@@ -69,6 +70,7 @@ const DRINKS = [['latte_sakura', '0.4', false], ['orange_bumble', '0.3', true], 
         await p.evaluate(() => { const t = window.__flyT; t.c.act.takeCup(t.top, t.k, t.ref); });
         await p.waitForTimeout(1500);
         if (on('take')) await p.screenshot({ path: `${out}/take_${d[0]}_${tag}.png`, clip: await clipOf(300, 250, 760, 330), timeout: 120000 });
+        if (on('take') && process.env.HAND) { const hp = await p.evaluate(() => ({ x: __dbg.D.customers[0].x })); await p.screenshot({ path: `${out}/hand_${d[0]}_${tag}.png`, clip: await clipOf(hp.x - 10, 420, 80, 70), timeout: 120000 }); }
         await p.waitForTimeout(300);
       }
     }
