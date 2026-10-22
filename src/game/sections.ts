@@ -177,6 +177,20 @@ export const SIDE_ZONES: readonly SideZone[] = [
   { id: 'shaker', section: 'R', x: 992, y: 408, w: 150, h: 100 }
 ];
 
+/** Что интерфейс занимает в боковой секции (экранные координаты = секция-локальные, камера стоит на секции); предметы и зоны сюда не заходят (docs/art/sides/plan.md, разд. 2). `always: false` — только по клику (развёрнутый билет): декору выше y 232 нельзя. */
+export interface KeepOut { name: string; x: number; y: number; w: number; h: number; always: boolean }
+export const SIDE_KEEP_OUT: readonly KeepOut[] = [
+  { name: 'HUD', x: 0, y: 0, w: 1280, h: 64, always: true },
+  { name: 'мини-карта', x: 598, y: 12, w: 168, h: 44, always: true },
+  { name: 'билет', x: 24, y: 76, w: 840, h: 54, always: true },
+  { name: 'билет развёрнут', x: 28, y: 136, w: 466, h: 94, always: false },
+  { name: 'коуч', x: 472, y: 520, w: 322, h: 100, always: true }
+];
+/** Кнопка стрелки к центру: в секции L справа, в R слева (полоса y 516–546). */
+export const SIDE_ARROW: Readonly<Record<'L' | 'R', { x: number; y: number; w: number; h: number }>> = { L: { x: 1092, y: 516, w: 178, h: 30 }, R: { x: 10, y: 516, w: 178, h: 30 } };
+/** База заднего ряда: предметы станций стоят на y 506 (контактная тень до 514). */
+export const SIDE_BASE_Y = 506;
+
 /** Центр зоны в мировых координатах (секция L сдвинута на −1280, R на +1280). */
 export function sideZoneCenter(z: SideZone): [number, number] {
   return [SECTION_CAM[z.section] + z.x + z.w / 2, z.y + z.h / 2];

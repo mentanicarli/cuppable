@@ -9,6 +9,7 @@ import { specOf } from '../src/game/drinkModel';
 import { BAR_UNIT, geomOf } from '../src/render/world/drinkModel';
 import { CUP_TOP_PX, cupUnit } from '../src/render/world/cupPlan';
 import { cupScale } from '../src/game/volumes';
+import PARTS_L from '../src/assets/art/bar-parts-left.json';
 
 /* Этап 12.3(2): соотношения размеров по шкале docs/art/scale.md. Бар: 4,64 px/см (кофемашина 75 см = 348 px). Допуск у фона 0,75–1,25. */
 const S_BAR = 4.64;
@@ -197,4 +198,29 @@ describe('шкала: темпер, питчер и звонок после 29-2
     expect(54).toBeLessThanOrEqual(56);
     expect(46).toBeLessThanOrEqual(48);
   });
+});
+
+/* Блок 30-1: чайная станция, набор для матчи, полка порошков (левая секция). Размеры группы предметов (объединение рамок data-item) против реальных см группы, шкала бара 4,64 px/см. */
+describe('шкала: станции левой секции после 30-1', () => {
+  const groups = [
+    { part: 'tea', cm: [49, 26], max: 1.25 },
+    { part: 'matcha', cm: [55, 14], max: 1.5 },
+    { part: 'powders', cm: [81, 22], max: 1.25 }
+  ] as const;
+  const union = (part: string): { w: number; h: number } => {
+    const svg = (PARTS_L as unknown as Record<string, { svg: string }>)[part]?.svg ?? '';
+    const bs = [...svg.matchAll(/data-item="\w+" data-box="([\d.]+) ([\d.]+) ([\d.]+) ([\d.]+)"/g)].map((m) => ({ x: +(m[1] as string), y: +(m[2] as string), w: +(m[3] as string), h: +(m[4] as string) }));
+    const x0 = Math.min(...bs.map((b) => b.x)), x1 = Math.max(...bs.map((b) => b.x + b.w));
+    const y0 = Math.min(...bs.map((b) => b.y)), y1 = Math.max(...bs.map((b) => b.y + b.h));
+    return { w: x1 - x0, h: y1 - y0 };
+  };
+  for (const g of groups) {
+    test(`${g.part}: ширина и высота группы в допуске 0,75–${g.max} от реальных ${g.cm[0]} × ${g.cm[1]} см`, () => {
+      const u = union(g.part);
+      expect(u.w / (g.cm[0] * S_BAR)).toBeGreaterThanOrEqual(0.75);
+      expect(u.w / (g.cm[0] * S_BAR)).toBeLessThanOrEqual(g.max);
+      expect(u.h / (g.cm[1] * S_BAR)).toBeGreaterThanOrEqual(0.75);
+      expect(u.h / (g.cm[1] * S_BAR)).toBeLessThanOrEqual(g.max);
+    });
+  }
 });

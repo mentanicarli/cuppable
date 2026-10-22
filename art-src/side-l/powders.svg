@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="710 386 388 132" data-part="powders" data-scale="1">
+<!--
+  Полка порошков (блок 30-1), секция L. Зона 716, 392, 376 × 118. Ступенчатая подставка 376 × 26 (y 484–510), на ней три стеклянные банки 84 × 92 с зажимной крышкой и табличкой-иконкой (какао — зерно, цикорий — цветок, протеин — гантель) и мерный стаканчик с ложкой справа. Подвижного нет.
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<ellipse cx="904" cy="511" rx="192" ry="4" fill="{{SHADOW}}" fill-opacity=".22" stroke="none"/>
+<g data-item="stand" data-box="716 484 376 26">
+<rect x="716" y="498" width="376" height="12" rx="4" fill="{{WOOD}}" stroke-width="{{M}}"/>
+<rect x="732" y="484" width="344" height="16" rx="4" fill="{{WOOD_HI}}" stroke-width="{{M}}"/>
+<path d="M740 489H1068" fill="none" stroke="{{HILITE}}" stroke-opacity=".6" stroke-width="{{D}}"/>
+<path d="M722 505H1086" fill="none" stroke="{{WOOD_SH}}" stroke-width="{{D}}"/>
+</g>
+<g data-item="jarCocoa" data-box="734 392 84 92">
+<path d="M738 408H814Q818 418 818 430V476Q818 484 810 484H742Q734 484 734 476V430Q734 418 738 408Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
+<path d="M735 424H817V476Q817 483 810 483H742Q735 483 735 476Z" fill="{{CHOC}}" stroke="none"/>
+<path d="M741 414Q738 440 740 474" fill="none" stroke="{{HILITE}}" stroke-opacity=".7" stroke-width="{{M}}"/>
+<rect x="738" y="392" width="76" height="16" rx="5" fill="{{STEEL_HI}}" stroke-width="{{M}}"/>
+<path d="M808 400H814Q818 400 818 406V440" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{M}}"/>
+<rect x="752" y="436" width="48" height="34" rx="4" fill="{{PAPER}}" stroke-width="{{D}}"/>
+<g data-icon="bean"><ellipse cx="776" cy="453" rx="9" ry="6.5" fill="{{CHOC}}" stroke-width="{{D}}" transform="rotate(-35 776 453)"/><path d="M769 458Q776 451 783 448" fill="none" stroke="{{PAPER}}" stroke-width="{{D}}"/></g>
+</g>
+<g data-item="jarChicory" data-box="826 392 84 92">
+<path d="M830 408H906Q910 418 910 430V476Q910 484 902 484H834Q826 484 826 476V430Q826 418 830 408Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
+<path d="M827 424H909V476Q909 483 902 483H834Q827 483 827 476Z" fill="{{BAKE_SH}}" stroke="none"/>
+<path d="M833 414Q830 440 832 474" fill="none" stroke="{{HILITE}}" stroke-opacity=".7" stroke-width="{{M}}"/>
+<rect x="830" y="392" width="76" height="16" rx="5" fill="{{STEEL_HI}}" stroke-width="{{M}}"/>
+<path d="M900 400H906Q910 400 910 406V440" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{M}}"/>
+<rect x="844" y="436" width="48" height="34" rx="4" fill="{{PAPER}}" stroke-width="{{D}}"/>
+<g data-icon="flower"><circle cx="868" cy="453" r="3" fill="{{MUSTARD}}" stroke-width="{{D}}"/><path d="M868 449L868 442M868 457L868 464M864 453L857 453M872 453L879 453M865 450L860 445M871 450L876 445M865 456L860 461M871 456L876 461" fill="none" stroke="{{DUSTY}}" stroke-width="{{M}}"/></g>
+</g>
+<g data-item="jarProtein" data-box="918 392 84 92">
+<path d="M922 408H998Q1002 418 1002 430V476Q1002 484 994 484H926Q918 484 918 476V430Q918 418 922 408Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
+<path d="M919 424H1001V476Q1001 483 994 483H926Q919 483 919 476Z" fill="{{KRAFT}}" stroke="none"/>
+<path d="M925 414Q922 440 924 474" fill="none" stroke="{{HILITE}}" stroke-opacity=".7" stroke-width="{{M}}"/>
+<rect x="922" y="392" width="76" height="16" rx="5" fill="{{STEEL_HI}}" stroke-width="{{M}}"/>
+<path d="M992 400H998Q1002 400 1002 406V440" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{M}}"/>
+<rect x="936" y="436" width="48" height="34" rx="4" fill="{{PAPER}}" stroke-width="{{D}}"/>
+<g data-icon="dumbbell"><path d="M951 453H969" fill="none" stroke-width="{{M}}"/><rect x="946" y="446" width="6" height="14" rx="2" fill="{{TERRA}}" stroke-width="{{D}}"/><rect x="968" y="446" width="6" height="14" rx="2" fill="{{TERRA}}" stroke-width="{{D}}"/><rect x="940" y="449" width="5" height="8" rx="2" fill="{{TERRA}}" stroke-width="{{D}}"/><rect x="975" y="449" width="5" height="8" rx="2" fill="{{TERRA}}" stroke-width="{{D}}"/></g>
+</g>
+<g data-item="cup" data-box="1014 436 64 48">
+<path d="M1062 452L1076 436Q1080 438 1076 442L1066 458" fill="{{PAPER}}" stroke-width="{{M}}"/>
+<ellipse cx="1076" cy="438" rx="6" ry="3.5" fill="{{PAPER}}" stroke-width="{{D}}"/>
+<path d="M1016 442H1054L1050 482Q1050 484 1047 484H1023Q1020 484 1020 482Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
+<path d="M1019 462H1051L1050 482Q1050 483 1047 483H1023Q1020 483 1020 482Z" fill="{{KRAFT}}" stroke="none"/>
+<ellipse cx="1035" cy="442" rx="19" ry="3.5" fill="{{GLASS_DP}}" stroke-width="{{D}}"/>
+<path d="M1024 448L1026 474" fill="none" stroke="{{HILITE}}" stroke-opacity=".8" stroke-width="{{M}}"/>
+<path d="M1038 462H1046M1038 470H1044" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
+</g>
+</g>
+</svg>

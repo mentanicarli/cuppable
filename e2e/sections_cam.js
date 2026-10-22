@@ -38,7 +38,9 @@ let fails = 0; const ok = (c, m) => { if (!c) { fails++; console.log('FAIL ' + m
   const { ctx, p } = await open('#dev', 2, true);
   const shot = async (name) => { await p.evaluate(() => window.scrollTo(0, 0)); await p.locator('#stage').screenshot({ path: `${out}/${name}.png`, timeout: 120000 }); };
   await p.waitForTimeout(600);
-  ok(await p.evaluate(() => __dbg.WORLD.barSideTextures()) === 13, '#dev: обе боковые секции открыты, 13 текстур (2 фона, 2 подписи секций, 9 подписей рамок станций)');
+  { const r = await p.evaluate(() => ({ n: __dbg.WORLD.barSideTextures(), own: ['tea', 'matcha', 'powders'].filter(k => __dbg.G['eq_' + k]).length }));
+    /* L (30-1): фон + по текстуре на купленный предмет; R пока заглушка: фон + подпись секции + 6 подписей рамок */
+    ok(r.n === (1 + r.own) + (1 + 1 + 6), `#dev: обе боковые секции открыты, текстур ${r.n} = L (1 фон + ${r.own} купленных) + R (фон, подпись, 6 подписей рамок)`); }
   await shot('b11_1_center');
   await PW.goSection(p, 'L'); await p.waitForTimeout(300); await shot('b11_2_left');
   ok(await p.evaluate(() => __dbg.CAM.x === -1280), 'L: камера −1280');

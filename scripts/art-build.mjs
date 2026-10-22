@@ -14,6 +14,8 @@ const ROOT = resolve(import.meta.dirname, '..');
 const SRC = join(ROOT, 'art-src');
 const OUT = join(ROOT, 'src/assets/art');
 const PARTS = join(OUT, 'bar-parts.json');
+/** папка art-src → отдельный файл частей боковой секции (30-1) */
+const SIDE_FILES = { 'side-l': 'bar-parts-left.json' };
 const check = process.argv.includes('--check');
 const pal = JSON.parse(readFileSync(join(SRC, 'palette.json'), 'utf8'));
 
@@ -29,6 +31,7 @@ const files = [];
 let bad = 0;
 const fail = (f, m) => { console.error(`✗ ${relative(ROOT, f)}: ${m}`); bad++; };
 const barParts = [];
+const sideParts = {};
 for (const f of files.sort()) {
   const s = readFileSync(f, 'utf8').replace(/\r\n/g, '\n');
   const head = /<svg\b([^>]*)>/.exec(s);
@@ -64,7 +67,9 @@ for (const f of files.sort()) {
       texts.push({ t, x: Number(g('x', 0)), y: Number(g('y', 0)), size: Number(g('font-size', 12)), weight: g('font-weight', '800'), fill: g('fill', pal.colors.INK), family: g('font-family', 'Nunito'), tl: null });
       return '';
     });
-    barParts.push({ id: part, after: attr('data-after'), svg, box: { x, y, w: bw, h: bh }, texts, file: f });
+    const sideDir = Object.keys(SIDE_FILES).find((d) => relative(SRC, f).split(/[\\/]/)[0] === d);
+    if (sideDir) (sideParts[SIDE_FILES[sideDir]] ??= []).push({ id: part, entry: { svg, box: { x, y, w: bw, h: bh }, texts }, file: f });
+    else barParts.push({ id: part, after: attr('data-after'), svg, box: { x, y, w: bw, h: bh }, texts, file: f });
   }
 }
 
@@ -88,6 +93,17 @@ if (barParts.length) {
       writeFileSync(PARTS, text);
       console.log(`частей бара собрано: ${barParts.map((p) => p.id).join(', ')} → src/assets/art/bar-parts.json`);
     }
+  }
+}
+for (const [name, list] of Object.entries(sideParts)) {
+  const target = join(OUT, name);
+  const text = JSON.stringify(Object.fromEntries(list.map((p) => [p.id, p.entry])));
+  if (bad) break;
+  if (check) {
+    if (!existsSync(target) || readFileSync(target, 'utf8').trim() !== text) fail(target, `${name} устарел: запустите npm run art`);
+  } else {
+    writeFileSync(target, text);
+    console.log(`частей боковой секции собрано: ${list.map((p) => p.id).join(', ')} → src/assets/art/${name}`);
   }
 }
 if (bad) process.exit(1);

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="422 430 278 90" data-part="matcha" data-scale="1">
+<!--
+  Набор для матчи (блок 30-1), секция L. Зона 428, 428, 266 × 84. Деревянный поднос 266 × 16 (y 496–512), на нём слева направо: чайничек 64 × 60 (436–500), чаша 70 × 44 (512–582), венчик 30 × 52 (596–626), банка матчи 44 × 58 (640–684, листик на этикетке). Подвижного нет.
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<ellipse cx="561" cy="513" rx="136" ry="4" fill="{{SHADOW}}" fill-opacity=".22" stroke="none"/>
+<g data-item="tray" data-box="428 496 266 16">
+<rect x="428" y="496" width="266" height="16" rx="5" fill="{{WOOD}}" stroke-width="{{M}}"/>
+<rect x="431" y="498" width="260" height="5" rx="2.5" fill="{{WOOD_HI}}" stroke="none"/>
+<path d="M436 507H686" fill="none" stroke="{{WOOD_SH}}" stroke-width="{{D}}"/>
+</g>
+<g data-item="kyusu" data-box="436 438 64 60">
+<path d="M449 480Q440 478 436 466L441 464Q445 472 452 474Z" fill="{{TERRA}}" stroke-width="{{M}}"/>
+<path d="M486 468L500 458Q502 470 494 482L488 478Z" fill="{{TERRA}}" stroke-width="{{M}}"/>
+<ellipse cx="468" cy="477" rx="25" ry="20" fill="{{TERRA}}" stroke-width="{{M}}"/>
+<path d="M452 469Q456 462 464 461" fill="none" stroke="{{HILITE}}" stroke-opacity=".7" stroke-width="{{M}}"/>
+<path d="M456 459Q458 449 468 449Q478 449 480 459Z" fill="{{RUG}}" stroke-width="{{M}}"/>
+<circle cx="468" cy="444" r="5" fill="{{RUG}}" stroke-width="{{D}}"/>
+</g>
+<g data-item="bowl" data-box="512 454 70 44">
+<path d="M512 458Q512 488 530 497H564Q582 488 582 458Z" fill="{{DUSTY}}" stroke-width="{{M}}"/>
+<ellipse cx="547" cy="458" rx="35" ry="6.5" fill="{{CER_IN}}" stroke-width="{{M}}"/>
+<path d="M520 468Q522 482 532 490" fill="none" stroke="{{HILITE}}" stroke-opacity=".55" stroke-width="{{M}}"/>
+<path d="M530 497H564" fill="none" stroke-width="{{M}}"/>
+<path d="M528 478L531 484M540 484L542 490M552 480L554 486M562 474L565 480" fill="none" stroke="{{STEEL_SH}}" stroke-opacity=".6" stroke-width="{{D}}"/>
+</g>
+<g data-item="whisk" data-box="596 446 30 52">
+<path d="M605 496V480H617V496Q617 498 615 498H607Q605 498 605 496Z" fill="{{BAKE}}" stroke-width="{{M}}"/>
+<path d="M605 482H617" fill="none" stroke="{{DARK}}" stroke-width="{{M}}"/>
+<path d="M606 480L597 452Q611 444 625 452L616 480Z" fill="{{KRAFT}}" stroke-width="{{M}}"/>
+<path d="M607 476L601 453M610 477L607 449M614 477L615 449M617 476L621 453M612 477L611 450" fill="none" stroke="{{BAKE}}" stroke-width="{{D}}"/>
+<path d="M598 451Q604 456 608 450M614 450Q618 456 624 451" fill="none" stroke="{{BAKE}}" stroke-width="{{D}}"/>
+</g>
+<g data-item="jar" data-box="640 440 44 58">
+<rect x="641" y="456" width="42" height="42" rx="6" fill="{{PAPER}}" stroke-width="{{M}}"/>
+<path d="M641 484Q652 478 662 486Q672 492 683 484V492Q683 498 677 498H647Q641 498 641 492Z" fill="{{SAGE_LT}}" stroke="none"/>
+<rect x="640" y="441" width="44" height="17" rx="6" fill="{{SAGE}}" stroke-width="{{M}}"/>
+<path d="M646 448H656" fill="none" stroke="{{HILITE}}" stroke-opacity=".7" stroke-width="{{M}}"/>
+<g data-icon="leaf"><path d="M654 482Q653 466 670 465Q671 480 654 482Z" fill="{{SAGE}}" stroke-width="{{D}}"/><path d="M657 480L667 468" fill="none" stroke-width="{{D}}"/></g>
+</g>
+</g>
+</svg>
