@@ -279,16 +279,11 @@ for i, args in enumerate([(718, 36, 60, 'MUSTARD', 'TERRA', 28), (764, 40, 44, N
                           (860, 44, 40, None, None, 36), (916, 36, 62, 'SAGE_LT', 'MUSTARD', 28), (962, 30, 54, None, None, 22)]):
     g.append(shelf_glass(f'shelfGlass{i + 1}', *args))
 
-# ведёрко со льдом (30-4): вариант A (в игре) — стальное ведёрко с горкой льда и щипцами; вариант B — стеклянная чаша со льдом (только кадр).
-# Переключатель одной строкой: BUCKET = 'B' (или переменная окружения BUCKET=B) собирает в decor.svg вариант B; вариант B всегда лежит ещё и в art-src/side-r/variants/bucket-b.svg (под тестом).
-BUCKET = os.environ.get('BUCKET', 'A')
+# ведёрко со льдом (30-4): стальное ведёрко с горкой льда и щипцами.
 # ряды кубиков: (центр x, центр y, сторона, поворот); ряд выше опирается на два кубика ряда ниже (шаг по y 8,5 → перекрытие ≥ 20 % площади)
 ICE_A = [(1200.5, 451, 15, -6), (1215.5, 451, 15, 4), (1230.5, 451, 15, -9), (1245.5, 451, 15, 7),
          (1208, 442.5, 15, 8), (1223, 442.5, 15, -5), (1238, 442.5, 15, 10),
          (1215.5, 434, 15, -10), (1230.5, 434, 15, 5)]
-ICE_B = [(1202, 483, 14, -6), (1216, 483, 14, 4), (1230, 483, 14, -8), (1244, 483, 14, 7),
-         (1209, 475, 14, 8), (1223, 475, 14, -5), (1237, 475, 14, 9),
-         (1216, 467, 14, -9), (1230, 467, 14, 5), (1223, 459, 14, 4)]
 
 
 def cube(cx, cy, s_, rot):
@@ -319,35 +314,13 @@ def bucket_a():
     return k
 
 
-def bucket_b():
-    k = ['<g data-bucket="B" data-rim="1193 457 60 10">',
-         f'<path data-layer="back" d="M1193 462Q1193 492 1223 492Q1253 492 1253 462Z" fill="{col("GLASS")}" fill-opacity=".55" stroke="none"/>',
-         ell(1223, 490.6, 22, 1.7, 'GLASS_DP', 'D').replace(' stroke-width', ' data-puddle="1" stroke-width', 1)]
-    k += [cube(*c) for c in ICE_B]
-    k += [f'<path data-layer="front" d="M1193 462Q1193 492 1223 492Q1253 492 1253 462A30 5 0 0 1 1193 462Z" fill="{col("GLASS")}" fill-opacity=".4" stroke="none"/>',
-          f'<path data-layer="stem" d="M1219 492L1220 500H1226L1227 492Z" fill="{col("GLASS")}" fill-opacity=".7" stroke-width="{sw("D")}"/>',
-          ell(1223, 502.5, 18, 3.5, 'GLASS', 'D'),
-          f'<path data-layer="outline" d="M1193 462Q1193 492 1223 492Q1253 492 1253 462" fill="none" stroke-width="{sw("M")}"/>',
-          ell(1223, 462, 30, 5, 'GLASS', 'M').replace('fill="{{GLASS}}"', 'fill="none"'),
-          f'<path data-layer="shine" d="M1197 468Q1198 482 1206 488" fill="none" stroke="{col("HILITE")}" stroke-opacity=".8" stroke-width="{sw("M")}"/>',
-          tongs(1230, 455, 1250, 465), '</g>']
-    return k
-
-
-def bucket_item(variant):
-    k = bucket_a() if variant == 'A' else bucket_b()
-    box = (1183, 425, 79, 81) if variant == 'A' else (1183, 450, 79, 56)
-    return item('iceBucket', box, k)
+def bucket_item():
+    return item('iceBucket', (1183, 425, 79, 81), bucket_a())
 
 
 body = (f'<g data-wrap="glassShelf" transform="{T(706, 706, 176)}">\n' + item('glassShelf', (706, 176, 296, 80), g) + '\n</g>\n'
-        + f'<g data-wrap="iceBucket" transform="{T(1182, 1168, 506)}">\n' + shadow(1223, 36) + '\n' + bucket_item(BUCKET) + '\n</g>\n')
-svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 520" data-part="decor" data-scale="{S}">\n<!--\n  Декор правой секции (30-2б): полка со стаканами (проектная рамка 706, 176, 296 × 80; верх y 176; шесть стаканов по общему порядку слоёв) и стальное ведёрко со льдом (без полотенца) (30-4, проектная 1183, 425, 79 × 81; вариант B — стеклянная чаша — переключается BUCKET). Окна нет. ×1,10 через transform обёрток data-wrap; рисуется в одной текстуре с фоном.\n-->\n'
+        + f'<g data-wrap="iceBucket" transform="{T(1182, 1168, 506)}">\n' + shadow(1223, 36) + '\n' + bucket_item() + '\n</g>\n')
+svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 520" data-part="decor" data-scale="{S}">\n<!--\n  Декор правой секции (30-2б): полка со стаканами (проектная рамка 706, 176, 296 × 80; верх y 176; шесть стаканов по общему порядку слоёв) и стальное ведёрко со льдом (без полотенца) (30-4, проектная 1183, 425, 79 × 81). Окна нет. ×1,10 через transform обёрток data-wrap; рисуется в одной текстуре с фоном.\n-->\n'
        f'<g stroke="{col("INK")}" stroke-linejoin="round" stroke-linecap="round">\n{body}</g>\n</svg>\n')
 open(f'{OUT}/decor.svg', 'w', encoding='utf-8', newline='').write(svg)
-# вариант B всегда рядом (data-out: проходит проверку палитры и толщин, в игру не попадает; тест test/artSrcSideR2.test.ts)
-os.makedirs(f'{OUT}/variants', exist_ok=True)
-vb = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="1160 400 120 120" data-out="bucket-b.svgf" data-scale="{S}">\n<!--\n  Вариант B ведёрка со льдом (30-4): стеклянная чаша на ножке со льдом, лужей и щипцами. Только для кадра, в игре вариант A (BUCKET).\n-->\n'
-      f'<g stroke="{col("INK")}" stroke-linejoin="round" stroke-linecap="round">\n<g data-wrap="iceBucket" transform="{T(1182, 1168, 506)}">\n' + shadow(1223, 36) + '\n' + bucket_item('B') + '\n</g>\n</g>\n</svg>\n')
-open(f'{OUT}/variants/bucket-b.svg', 'w', encoding='utf-8', newline='').write(vb)
 print('ok')

@@ -227,7 +227,7 @@ describe('шкала: станции боковых секций (×1,10)', () =
       }
     });
   }
-  test('ведёрко со льдом (30-4, вариант A): 86,9 × 89,1 px (проект 79 × 81 ×1,10) в допуске от реальных 19 × 19 см', () => {
+  test('ведёрко со льдом (30-4): 86,9 × 89,1 px (проект 79 × 81 ×1,10) в допуске от реальных 19 × 19 см', () => {
     const f = (parseItems(partsOf('R').decor?.svg ?? '').find((i) => i.id === 'iceBucket') as { final: { w: number; h: number } }).final;
     expect(Math.abs(f.w - 86.9)).toBeLessThanOrEqual(0.5);
     expect(Math.abs(f.h - 89.1)).toBeLessThanOrEqual(0.5);
