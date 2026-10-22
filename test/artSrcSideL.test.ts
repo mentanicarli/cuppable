@@ -2,53 +2,71 @@ import { describe, expect, test } from 'vitest';
 import PARTS_L from '../src/assets/art/bar-parts-left.json';
 import PAL from '../art-src/palette.json';
 import { SIDE_ARROW, SIDE_KEEP_OUT, SIDE_ZONES } from '../src/game/sections';
+import { hit, parseItems, union, type Box } from './helpers/sideArt';
 
-/* Блок 30-1: левая секция «Чайный бар». Тест разбирает собранные части (src/assets/art/bar-parts-left.json): состав, габариты предметов по таблице docs/art/sides/plan.md, зоны, свободные полосы, палитра, толщины, иконки.
-   Фактическую геометрию (getBBox) сверяет `node scripts/sides-preview.mjs out.png --bbox` (допуск 4 px): в юните браузера нет, поэтому здесь сверка объявленных рамок data-box. */
-type Box = { x: number; y: number; w: number; h: number };
+/* Блоки 30-1 и 30-2 (правки): левая секция «Чайный бар». Предметы нарисованы в проектных размерах плана и ×1,10 раскладываются transform-обёртками (data-wrap); тест сверяет проектные рамки (±4 px), параметры обёрток, итоговые рамки, зоны, свободные полосы, палитру, толщины (3,5 / 3 / 2 делятся на data-scale 1,1), иконки и этикетки.
+   Фактическую геометрию сверяет `node scripts/sides-preview.mjs out.png --bbox`. */
 const parts = PARTS_L as unknown as Record<string, { svg: string; box: Box; texts: unknown[] }>;
 const svgOf = (id: string): string => (parts[id] as { svg: string }).svg;
-const items = (id: string): Record<string, Box> => {
-  const r: Record<string, Box> = {};
-  for (const m of svgOf(id).matchAll(/data-item="(\w+)" data-box="([\d.]+) ([\d.]+) ([\d.]+) ([\d.]+)"/g)) r[m[1] as string] = { x: +(m[2] as string), y: +(m[3] as string), w: +(m[4] as string), h: +(m[5] as string) };
-  return r;
-};
-const hit = (a: Box, b: Box): boolean => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 const count = (s: string, sub: string): number => s.split(sub).length - 1;
 const near = (a: number, b: number, tol: number): boolean => Math.abs(a - b) <= tol;
+const S = 1.1;
 
-/** Таблица плана (разд. 1): габариты px и место. */
+/** Проектные размеры (план, разд. 1). */
 const WANT: Record<string, Record<string, Box>> = {
   tea: { kettle: { x: 118, y: 390, w: 74, h: 116 }, glassTeapot: { x: 200, y: 442, w: 70, h: 64 }, tinA: { x: 276, y: 450, w: 30, h: 56 }, tinB: { x: 308, y: 450, w: 30, h: 56 } },
   matcha: { tray: { x: 428, y: 496, w: 266, h: 16 }, kyusu: { x: 436, y: 438, w: 64, h: 60 }, bowl: { x: 512, y: 454, w: 70, h: 44 }, whisk: { x: 596, y: 446, w: 30, h: 52 }, jar: { x: 640, y: 440, w: 44, h: 58 } },
   powders: { stand: { x: 716, y: 484, w: 376, h: 26 }, jarCocoa: { x: 734, y: 392, w: 84, h: 92 }, jarChicory: { x: 826, y: 392, w: 84, h: 92 }, jarProtein: { x: 918, y: 392, w: 84, h: 92 } },
-  decor: { teaShelf: { x: 130, y: 232, w: 300, h: 74 }, roundWindow: { x: 1010, y: 150, w: 150, h: 150 }, plant: { x: 24, y: 400, w: 70, h: 106 } }
+  decor: { teaShelf: { x: 130, y: 232, w: 300, h: 74 }, plant: { x: 24, y: 400, w: 70, h: 106 } }
 };
+/** Раскладка ×1,10: куда переехал левый край проектного ряда (translate(a b) scale(1,1) translate(c d)). */
+const LAYOUT: Record<string, { a: number; b: number; c: number; d: number }> = {
+  tea: { a: 121, b: 506, c: -117, d: -506 },
+  matcha: { a: 440, b: 506, c: -428, d: -506 },
+  powders: { a: 780, b: 506, c: -716, d: -506 },
+  teaShelf: { a: 140, b: 232, c: -130, d: -232 },
+  plant: { a: 20, b: 506, c: -24, d: -506 }
+};
+const items = (part: string): ReturnType<typeof parseItems> => parseItems(svgOf(part));
+const finals = (part: string): Box[] => items(part).map((i) => i.final);
 
-describe('30-1: левая секция, состав частей', () => {
+describe('30-1/30-2: левая секция, состав частей', () => {
   test('ровно четыре части: tea, matcha, powders, decor (остатков старых нет)', () => {
     expect(Object.keys(parts).sort()).toEqual(['decor', 'matcha', 'powders', 'tea']);
     for (const k of Object.keys(parts)) expect((parts[k] as { texts: unknown[] }).texts).toEqual([]);
   });
-  test('число предметов-групп по частям', () => {
-    expect(Object.keys(items('tea'))).toHaveLength(4);
-    expect(Object.keys(items('matcha'))).toHaveLength(5);
-    expect(Object.keys(items('powders'))).toHaveLength(5);
-    expect(Object.keys(items('decor'))).toHaveLength(3);
+  test('число предметов-групп по частям; окна нет', () => {
+    expect(items('tea')).toHaveLength(4);
+    expect(items('matcha')).toHaveLength(5);
+    expect(items('powders')).toHaveLength(5);
+    expect(items('decor').map((i) => i.id).sort()).toEqual(['plant', 'teaShelf']);
+    expect(svgOf('decor')).not.toContain('roundWindow');
+    expect(svgOf('decor')).not.toContain('circle');
   });
-  test('иконки на банках: чай 2, матча 1, порошки 3, полка с банками 5; слов нет', () => {
-    expect(count(svgOf('tea'), 'data-icon=')).toBe(2);
+  test('иконки: у чая и банок на полке нет (там этикетки), у матчи 1, у порошков 3; слов нет', () => {
+    expect(count(svgOf('tea'), 'data-icon=')).toBe(0);
+    expect(count(svgOf('decor'), 'data-icon=')).toBe(0);
     expect(count(svgOf('matcha'), 'data-icon=')).toBe(1);
     expect(count(svgOf('powders'), 'data-icon=')).toBe(3);
-    expect(count(svgOf('decor'), 'data-icon=')).toBe(5);
     for (const k of Object.keys(parts)) expect(svgOf(k)).not.toContain('<text');
+  });
+  test('этикетки на банках чая: две у станции, пять на полке; у каждой бумажная плашка и две строчки', () => {
+    expect(count(svgOf('tea'), 'data-label=')).toBe(2);
+    expect(count(svgOf('decor'), 'data-label=')).toBe(5);
+    for (const k of ['tea', 'decor']) {
+      for (const seg of svgOf(k).split('data-label="').slice(1)) {
+        const g = seg.slice(0, seg.indexOf('</g>'));
+        expect(g.toLowerCase()).toContain('#fff8ec');
+        expect(count(g, 'M')).toBe(2); /* два отрезка-строчки */
+      }
+    }
   });
 });
 
-describe('30-1: габариты по таблице плана (±4 px)', () => {
+describe('30-1/30-2: проектные размеры и раскладка ×1,10', () => {
   for (const [part, want] of Object.entries(WANT)) {
-    test(`${part}: рамки предметов`, () => {
-      const got = items(part);
+    test(`${part}: проектные рамки предметов ±4 px`, () => {
+      const got = Object.fromEntries(items(part).map((i) => [i.id, i.design]));
       for (const [id, w] of Object.entries(want)) {
         const g = got[id] as Box;
         expect(g, `${part}.${id}`).toBeDefined();
@@ -56,51 +74,81 @@ describe('30-1: габариты по таблице плана (±4 px)', () =>
       }
     });
   }
-  test('предметы станций стоят на заднем ряду: низ рамки не ниже 512 (подставки и поднос)', () => {
-    for (const part of ['tea', 'matcha', 'powders']) for (const [id, b] of Object.entries(items(part))) expect(b.y + b.h, `${part}.${id}`).toBeLessThanOrEqual(512);
+  test('масштаб ×1,10 и положения обёрток по таблице раскладки', () => {
+    for (const part of Object.keys(parts)) {
+      for (const it of items(part)) {
+        expect(it.s, `${part}.${it.id} масштаб`).toBeCloseTo(S, 5);
+        const key = part === 'decor' ? it.id : part;
+        const L = LAYOUT[key] as { a: number; b: number; c: number; d: number };
+        expect([it.a, it.b, it.c, it.d], `${part}.${it.id}`).toEqual([L.a, L.b, L.c, L.d]);
+      }
+    }
   });
-  test('box части содержит рамки всех её предметов', () => {
+  test('предметы станций стоят на заднем ряду: низ итоговой рамки 506…514', () => {
+    for (const part of ['tea', 'matcha', 'powders']) {
+      const u = union(finals(part));
+      expect(u.y + u.h, part).toBeGreaterThanOrEqual(505);
+      expect(u.y + u.h, part).toBeLessThanOrEqual(514);
+    }
+  });
+  test('порядок слева направо: растение, чай, матча, порошки; промежутки между рамками станций ≥ 12 px', () => {
+    const plant = (items('decor').find((i) => i.id === 'plant') as { final: Box }).final;
+    const us = ['tea', 'matcha', 'powders'].map((p) => union(finals(p)));
+    expect(plant.x + plant.w).toBeLessThan((us[0] as Box).x);
+    for (let i = 0; i < us.length - 1; i++) expect((us[i + 1] as Box).x - ((us[i] as Box).x + (us[i] as Box).w)).toBeGreaterThanOrEqual(12);
+  });
+  test('box части содержит итоговые рамки всех её предметов', () => {
     for (const part of Object.keys(parts)) {
       const pb = (parts[part] as { box: Box }).box;
-      for (const [id, b] of Object.entries(items(part))) {
-        expect(b.x >= pb.x && b.y >= pb.y && b.x + b.w <= pb.x + pb.w && b.y + b.h <= pb.y + pb.h, `${part}.${id} внутри box части`).toBe(true);
+      for (const it of items(part)) {
+        const f = it.final;
+        expect(f.x >= pb.x - 1 && f.y >= pb.y - 1 && f.x + f.w <= pb.x + pb.w + 1 && f.y + f.h <= pb.y + pb.h + 1, `${part}.${it.id} внутри box части`).toBe(true);
       }
     }
   });
 });
 
-describe('30-1: предметы в зонах и вне занятых полос', () => {
+describe('30-1/30-2: предметы в зонах и вне занятых полос', () => {
   const zone = (id: string): Box => SIDE_ZONES.find((z) => z.id === id) as Box;
   test('предметы станции укладываются в её зону ±8 px', () => {
     for (const part of ['tea', 'matcha', 'powders']) {
       const z = zone(part);
-      for (const [id, b] of Object.entries(items(part))) {
-        expect(b.x >= z.x - 8 && b.y >= z.y - 8 && b.x + b.w <= z.x + z.w + 8 && b.y + b.h <= z.y + z.h + 8, `${part}.${id} в зоне`).toBe(true);
+      for (const it of items(part)) {
+        const b = it.final;
+        expect(b.x >= z.x - 8 && b.y >= z.y - 8 && b.x + b.w <= z.x + z.w + 8 && b.y + b.h <= z.y + z.h + 8, `${part}.${it.id} в зоне`).toBe(true);
       }
     }
   });
-  test('зоны L не пересекаются друг с другом, с интерфейсом и со стрелкой', () => {
+  test('зоны L не пересекаются (зазор ≥ 12), не заходят в интерфейс и стрелку', () => {
     const zs = SIDE_ZONES.filter((z) => z.section === 'L');
     for (let i = 0; i < zs.length; i++) {
       const a = zs[i] as Box & { id: string };
-      for (let j = i + 1; j < zs.length; j++) expect(hit(a, zs[j] as Box)).toBe(false);
+      for (let j = i + 1; j < zs.length; j++) {
+        const o = zs[j] as Box;
+        expect(Math.max(o.x - (a.x + a.w), a.x - (o.x + o.w)), `${a.id}`).toBeGreaterThanOrEqual(12);
+      }
       for (const u of SIDE_KEEP_OUT) if (u.always) expect(hit(a, u), `зона ${a.id} и «${u.name}»`).toBe(false);
       expect(hit(a, SIDE_ARROW.L)).toBe(false);
+      expect(a.y + a.h).toBeLessThanOrEqual(515);
     }
   });
-  test('декор не заходит в занятые полосы (билет, в том числе развёрнутый, коуч, мини-карта, стрелка)', () => {
-    for (const [id, b] of Object.entries(items('decor'))) {
-      for (const u of SIDE_KEEP_OUT) expect(hit(b, u), `декор ${id} и «${u.name}»`).toBe(false);
-      expect(hit(b, SIDE_ARROW.L), `декор ${id} и стрелка`).toBe(false);
-      if (b.x < 494) expect(b.y).toBeGreaterThanOrEqual(232);
+  test('предметы и декор не заходят в занятые полосы (билет, в том числе развёрнутый, коуч, мини-карта, стрелка); выше базы 514', () => {
+    for (const part of Object.keys(parts)) {
+      for (const it of items(part)) {
+        for (const u of SIDE_KEEP_OUT) expect(hit(it.final, u), `${part}.${it.id} и «${u.name}»`).toBe(false);
+        expect(hit(it.final, SIDE_ARROW.L), `${part}.${it.id} и стрелка`).toBe(false);
+        expect(it.final.y + it.final.h, `${part}.${it.id}`).toBeLessThanOrEqual(514);
+        if (it.final.x < 494 && part === 'decor') expect(it.final.y, `${part}.${it.id}`).toBeGreaterThanOrEqual(232);
+      }
     }
   });
 });
 
-describe('30-1: язык эталона', () => {
+describe('30-1/30-2: язык эталона', () => {
   const colors = new Set(Object.values(PAL.colors).map((c) => c.toLowerCase()));
-  const widths = new Set(Object.values(PAL.stroke).map(String));
-  test('цвета только из палитры, толщины только L/M/D (3,5 / 3 / 2), без градиентов', () => {
+  /* art-build делит толщины на data-scale (1,1), обёртка ×1,1 возвращает 3,5 / 3 / 2 px на экране */
+  const widths = new Set(Object.values(PAL.stroke).map((v) => String(+(v / S).toFixed(2))));
+  test('цвета только из палитры, толщины только L/M/D (с учётом ×1,10), без градиентов', () => {
     for (const k of Object.keys(parts)) {
       const s = svgOf(k);
       for (const m of s.matchAll(/(?:fill|stroke)="(#[0-9a-fA-F]{6})"/g)) expect(colors.has((m[1] as string).toLowerCase()), `${k}: цвет ${m[1]}`).toBe(true);

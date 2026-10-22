@@ -1,36 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 520" data-part="decor" data-scale="1">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 520" data-part="decor" data-scale="1.1">
 <!--
-  Декор левой секции (блок 30-1), рисуется в одной текстуре с фоном: полка с пятью жестяными банками чая (130, 232, 300 × 74; доска y 296–306), круглое окно 150 × 150 (1010, 150), растение на столешнице 70 × 106 (24, 400). Выше y 232 левее x 494 ничего нет (развёрнутый билет).
+  Декор левой секции (блок 30-1), рисуется в одной текстуре с фоном: полка с пятью жестяными банками чая и этикетками (проектные 130, 232, 300 × 74), растение (проектные 24, 400, 70 × 106). Окна нет (решение владельца 30-2). Предметы проектных размеров ×1,10 через transform обёрток data-wrap (якорь: база y 506; полка — верх y 232). Выше y 232 левее x 494 ничего нет (развёрнутый билет).
 -->
 <g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<g data-wrap="teaShelf" transform="translate(140 232) scale(1.1) translate(-130 -232)">
 <g data-item="teaShelf" data-box="130 232 300 74">
 <rect x="130" y="296" width="300" height="10" rx="3" fill="{{WOOD}}" stroke-width="{{M}}"/>
 <path d="M136 299H424" fill="none" stroke="{{WOOD_HI}}" stroke-width="{{D}}"/>
 <rect x="136" y="244" width="48" height="52" rx="5" fill="{{TERRA}}" stroke-width="{{M}}"/>
 <rect x="135" y="234" width="50" height="12" rx="5" fill="{{RUG}}" stroke-width="{{M}}"/>
-<g data-icon="leaf"><path d="M151 284Q150 267 168 266Q169 282 151 284Z" fill="{{PAPER}}" stroke-width="{{D}}"/><path d="M154 282L165 269" fill="none" stroke-width="{{D}}"/></g>
+<g data-label="tea"><rect x="147.0" y="272" width="26" height="16" rx="2.5" fill="{{PAPER}}" stroke-width="{{D}}"/><path d="M149.5 278.08H170.5M149.5 283.52H162.5" fill="none" stroke-width="{{D}}"/></g>
 <rect x="196" y="252" width="48" height="44" rx="5" fill="{{PAPER}}" stroke-width="{{M}}"/>
 <rect x="195" y="242" width="50" height="12" rx="5" fill="{{KRAFT}}" stroke-width="{{M}}"/>
-<g data-icon="flower"><circle cx="220" cy="275" r="3" fill="{{MUSTARD}}" stroke-width="{{D}}"/><path d="M220 271V264M220 279V286M216 275H209M224 275H231" fill="none" stroke="{{PINK}}" stroke-width="{{M}}"/></g>
+<g data-label="tea"><rect x="207.0" y="275" width="26" height="13" rx="2.5" fill="{{PAPER}}" stroke-width="{{D}}"/><path d="M209.5 279.94H230.5M209.5 284.36H222.5" fill="none" stroke-width="{{D}}"/></g>
 <rect x="256" y="240" width="48" height="56" rx="5" fill="{{SAGE}}" stroke-width="{{M}}"/>
 <rect x="255" y="232" width="50" height="12" rx="5" fill="{{SAGE_LT}}" stroke-width="{{M}}"/>
-<g data-icon="leaf"><path d="M271 284Q270 267 288 266Q289 282 271 284Z" fill="{{PAPER}}" stroke-width="{{D}}"/><path d="M274 282L285 269" fill="none" stroke-width="{{D}}"/></g>
+<g data-label="tea"><rect x="267.0" y="271" width="26" height="17" rx="2.5" fill="{{PAPER}}" stroke-width="{{D}}"/><path d="M269.5 277.46H290.5M269.5 283.24H282.5" fill="none" stroke-width="{{D}}"/></g>
 <rect x="316" y="254" width="48" height="42" rx="5" fill="{{DUSTY}}" stroke-width="{{M}}"/>
 <rect x="315" y="245" width="50" height="11" rx="5" fill="{{GLASS}}" stroke-width="{{M}}"/>
-<g data-icon="berry"><circle cx="333" cy="278" r="4.5" fill="{{PINK}}" stroke-width="{{D}}"/><circle cx="345" cy="278" r="4.5" fill="{{PINK}}" stroke-width="{{D}}"/><circle cx="339" cy="269" r="4.5" fill="{{PINK}}" stroke-width="{{D}}"/></g>
+<g data-label="tea"><rect x="327.0" y="275" width="26" height="13" rx="2.5" fill="{{PAPER}}" stroke-width="{{D}}"/><path d="M329.5 279.94H350.5M329.5 284.36H342.5" fill="none" stroke-width="{{D}}"/></g>
 <rect x="376" y="246" width="48" height="50" rx="5" fill="{{MUSTARD}}" stroke-width="{{M}}"/>
 <rect x="375" y="237" width="50" height="11" rx="5" fill="{{BAKE}}" stroke-width="{{M}}"/>
-<g data-icon="leaf"><path d="M391 284Q390 267 408 266Q409 282 391 284Z" fill="{{PAPER}}" stroke-width="{{D}}"/><path d="M394 282L405 269" fill="none" stroke-width="{{D}}"/></g>
+<g data-label="tea"><rect x="387.0" y="273" width="26" height="15" rx="2.5" fill="{{PAPER}}" stroke-width="{{D}}"/><path d="M389.5 278.7H410.5M389.5 283.8H402.5" fill="none" stroke-width="{{D}}"/></g>
 </g>
-<g data-item="roundWindow" data-box="1010 150 150 150">
-<circle cx="1085" cy="225" r="75" fill="{{WOOD_SH}}" stroke-width="{{L}}"/>
-<circle cx="1085" cy="225" r="63" fill="{{GLASS}}" stroke-width="{{M}}"/>
-<circle cx="1108" cy="199" r="9" fill="{{MUSTARD}}" stroke-width="{{D}}"/>
-<path d="M1030 232Q1050 213 1070 230Q1085 218 1105 240L1112 262Q1085 285 1050 276Q1030 265 1030 232Z" fill="{{SAGE_LT}}" stroke="none"/>
-<path d="M1040 198Q1048 190 1060 195Q1068 188 1078 196Q1072 203 1060 201Q1050 205 1040 198Z" fill="{{PAPER}}" stroke-width="{{D}}"/>
-<path d="M1085 162V288M1022 225H1148" fill="none" stroke="{{WOOD_SH}}" stroke-width="{{M}}"/>
-<path d="M1044 192Q1060 172 1086 168" fill="none" stroke="{{HILITE}}" stroke-opacity=".85" stroke-width="{{M}}"/>
 </g>
+<g data-wrap="plant" transform="translate(20 506) scale(1.1) translate(-24 -506)">
 <g data-item="plant" data-box="24 400 70 106">
 <ellipse cx="59" cy="507" rx="30" ry="4" fill="{{SHADOW}}" fill-opacity=".22" stroke="none"/>
 <path d="M59 468Q48 440 52 408Q58 430 63 468Z" fill="{{SAGE}}" stroke-width="{{M}}"/>
@@ -42,6 +36,7 @@
 <path d="M36 466H82L77 506H41Z" fill="{{TERRA}}" stroke-width="{{M}}"/>
 <rect x="33" y="460" width="52" height="10" rx="4" fill="{{RUG}}" stroke-width="{{M}}"/>
 <path d="M44 476L47 500" fill="none" stroke="{{HILITE}}" stroke-opacity=".5" stroke-width="{{M}}"/>
+</g>
 </g>
 </g>
 </svg>

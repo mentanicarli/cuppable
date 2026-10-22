@@ -215,8 +215,8 @@ describe('секции: подсказки и тосты (Б1-3)', () => {
       for (const f of fixed) expect(hit(z, f), `${z.id} × ${f.n}`).toBe(false);
       for (const o of SIDE_ZONES) if (o !== z && o.section === z.section) expect(hit(z, o), `${z.id} × ${o.id}`).toBe(false);
     }
-    expect(sideZoneCenter(SIDE_ZONES[0] as (typeof SIDE_ZONES)[number])).toEqual([-1280 + 112 + 113, 438]);
-    expect(sideZoneCenter(SIDE_ZONES[8] as (typeof SIDE_ZONES)[number])).toEqual([1280 + 992 + 75, 458]);
+    expect(sideZoneCenter(SIDE_ZONES[0] as (typeof SIDE_ZONES)[number])).toEqual([-1280 + 117 + 125.5, 364 + 73]);
+    expect(sideZoneCenter(SIDE_ZONES[8] as (typeof SIDE_ZONES)[number])).toEqual([1280 + 991 + 81, 383 + 63.5]);
   });
 
   test('stationToast совпадает с таблицей для всех достижимых from', () => {

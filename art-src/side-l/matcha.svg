@@ -1,8 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="422 430 278 90" data-part="matcha" data-scale="1">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="434 424 306 100" data-part="matcha" data-scale="1.1">
 <!--
   Набор для матчи (блок 30-1), секция L. Зона 428, 428, 266 × 84. Деревянный поднос 266 × 16 (y 496–512), на нём слева направо: чайничек 64 × 60 (436–500), чаша 70 × 44 (512–582), венчик 30 × 52 (596–626), банка матчи 44 × 58 (640–684, листик на этикетке). Подвижного нет.
 -->
 <g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<g data-wrap="matcha" transform="translate(440 506) scale(1.1) translate(-428 -506)">
 <ellipse cx="561" cy="513" rx="136" ry="4" fill="{{SHADOW}}" fill-opacity=".22" stroke="none"/>
 <g data-item="tray" data-box="428 496 266 16">
 <rect x="428" y="496" width="266" height="16" rx="5" fill="{{WOOD}}" stroke-width="{{M}}"/>
@@ -37,6 +38,7 @@
 <rect x="640" y="441" width="44" height="17" rx="6" fill="{{SAGE}}" stroke-width="{{M}}"/>
 <path d="M646 448H656" fill="none" stroke="{{HILITE}}" stroke-opacity=".7" stroke-width="{{M}}"/>
 <g data-icon="leaf"><path d="M654 482Q653 466 670 465Q671 480 654 482Z" fill="{{SAGE}}" stroke-width="{{D}}"/><path d="M657 480L667 468" fill="none" stroke-width="{{D}}"/></g>
+</g>
 </g>
 </g>
 </svg>

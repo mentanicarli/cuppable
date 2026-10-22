@@ -26,13 +26,22 @@ const page = await b.newPage({ viewport: { width: crop[2], height: crop[3] }, de
 await page.setContent(`<body style="margin:0;overflow:hidden"><div style="width:${crop[2]}px;height:${crop[3]}px;overflow:hidden;position:relative;${gray ? 'filter:grayscale(1)' : ''}"><div style="position:absolute;left:${-crop[0]}px;top:${-crop[1]}px">${svg}</div></div></body>`);
 fs.mkdirSync(path.dirname(out), { recursive: true });
 if (process.argv.includes('--bbox')) {
-  const res = await page.evaluate(() => [...document.querySelectorAll('[data-item]')].map((g) => {
-    const bb = g.getBBox();
-    return { id: g.getAttribute('data-item'), box: g.getAttribute('data-box'), got: [bb.x, bb.y, bb.width, bb.height].map((v) => Math.round(v * 10) / 10) };
-  }));
+  /* фактическая геометрия (getBoundingClientRect, итоговые координаты секции) против data-box, пересчитанного через transform обёртки data-wrap (translate(a b) scale(s) translate(-c -d)) */
+  const res = await page.evaluate(() => {
+    const o = document.querySelector('svg').getBoundingClientRect();
+    return [...document.querySelectorAll('[data-item]')].map((g) => {
+      const r = g.getBoundingClientRect();
+      const w = g.closest('[data-wrap]');
+      const m = w ? /translate\(([-\d.]+) ([-\d.]+)\) scale\(([-\d.]+)\) translate\(([-\d.]+) ([-\d.]+)\)/.exec(w.getAttribute('transform')) : null;
+      const [x, y, bw, bh] = g.getAttribute('data-box').split(' ').map(Number);
+      const f = m ? { a: +m[1], b: +m[2], s: +m[3], c: +m[4], d: +m[5] } : { a: 0, b: 0, s: 1, c: 0, d: 0 };
+      const want = [f.a + f.s * (x + f.c), f.b + f.s * (y + f.d), f.s * bw, f.s * bh].map((v) => Math.round(v * 10) / 10);
+      return { id: g.getAttribute('data-item'), want, got: [r.x - o.x, r.y - o.y, r.width, r.height].map((v) => Math.round(v * 10) / 10) };
+    });
+  });
   let bad = 0;
   for (const r of res) {
-    const want = r.box.split(' ').map(Number);
+    const want = r.want;
     const tol = r.got.every((v, i) => Math.abs(v - want[i]) <= 4);
     if (!tol) bad++;
     console.log((tol ? 'ok  ' : 'ОШИБКА ') + r.id.padEnd(14) + 'ожидалось ' + want.join(' ') + '  получено ' + r.got.join(' '));

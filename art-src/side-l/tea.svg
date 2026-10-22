@@ -1,8 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="106 384 238 132" data-part="tea" data-scale="1">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="115 372 256 150" data-part="tea" data-scale="1.1">
 <!--
   Чайная станция (блок 30-1), секция L, секция-локальные координаты. Зона 112, 370, 226 × 136. Электрочайник с длинным носиком (118–192 × 390–506, 74 × 116), стеклянный заварочник с красным чаем (200–272 × 442–506, ≈ 70 × 64), две банки чая 30 × 56 (276–306 и 308–338, листик на крышке). База y 506. Без подписей, без пара.
 -->
 <g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<g data-wrap="tea" transform="translate(121 506) scale(1.1) translate(-117 -506)">
 <ellipse cx="228" cy="508" rx="116" ry="5" fill="{{SHADOW}}" fill-opacity=".2" stroke="none"/>
 <g data-item="kettle" data-box="118 390 74 116">
 <path d="M133 486Q117 470 121 440Q122 433 117 429L120 424Q131 431 129 446Q127 466 141 478Z" fill="{{DARK}}" stroke-width="{{M}}"/>
@@ -29,13 +30,14 @@
 <rect x="277" y="462" width="28" height="44" rx="5" fill="{{TERRA}}" stroke-width="{{M}}"/>
 <rect x="276" y="451" width="30" height="13" rx="5" fill="{{RUG}}" stroke-width="{{M}}"/>
 <path d="M281 470L281 500" fill="none" stroke="{{HILITE}}" stroke-opacity=".5" stroke-width="{{M}}"/>
-<g data-icon="leaf"><path d="M284 494Q283 479 298 478Q299 492 284 494Z" fill="{{PAPER}}" stroke-width="{{D}}"/><path d="M286 492L295 482" fill="none" stroke-width="{{D}}"/></g>
+<g data-label="tea"><rect x="283" y="478" width="16" height="13" rx="2.5" fill="{{PAPER}}" stroke-width="{{D}}"/><path d="M285.5 482.94H296.5M285.5 487.36H292" fill="none" stroke-width="{{D}}"/></g>
 </g>
 <g data-item="tinB" data-box="308 450 30 56">
 <rect x="309" y="462" width="28" height="44" rx="5" fill="{{SAGE}}" stroke-width="{{M}}"/>
 <rect x="308" y="451" width="30" height="13" rx="5" fill="{{SAGE_LT}}" stroke-width="{{M}}"/>
 <path d="M313 470L313 500" fill="none" stroke="{{HILITE}}" stroke-opacity=".5" stroke-width="{{M}}"/>
-<g data-icon="leaf"><path d="M316 494Q315 479 330 478Q331 492 316 494Z" fill="{{PAPER}}" stroke-width="{{D}}"/><path d="M318 492L327 482" fill="none" stroke-width="{{D}}"/></g>
+<g data-label="tea"><rect x="315" y="478" width="16" height="13" rx="2.5" fill="{{PAPER}}" stroke-width="{{D}}"/><path d="M317.5 482.94H328.5M317.5 487.36H324" fill="none" stroke-width="{{D}}"/></g>
+</g>
 </g>
 </g>
 </svg>

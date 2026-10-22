@@ -166,15 +166,15 @@ export const zonesInSideSections = (dev: boolean): boolean => sectionsPlayable(d
 /** Зона станции боковой секции в секция-локальных координатах (docs/design/sections.md, раздел 13, «Промпт 4»). */
 export interface SideZone { id: string; section: 'L' | 'R'; x: number; y: number; w: number; h: number }
 export const SIDE_ZONES: readonly SideZone[] = [
-  { id: 'tea', section: 'L', x: 112, y: 370, w: 226, h: 136 },
-  { id: 'matcha', section: 'L', x: 428, y: 428, w: 266, h: 84 },
-  { id: 'powders', section: 'L', x: 716, y: 392, w: 376, h: 118 },
-  { id: 'juice', section: 'R', x: 66, y: 296, w: 152, h: 214 },
-  { id: 'whipper', section: 'R', x: 262, y: 328, w: 134, h: 182 },
-  { id: 'foamer', section: 'R', x: 418, y: 344, w: 104, h: 166 },
-  { id: 'blender', section: 'R', x: 552, y: 288, w: 130, h: 220 },
-  { id: 'boba', section: 'R', x: 716, y: 388, w: 232, h: 122 },
-  { id: 'shaker', section: 'R', x: 992, y: 408, w: 150, h: 100 }
+  { id: 'tea', section: 'L', x: 117, y: 364, w: 251, h: 146 },
+  { id: 'matcha', section: 'L', x: 436, y: 417, w: 301, h: 95 },
+  { id: 'powders', section: 'L', x: 776, y: 366, w: 422, h: 146 },
+  { id: 'juice', section: 'R', x: 14, y: 261, w: 167, h: 249 },
+  { id: 'whipper', section: 'R', x: 200, y: 300, w: 148, h: 210 },
+  { id: 'foamer', section: 'R', x: 367, y: 320, w: 116, h: 190 },
+  { id: 'blender', section: 'R', x: 497, y: 256, w: 146, h: 254 },
+  { id: 'boba', section: 'R', x: 658, y: 362, w: 310, h: 148 },
+  { id: 'shaker', section: 'R', x: 991, y: 383, w: 162, h: 127 }
 ];
 
 /** Что интерфейс занимает в боковой секции (экранные координаты = секция-локальные, камера стоит на секции); предметы и зоны сюда не заходят (docs/art/sides/plan.md, разд. 2). `always: false` — только по клику (развёрнутый билет): декору выше y 232 нельзя. */

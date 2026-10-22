@@ -1,8 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="710 386 388 132" data-part="powders" data-scale="1">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="774 372 432 160" data-part="powders" data-scale="1.1">
 <!--
   Полка порошков (блок 30-1), секция L. Зона 716, 392, 376 × 118. Ступенчатая подставка 376 × 26 (y 484–510), на ней три стеклянные банки 84 × 92 с зажимной крышкой и табличкой-иконкой (какао — зерно, цикорий — цветок, протеин — гантель) и мерный стаканчик с ложкой справа. Подвижного нет.
 -->
 <g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<g data-wrap="powders" transform="translate(780 506) scale(1.1) translate(-716 -506)">
 <ellipse cx="904" cy="511" rx="192" ry="4" fill="{{SHADOW}}" fill-opacity=".22" stroke="none"/>
 <g data-item="stand" data-box="716 484 376 26">
 <rect x="716" y="498" width="376" height="12" rx="4" fill="{{WOOD}}" stroke-width="{{M}}"/>
@@ -45,6 +46,7 @@
 <ellipse cx="1035" cy="442" rx="19" ry="3.5" fill="{{GLASS_DP}}" stroke-width="{{D}}"/>
 <path d="M1024 448L1026 474" fill="none" stroke="{{HILITE}}" stroke-opacity=".8" stroke-width="{{M}}"/>
 <path d="M1038 462H1046M1038 470H1044" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
+</g>
 </g>
 </g>
 </svg>
