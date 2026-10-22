@@ -33,7 +33,11 @@ const STEP0 = process.env.STEP === '0';
     const go = async (id) => { await p.evaluate(id => window.__sec.go(id, true), id); await p.waitForTimeout(900); };
     await p.waitForTimeout(800);
     await over({ pf: PF.grinder, cof: false, dose: 0, pitH: 40 });
-    if (STEP0) {
+    if (process.env.HIDE) {
+      /* без стены и столешницы: у старой сборки скрыт первый спрайт (static), у новой первые два (wall, counterTop); всё остальное должно совпасть побитово */
+      await p.evaluate((m) => { const ch = __dbg.WORLD.bar.world.children; ch[2].visible = false; if (m === 'new') ch[3].visible = false; }, process.env.HIDE);
+      await p.waitForTimeout(500); await shot('center_hidden', 0, 0, 1280, 720, `${out}/hidden_2x.png`);
+    } else if (STEP0) {
       await shot('syrup_labels', 850, 160, 240, 180, `${out}/syrup_labels_${suffix}.png`);
       await shot('milk_label', 1050, 230, 220, 290, `${out}/milk_label_${suffix}.png`);
       if (suffix === '2x') await shot('center_milk', 0, 0, 1280, 720, `${out}/center_milk_2x.png`);
@@ -42,12 +46,12 @@ const STEP0 = process.env.STEP === '0';
       await milk(false); await shot('center_nomilk', 0, 0, 1280, 720); await milk(true);
     } else {
       /* стыки: правая полоса боковой секции (камера на ней) и левая полоса центра рядом; то же справа */
-      const strip = async (sec, x, w, name) => { await go(sec); await shot(name, x, 0, w, 720, `${out}/_${name}.png`); };
+      const strip = async (sec, x, w, name) => { await go(sec); await shot(name, x, 380, w, 260, `${out}/_${name}.png`); };
       await strip('L', 1240, 40, 'L_edge'); await strip('C', 0, 40, 'C_left'); await strip('C', 1240, 40, 'C_right'); await strip('R', 0, 40, 'R_edge'); await go('C');
       const img = n => 'data:image/png;base64,' + fs.readFileSync(`${out}/_${n}.png`).toString('base64');
       const c = await ctx.newPage();
       for (const [name, a, bb] of [['seam_left', 'L_edge', 'C_left'], ['seam_right', 'C_right', 'R_edge']]) {
-        await c.setContent(`<body style="margin:0;background:#fff"><div style="display:flex;gap:0;background:#f0f"><img style="display:block;width:160px" src="${img(a)}"><img style="display:block;width:160px" src="${img(bb)}"></div>`); await c.waitForTimeout(300);
+        await c.setContent(`<body style="margin:0;background:#fff"><div style="display:inline-flex;gap:0;background:#f0f"><img style="display:block;width:80px" src="${img(a)}"><img style="display:block;width:80px" src="${img(bb)}"></div>`); await c.waitForTimeout(300);
         await c.locator('div').screenshot({ path: `${out}/${tag}_${name}_4x.png` });
       }
       await c.close();

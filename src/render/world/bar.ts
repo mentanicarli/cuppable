@@ -6,6 +6,7 @@ import { BAR_UNIT, drinkPx, geomOf, glassHalfWidth, type CeramicGeom, type Glass
 import { specOf, type DrinkSpec, type ModelRef } from '../../game/drinkModel';
 import { SECTION_CAM, SECTION_NAMES, SECTION_W, SIDE_ZONES, stationOfZone, type SectionsOpen } from '../../game/sections';
 import PAL from '../../../art-src/palette.json';
+import { counterTopSvg, wallSvg, type Fmt } from '../../game/backdrop';
 
 interface Box { x: number; y: number; w: number; h: number }
 interface TextSpec { t: string; x: number; y: number; size: number; weight: string; fill: string; family: string; tl: number | null }
@@ -85,15 +86,13 @@ class ModelTex {
 /** Боковая секция (Б1-1): плашка-заглушка вместо будущего арта (этап 30). Текстуры живут, пока секция открыта и камера на ней или на соседней остановке. */
 interface SideSection { c: Container; tex: Texture | null; label: Text | null; names: Text[]; loading: boolean }
 
-/** Заглушка фона боковой секции: стена в полоску со смещением (шов с центром без разрыва ритма, sections.md 1.2), тумба, плашка под подпись. Только палитра art-src. */
+/** Цвета и толщины палитры для общей функции стены и столешницы (src/game/backdrop.ts). */
+const PAL_FMT: Fmt = { col: (n) => (PAL.colors as Record<string, string>)[n] as string, w: (n) => String(PAL.stroke[n]) };
+
+/** Заглушка фона боковой секции (блок 29-4): стена и столешница той же функцией и теми же числами, что у центра (полосы шаг 130 со смещением 40 / 80, стыки досок через 640), поэтому на стыке секций нет шва; фасад тумбы и нос плиты те же части, что в центре. Плашка с подписью и штриховые рамки станций остаются до блока 30. */
 function placeholderSvg(id: 'L' | 'R'): string {
   const C = PAL.colors;
-  const off = id === 'L' ? 40 : 80;
-  let stripes = '';
-  for (let x = off - 130; x < SECTION_W + 130; x += 130) stripes += `<rect x="${x}" y="0" width="65" height="472" fill="${C.KRAFT_SH}" opacity="0.55"/>`;
-  return `<rect width="${SECTION_W}" height="720" fill="${C.KRAFT}"/>${stripes}`
-    + `<rect x="-6" y="472" width="${SECTION_W + 12}" height="140" fill="${C.TOP}" stroke="${C.INK}" stroke-width="3.5"/>`
-    + `<rect x="-6" y="612" width="${SECTION_W + 12}" height="130" fill="${C.WOOD}" stroke="${C.INK}" stroke-width="3.5"/>`
+  return wallSvg(id, PAL_FMT) + counterTopSvg(PAL_FMT) + (P.counterFront as Part).svg + (P.counterNose as Part).svg
     + `<rect x="${SECTION_W / 2 - 220}" y="170" width="440" height="90" rx="22" fill="${C.PAPER}" stroke="${C.INK}" stroke-width="3.5" stroke-dasharray="14 9"/>`
     /* штриховые рамки на месте зон станций, чтобы по заглушке можно было играть (убираются в блоке 30 вместе с заглушкой) */
     + SIDE_ZONES.filter((z) => z.section === id).map((z) => `<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" rx="14" fill="${C.PAPER}" fill-opacity="0.55" stroke="${C.INK}" stroke-width="3" stroke-dasharray="10 7"/>`).join('');
@@ -221,9 +220,8 @@ export class BarScene {
       });
     };
 
-    spr('static');
-    /* вывеска, доска, полка с растением и стойка сиропов (29-3): вырезаны из static; вордмарк бренда отдельной частью поверх плашки; подписи static рисуются выше */
-    for (const id of ['plantShelf', 'corkBoard', 'sign', 'wordmark', 'syrupShelf']) spr(id);
+    /* стена и столешница (29-4) вырезаны из static; вывеска, доска, полка с растением и стойка сиропов (29-3) тоже; вордмарк бренда отдельной частью поверх плашки; в static остались только подписи (Pixi-текст), рисуются выше */
+    for (const id of ['wall', 'counterTop', 'plantShelf', 'corkBoard', 'sign', 'wordmark', 'syrupShelf']) spr(id);
     txt('static', R);
     /* кофемашина: отдельная часть art-src (блок 29-1), раньше была в статике; подвижные детали (портафильтр, стрелка, чашка, пар) лежат выше */
     spr('machine');

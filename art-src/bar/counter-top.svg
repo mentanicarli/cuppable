@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 460 1280 160" data-part="counterTop" data-after="static" data-scale="1">
+<!--
+  Столешница центральной секции (блок 29-4): задний бортик y 466–480, две доски (y 480–543 и 543–612) с контуром M между ними, стыки досок через 640 px (x 180 и 820 в верхней, 420 и 1060 в нижней), блик по верху каждой доски. Низ y 612 лежит под носом плиты (counterNose, y 607–628). Одинаково у всех трёх секций: стыки не ближе 140 px к краю. Файл создаёт scripts/make-backdrop.mjs, руками не править.
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round"><rect x="-6" y="480" width="1292" height="63" fill="{{TOP}}" stroke="none"/><rect x="-6" y="543" width="1292" height="69" fill="{{WOOD_HI}}" stroke="none"/><rect x="-6" y="466" width="1292" height="14" fill="{{WOOD}}" stroke="none"/><path d="M-6 466H1286" fill="none" stroke-width="{{M}}"/><path d="M-6 480H1286" fill="none" stroke-width="{{D}}"/><path d="M-6 543H1286" fill="none" stroke-width="{{M}}"/><path d="M-6 484H1286M-6 547H1286" fill="none" stroke="{{HILITE}}" stroke-opacity=".4" stroke-width="{{D}}"/><g fill="none" stroke="{{WOOD_SH}}" stroke-width="{{D}}"><path d="M180 481V542"/><path d="M820 481V542"/><path d="M420 544V612"/><path d="M1060 544V612"/></g></g>
+</svg>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 480" data-part="wall" data-after="static" data-scale="1">
+<!--
+  Стена центральной секции (блок 29-4): плоский фон KRAFT и десять вертикальных полос KRAFT_SH (прозрачность .55) шириной 26, шаг 130, первая на x 60. У боковых секций та же полоса со смещением 40 (L) и 80 (R), так что ритм на стыках не рвётся (мировые x полос −70, 60, 190 … 1230, 1360 …). Низ стены на y 480 уходит под столешницу. Файл создаёт scripts/make-backdrop.mjs по src/game/backdrop.ts, руками не править.
+-->
+<rect x="0" y="0" width="1280" height="480" fill="{{KRAFT}}" stroke="none"/><g stroke="none" fill="{{KRAFT_SH}}" fill-opacity=".55"><rect x="60" y="0" width="26" height="480"/><rect x="190" y="0" width="26" height="480"/><rect x="320" y="0" width="26" height="480"/><rect x="450" y="0" width="26" height="480"/><rect x="580" y="0" width="26" height="480"/><rect x="710" y="0" width="26" height="480"/><rect x="840" y="0" width="26" height="480"/><rect x="970" y="0" width="26" height="480"/><rect x="1100" y="0" width="26" height="480"/><rect x="1230" y="0" width="26" height="480"/></g>
+</svg>

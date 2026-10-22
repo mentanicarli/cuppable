@@ -10,6 +10,10 @@ import BOARD from '../art-src/bar/cork-board.svg?raw';
 import PLANT from '../art-src/bar/plant-shelf.svg?raw';
 import BAR from '../src/render/world/bar.ts?raw';
 import LEG06 from '../src/legacy/06-bar.js?raw';
+import WALL from '../art-src/bar/wall.svg?raw';
+import COUNTER_TOP from '../art-src/bar/counter-top.svg?raw';
+import NOSE from '../art-src/bar/counter-nose.svg?raw';
+import { COUNTER, PLANK_JOINTS, PLANK_PERIOD, SECTION_WIDTH, SECTION_X, STRIPE_OFFSET, STRIPE_STEP, STRIPE_W, WALL_H, counterTopSvg, stripeXs, wallSvg, worldStripeXs, type Fmt, type SectionKey } from '../src/game/backdrop';
 
 /* Блок 29-3: питчер (форма, непрозрачность, уровень овалом и шкалой), полка и бутылки сиропов, вывеска, доска, растение с кружками. Тесты разбирают числа формы и состав собранных частей. */
 type Box = { x: number; y: number; w: number; h: number };
@@ -225,5 +229,87 @@ describe('29-3: части без токенов вне палитры', () => {
       expect(svg.includes('url(#')).toBe(false);
       expect(svg.includes('linearGradient')).toBe(false);
     }
+  });
+});
+
+describe('29-4: стена и столешница одной полосой на три секции', () => {
+  const tok: Fmt = { col: (n) => '{{' + n + '}}', w: (n) => '{{' + n + '}}' };
+  const body = (svg: string): string => svg.slice(svg.indexOf('-->') + 3, svg.lastIndexOf('</svg>')).trim();
+  const SECS: SectionKey[] = ['L', 'C', 'R'];
+  test('шаг полос 130, ширина 26, десять полос в каждой секции; у центра первая на x 60, у боковых смещение 40 и 80', () => {
+    expect(STRIPE_STEP).toBe(130);
+    expect(STRIPE_W).toBe(26);
+    expect(STRIPE_OFFSET).toEqual({ L: 40, C: 60, R: 80 });
+    for (const sec of SECS) {
+      const xs = stripeXs(sec);
+      expect(xs).toHaveLength(10);
+      for (let i = 1; i < xs.length; i++) expect((xs[i] as number) - (xs[i - 1] as number)).toBe(STRIPE_STEP);
+      expect(xs[0]).toBe(STRIPE_OFFSET[sec]);
+      expect((xs[xs.length - 1] as number) + STRIPE_W).toBeLessThanOrEqual(SECTION_WIDTH); /* ни одна полоса не пересекает край секции */
+    }
+  });
+  test('фаза на стыках: в мировых координатах от левой до правой секции шаг между всеми полосами ровно 130 (смещение фазы на стыке L/C и C/R = 0 px)', () => {
+    const world = [...worldStripeXs('L'), ...worldStripeXs('C'), ...worldStripeXs('R')];
+    expect(world).toHaveLength(30);
+    for (let i = 1; i < world.length; i++) expect((world[i] as number) - (world[i - 1] as number)).toBe(STRIPE_STEP);
+    expect(worldStripeXs('C')[0]).toBe(60);
+    expect(worldStripeXs('C')[9]).toBe(1230);
+    expect(worldStripeXs('L')[9]).toBe(-70);
+    expect(worldStripeXs('R')[0]).toBe(1360);
+    expect(SECTION_X).toEqual({ L: -1280, C: 0, R: 1280 });
+  });
+  test('стыки досок: период 640 делит 1280, в мировых координатах все стыки каждого ряда через 640 по трём секциям, у краёв секции стыков нет (≥ 140 px)', () => {
+    expect(SECTION_WIDTH % PLANK_PERIOD).toBe(0);
+    for (const row of [PLANK_JOINTS.row1, PLANK_JOINTS.row2]) {
+      const world = SECS.flatMap((sec) => row.map((x) => x + SECTION_X[sec]));
+      for (let i = 1; i < world.length; i++) expect((world[i] as number) - (world[i - 1] as number)).toBe(PLANK_PERIOD);
+      for (const x of row) {
+        expect(x).toBeGreaterThanOrEqual(140);
+        expect(x).toBeLessThanOrEqual(SECTION_WIDTH - 140);
+      }
+    }
+  });
+  test('столешница: бортик y 466–480, две доски (480–543, 543–612) с контуром M между ними; низ под носом плиты (y 607–628), нос не двигался', () => {
+    expect(COUNTER).toEqual({ rimTop: 466, rimBottom: 480, seam: 543, bottom: 612 });
+    expect(COUNTER.bottom).toBeGreaterThan(607);
+    expect(COUNTER.bottom).toBeLessThanOrEqual(628);
+    expect(NOSE).toMatch(/<rect x="-6" y="607" width="1292"/);
+    const ct = counterTopSvg(tok);
+    expect(ct).toContain('<path d="M-6 543H1286" fill="none" stroke-width="{{M}}"/>');
+    expect(ct).toContain('fill="{{TOP}}"');
+    expect(ct).toContain('fill="{{WOOD_HI}}"');
+    expect(WALL_H).toBe(480);
+  });
+  test('файлы art-src (wall.svg, counter-top.svg) — ровно результат общей функции для центра; боковые заглушки в bar.ts строятся той же функцией', () => {
+    expect(body(WALL)).toBe(wallSvg('C', tok));
+    expect(body(COUNTER_TOP)).toBe(counterTopSvg(tok));
+    expect(BAR).toContain('wallSvg(id, PAL_FMT) + counterTopSvg(PAL_FMT)');
+    expect(BAR).toContain('(P.counterFront as Part).svg + (P.counterNose as Part).svg');
+    const L = wallSvg('L', tok);
+    const R = wallSvg('R', tok);
+    expect(count(L, '<rect x="')).toBe(11);
+    expect(count(R, '<rect x="')).toBe(11);
+    expect(L).toContain('<rect x="40" y="0" width="26" height="480"/>');
+    expect(R).toContain('<rect x="80" y="0" width="26" height="480"/>');
+  });
+  test('плоские заливки: в собранных wall и counterTop нет градиентов и url(#), толщины только 3,5 / 3 / 2; в bar-parts.json нигде не осталось gWall, gWoodTop, gWoodFront', () => {
+    for (const id of ['wall', 'counterTop']) {
+      const svg = svgOf(id);
+      expect(svg.includes('url(#') || svg.includes('linearGradient')).toBe(false);
+      for (const m of svg.matchAll(/stroke-width="([\d.]+)"/g)) expect(['3.5', '3', '2']).toContain(m[1]);
+      const allowed = new Set(Object.values(PAL.colors).map((c) => c.toLowerCase()));
+      for (const m of svg.matchAll(/#[0-9a-fA-F]{6}/g)) expect(allowed.has(m[0].toLowerCase())).toBe(true);
+    }
+    for (const id of Object.keys(parts)) for (const g of ['gWall', 'gWoodTop', 'gWoodFront']) expect((parts[id] as { svg: string }).svg.includes(g), id + ' ' + g).toBe(false);
+  });
+  test('число групп без остатков старых: в wall одна группа полос и один фон, в counterTop одна внешняя группа; static пустой (только подпись вывески Pixi-текстом)', () => {
+    expect(count(svgOf('wall'), '<g ')).toBe(1);
+    expect(count(svgOf('wall'), '<rect')).toBe(11);
+    expect(count(svgOf('counterTop'), '<g stroke=')).toBe(1);
+    expect(count(svgOf('counterTop'), '<rect')).toBe(3);
+    const st = parts.static as { svg: string; box: Box; texts: { t: string }[] };
+    expect(st.svg).toBe('');
+    expect(st.box.w * st.box.h).toBeLessThanOrEqual(4);
+    expect(st.texts.map((t) => t.t)).toEqual(['Кофе между парами']);
   });
 });
