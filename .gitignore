@@ -24,5 +24,3 @@ Thumbs.db
 *.seq.html
 
 public/music/manifest.json
-# кадры приёмки блока 30-4 (удаляются после одобрения владельцем)
-!docs/art/sides/s4/*.png
