@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="359 318 133 202" data-part="foamer" data-scale="1.1">
 <!--
-  Миксер для пенок (30-2б), секция R. Проектная рамка 420, 342, 106 × 164: стальной кувшин с носиком и ручкой на белой круглой базе с кнопкой, шапка пены из трёх круглых волн над краем, сбоку наклонная трубка-вспениватель (39 px). Красного блока нет. ×1,10 через transform обёртки.
+  Миксер для пенок (30-2б), секция R. Проектная рамка 420, 342, 106 × 164: стальной кувшин с носиком и ручкой на белой круглой базе с кнопкой, шапка пены-облако (8 дуг разного радиуса, пузырьки, капля на стенке), сбоку наклонная трубка-вспениватель (39 px). Красного блока нет. ×1,10 через transform обёртки.
 -->
 <g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
 <g data-wrap="foamer" transform="translate(364.6 506) scale(1.1) translate(-418 -506)">
@@ -20,11 +20,10 @@
 <path d="M502 384Q528 386 526 414Q524 440 499 446" fill="none" stroke-width="{{L}}"/>
 <path d="M502 387Q523 389 522 412Q520 434 499 441" fill="none" stroke="{{STEEL_HI}}" stroke-width="{{D}}"/>
 <ellipse cx="470" cy="372" rx="32" ry="3.2" fill="{{STEEL_SH}}" stroke-width="{{D}}"/>
-<circle cx="452" cy="368" r="11" fill="{{PAPER}}" stroke-width="{{M}}"/>
-<circle cx="470" cy="362" r="13" fill="{{PAPER}}" stroke-width="{{M}}"/>
-<circle cx="488" cy="369" r="10" fill="{{PAPER}}" stroke-width="{{M}}"/>
-<circle cx="452" cy="368" r="9.6" fill="{{PAPER}}" stroke="none"/><circle cx="470" cy="362" r="11.6" fill="{{PAPER}}" stroke="none"/><circle cx="488" cy="369" r="8.6" fill="{{PAPER}}" stroke="none"/>
-<path d="M441 374H499" fill="none" stroke="{{KRAFT_SH}}" stroke-width="{{D}}"/>
+<path data-cap="1" d="M438 374.5A7 7 0 0 1 447 366A5.5 5.5 0 0 1 456 362.5A4 4 0 0 1 461 356.5A8 8 0 0 1 472 358A9 9 0 0 1 482 355A3.8 3.8 0 0 1 488 359A6 6 0 0 1 497 363A7 7 0 0 1 502 374.5Z" fill="{{KRAFT}}" stroke-width="{{M}}"/>
+<path d="M442 373.4H498" fill="none" stroke="{{BAKE_SH}}" stroke-width="{{D}}"/>
+<circle data-bubble="1" cx="449" cy="371" r="2.1" fill="{{PAPER}}" stroke-width="{{D}}"/><circle data-bubble="1" cx="459" cy="367" r="2.4" fill="{{PAPER}}" stroke-width="{{D}}"/><circle data-bubble="1" cx="471" cy="363.5" r="2.2" fill="{{PAPER}}" stroke-width="{{D}}"/><circle data-bubble="1" cx="483" cy="364" r="2.5" fill="{{PAPER}}" stroke-width="{{D}}"/><circle data-bubble="1" cx="494" cy="369" r="2.1" fill="{{PAPER}}" stroke-width="{{D}}"/>
+<path data-drop="1" d="M440.4 383.5Q437.8 387.2 440.4 389.2Q443 387.2 440.4 383.5Z" fill="{{KRAFT}}" stroke-width="{{D}}"/>
 </g>
 </g>
 </g>

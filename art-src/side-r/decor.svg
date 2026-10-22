@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 520" data-part="decor" data-scale="1.1">
 <!--
-  Декор правой секции (30-2б): полка со стаканами (проектная рамка 706, 176, 296 × 80; верх y 176; шесть стаканов по общему порядку слоёв) и стальное ведёрко со льдом и маленьким полотенцем на правой ручке-кольце (проектная 1180.5, 424, 81 × 82). Окна нет. ×1,10 через transform обёрток data-wrap; рисуется в одной текстуре с фоном.
+  Декор правой секции (30-2б): полка со стаканами (проектная рамка 706, 176, 296 × 80; верх y 176; шесть стаканов по общему порядку слоёв) и стальное ведёрко со льдом (без полотенца) (проектная 1180.5, 424, 81 × 82). Окна нет. ×1,10 через transform обёрток data-wrap; рисуется в одной текстуре с фоном.
 -->
 <g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
 <g data-wrap="glassShelf" transform="translate(706 176) scale(1.1) translate(-706 -176)">
@@ -69,9 +69,6 @@
 <path d="M1194 446L1199 500" fill="none" stroke="{{HILITE}}" stroke-opacity="0.7" stroke-width="{{M}}"/>
 <path d="M1196 486H1246" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
 <path d="M1197 494H1245" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
-<path d="M1250.5 449Q1256 445.5 1261.5 449L1262 476Q1259.5 480 1257 476Q1254.5 480 1251 476Z" fill="{{PAPER}}" stroke-width="{{D}}"/>
-<path d="M1251 459H1261.8M1251 466H1261.8" fill="none" stroke="{{TERRA}}" stroke-width="{{D}}"/>
-<path d="M1255 451Q1257 462 1255.5 476" fill="none" stroke="{{KRAFT_SH}}" stroke-width="{{D}}"/>
 </g>
 </g>
 </g>

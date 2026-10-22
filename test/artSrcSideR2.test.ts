@@ -140,10 +140,66 @@ describe('30-2б: ведёрко со льдом', () => {
 
 describe('30-2б: миксер пенок', () => {
   const svg = svgOf('foamer');
-  test('красного блока сверху нет; белая круглая база; шапка пены из 3 волн', () => {
+  test('красного блока сверху нет; белая круглая база', () => {
     expect([...svg.matchAll(/<rect [^>]*fill="#c4694a"/gi)]).toHaveLength(0);
-    expect([...svg.matchAll(/<circle cx="[\d.]+" cy="[\d.]+" r="\d+" fill="#FFF8EC" stroke-width/g)]).toHaveLength(3);
     expect(svg).toContain('<ellipse cx="470" cy="486" rx="50" ry="6" fill="#FFF8EC"');
+  });
+  describe('шапка пены — облако', () => {
+    const d = (/<path data-cap="1" d="([^"]+)"/.exec(svg) as RegExpExecArray)[1] as string;
+    const arcs = [...d.matchAll(/A([\d.]+) [\d.]+ 0 0 1 ([\d.]+) ([\d.]+)/g)].map((m) => ({ r: Number(m[1]), x: Number(m[2]), y: Number(m[3]) }));
+    const start = /^M([\d.]+) ([\d.]+)/.exec(d) as RegExpExecArray;
+    /* точки дуг (сэмплы по окружности, sweep=1) */
+    const pts: { x: number; y: number }[] = [];
+    let px = Number(start[1]), py = Number(start[2]);
+    for (const a of arcs) {
+      const mx = (px + a.x) / 2, my = (py + a.y) / 2, c = Math.hypot(a.x - px, a.y - py);
+      const h = Math.sqrt(Math.max(0, a.r * a.r - (c / 2) ** 2));
+      const ux = (a.x - px) / c, uy = (a.y - py) / c;
+      /* центр справа от направления хорда (sweep=1, малая дуга): выпуклость вверх при движении слева направо */
+      const cx = mx + uy * h * -1, cy = my - ux * h * -1;
+      const a0 = Math.atan2(py - cy, px - cx);
+      let a1 = Math.atan2(a.y - cy, a.x - cx);
+      while (a1 < a0) a1 += Math.PI * 2;
+      for (let i = 0; i <= 20; i++) { const t = a0 + ((a1 - a0) * i) / 20; pts.push({ x: cx + a.r * Math.cos(t), y: cy + a.r * Math.sin(t) }); }
+      px = a.x; py = a.y;
+    }
+    const RIM_Y = 372;
+    test('не меньше 6 дуг, радиусы 3–9, max/min ≥ 1,5, хорды помещаются', () => {
+      expect(arcs.length).toBeGreaterThanOrEqual(6);
+      const rs = arcs.map((a) => a.r);
+      expect(Math.min(...rs)).toBeGreaterThanOrEqual(3);
+      expect(Math.max(...rs)).toBeLessThanOrEqual(9);
+      expect(Math.max(...rs) / Math.min(...rs)).toBeGreaterThanOrEqual(1.5);
+      let qx = Number(start[1]), qy = Number(start[2]);
+      for (const a of arcs) { expect(Math.hypot(a.x - qx, a.y - qy)).toBeLessThanOrEqual(2 * a.r + 1e-6); qx = a.x; qy = a.y; }
+    });
+    test('высота над ободом 12–20 px, ширина не больше просвета + 2 px с каждой стороны, основание перекрывает обод на 2–3 px', () => {
+      const top = Math.min(...pts.map((p) => p.y));
+      expect(RIM_Y - top).toBeGreaterThanOrEqual(12);
+      expect(RIM_Y - top).toBeLessThanOrEqual(20);
+      expect(Math.min(...pts.map((p) => p.x))).toBeGreaterThanOrEqual(470 - 32 - 2);
+      expect(Math.max(...pts.map((p) => p.x))).toBeLessThanOrEqual(470 + 32 + 2);
+      const base = Math.max(Number(start[2]), ...arcs.map((a) => a.y));
+      expect(base - RIM_Y).toBeGreaterThanOrEqual(2);
+      expect(base - RIM_Y).toBeLessThanOrEqual(3);
+    });
+    test('верх неровный: высоты соседних вершин различаются', () => {
+      const ys = arcs.slice(0, -1).map((a) => a.y);
+      expect(new Set(ys.map((y) => Math.round(y))).size).toBeGreaterThanOrEqual(5);
+    });
+    test('кремовая заливка светлее стенки кувшина, полоса тени BAKE_SH у основания, 4–6 пузырьков светлее шапки, одна капля 4–6 px', () => {
+      expect(svg).toMatch(/data-cap="1"[^>]*fill="#F1DFC2"/i);
+      expect(svg).toContain('stroke="#B8733A"');
+      const bubbles = [...svg.matchAll(/<circle data-bubble="1" [^>]*fill="#FFF8EC"/g)];
+      expect(bubbles.length).toBeGreaterThanOrEqual(4);
+      expect(bubbles.length).toBeLessThanOrEqual(6);
+      const drops = [...svg.matchAll(/<path data-drop="1" d="([^"]+)"/g)];
+      expect(drops).toHaveLength(1);
+      const ys = [...(drops[0]?.[1] as string).matchAll(/(?:^|[MQ\s])[\d.]+ ([\d.]+)/g)].map((m) => Number(m[1]));
+      const hh = Math.max(...ys) - Math.min(...ys);
+      expect(hh).toBeGreaterThanOrEqual(4);
+      expect(hh).toBeLessThanOrEqual(6);
+    });
   });
   test('трубка-вспениватель наклонена и не длиннее 25 % высоты предмета', () => {
     const m = /data-wand="([^"]+)"/.exec(svg) as RegExpExecArray;
@@ -152,7 +208,7 @@ describe('30-2б: миксер пенок', () => {
     expect(Math.hypot(x2 - x1, y2 - y1)).toBeLessThanOrEqual(0.25 * h);
     expect(Math.abs(x2 - x1)).toBeGreaterThan(3);
   });
-  test('рамка предмета не выросла: итог 117 × 176 (±6 px)', () => {
+  test('рамка предмета не выросла: итог 117 × 176 (±6 px, высота ≤ +4)', () => {
     const f = finalBox('foamer', 'foamer');
     expect(Math.abs(f.w - 117)).toBeLessThanOrEqual(6);
     expect(Math.abs(f.h - 176)).toBeLessThanOrEqual(6);
