@@ -14,7 +14,6 @@ out
 !docs/art/drinks/h2-4/places_sheet.png
 !docs/art/sections/*.png
 # кадры приёмки блока 29-1 (удаляются после одобрения владельцем)
-!docs/art/center/c1/*.png
 .DS_Store
 Thumbs.db
 .env*
