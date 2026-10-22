@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 520" data-part="decor" data-scale="1.1">
 <!--
-  Декор правой секции (30-2б): полка со стаканами (проектная рамка 706, 176, 296 × 80; верх y 176; шесть стаканов по общему порядку слоёв) и стальное ведёрко со льдом (без полотенца) (проектная 1180.5, 424, 81 × 82). Окна нет. ×1,10 через transform обёрток data-wrap; рисуется в одной текстуре с фоном.
+  Декор правой секции (30-2б): полка со стаканами (проектная рамка 706, 176, 296 × 80; верх y 176; шесть стаканов по общему порядку слоёв) и стальное ведёрко со льдом (без полотенца) (30-4, проектная 1183, 425, 79 × 81; вариант B — стеклянная чаша — переключается BUCKET). Окна нет. ×1,10 через transform обёрток data-wrap; рисуется в одной текстуре с фоном.
 -->
 <g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
 <g data-wrap="glassShelf" transform="translate(706 176) scale(1.1) translate(-706 -176)">
@@ -44,31 +44,33 @@
 </g>
 </g>
 </g>
-<g data-wrap="iceBucket" transform="translate(1171.4 506) scale(1.1) translate(-1182 -506)">
-<ellipse cx="1221" cy="508" rx="40" ry="4" fill="{{SHADOW}}" fill-opacity=".22" stroke="none"/>
-<g data-item="iceBucket" data-box="1180.5 425 81.5 81">
-<g data-bucket="1" data-rim="1186 430 70 12">
-<circle cx="1185" cy="452" r="4.5" fill="{{STEEL_HI}}" stroke-width="{{D}}"/>
-<circle cx="1257" cy="452" r="4.5" fill="{{STEEL_HI}}" stroke-width="{{D}}"/>
-<ellipse cx="1221" cy="436" rx="35" ry="6" fill="{{STEEL_HI}}" stroke-width="{{M}}"/>
-<ellipse cx="1221" cy="436.4" rx="31.5" ry="4" fill="{{STEEL_SH}}" stroke-width="{{D}}"/>
-<rect data-ice="1" x="1203.4" y="434.5" width="12" height="12" rx="2.5" fill="{{GLASS}}" stroke-width="{{D}}" transform="rotate(-6 1209.4 440.5)"/>
-<path d="M1205.6 437.7L1205.6 441.5" fill="none" stroke="{{PAPER}}" stroke-width="{{D}}" transform="rotate(-6 1209.4 440.5)"/>
-<rect data-ice="1" x="1214.6" y="434.8" width="12" height="12" rx="2.5" fill="{{GLASS}}" stroke-width="{{D}}" transform="rotate(5 1220.6 440.8)"/>
-<path d="M1216.8 438L1216.8 441.8" fill="none" stroke="{{PAPER}}" stroke-width="{{D}}" transform="rotate(5 1220.6 440.8)"/>
-<rect data-ice="1" x="1225.8" y="434.2" width="12" height="12" rx="2.5" fill="{{GLASS}}" stroke-width="{{D}}" transform="rotate(-4 1231.8 440.2)"/>
-<path d="M1228 437.4L1228 441.2" fill="none" stroke="{{PAPER}}" stroke-width="{{D}}" transform="rotate(-4 1231.8 440.2)"/>
-<rect data-ice="1" x="1209" y="428.2" width="12" height="12" rx="2.5" fill="{{GLASS}}" stroke-width="{{D}}" transform="rotate(7 1215 434.2)"/>
-<path d="M1211.2 431.4L1211.2 435.2" fill="none" stroke="{{PAPER}}" stroke-width="{{D}}" transform="rotate(7 1215 434.2)"/>
-<rect data-ice="1" x="1221.75" y="428.65" width="11.5" height="11.5" rx="2.5" fill="{{GLASS}}" stroke-width="{{D}}" transform="rotate(-7 1227.5 434.4)"/>
-<path d="M1223.95 431.85L1223.95 435.4" fill="none" stroke="{{PAPER}}" stroke-width="{{D}}" transform="rotate(-7 1227.5 434.4)"/>
-<rect data-ice="1" x="1215.7" y="425.4" width="11" height="11" rx="2.5" fill="{{GLASS}}" stroke-width="{{D}}" transform="rotate(4 1221.2 430.9)"/>
-<path d="M1217.9 428.6L1217.9 431.9" fill="none" stroke="{{PAPER}}" stroke-width="{{D}}" transform="rotate(4 1221.2 430.9)"/>
-<path d="M1186 436A35 6 0 0 0 1256 436L1248 506H1194Z" fill="{{STEEL}}" stroke-width="{{M}}"/>
-<path d="M1189 437.6A32 4.6 0 0 0 1253 437.6" fill="none" stroke="{{STEEL_HI}}" stroke-width="{{D}}"/>
-<path d="M1194 446L1199 500" fill="none" stroke="{{HILITE}}" stroke-opacity="0.7" stroke-width="{{M}}"/>
-<path d="M1196 486H1246" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
-<path d="M1197 494H1245" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<g data-wrap="iceBucket" transform="translate(1168 506) scale(1.1) translate(-1182 -506)">
+<ellipse cx="1223" cy="508" rx="36" ry="4" fill="{{SHADOW}}" fill-opacity=".22" stroke="none"/>
+<g data-item="iceBucket" data-box="1183 425 79 81">
+<g data-bucket="A" data-rim="1193 447 60 10">
+<circle cx="1189" cy="468" r="4.5" fill="{{STEEL_HI}}" stroke-width="{{D}}"/>
+<circle cx="1257" cy="468" r="4.5" fill="{{STEEL_HI}}" stroke-width="{{D}}"/>
+<ellipse cx="1223" cy="452" rx="30" ry="5" fill="{{STEEL_HI}}" stroke-width="{{M}}"/>
+<ellipse cx="1223" cy="452.4" rx="27" ry="3.2" fill="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<rect data-ice="1" x="1193" y="443.5" width="15" height="15" rx="3" fill="{{GLASS}}" stroke-width="{{D}}" transform="rotate(-6 1200.5 451)"/><path d="M1195.4 446.9L1195.4 452" fill="none" stroke="{{PAPER}}" stroke-width="{{D}}" transform="rotate(-6 1200.5 451)"/>
+<rect data-ice="1" x="1208" y="443.5" width="15" height="15" rx="3" fill="{{GLASS}}" stroke-width="{{D}}" transform="rotate(4 1215.5 451)"/><path d="M1210.4 446.9L1210.4 452" fill="none" stroke="{{PAPER}}" stroke-width="{{D}}" transform="rotate(4 1215.5 451)"/>
+<rect data-ice="1" x="1223" y="443.5" width="15" height="15" rx="3" fill="{{GLASS}}" stroke-width="{{D}}" transform="rotate(-9 1230.5 451)"/><path d="M1225.4 446.9L1225.4 452" fill="none" stroke="{{PAPER}}" stroke-width="{{D}}" transform="rotate(-9 1230.5 451)"/>
+<rect data-ice="1" x="1238" y="443.5" width="15" height="15" rx="3" fill="{{GLASS}}" stroke-width="{{D}}" transform="rotate(7 1245.5 451)"/><path d="M1240.4 446.9L1240.4 452" fill="none" stroke="{{PAPER}}" stroke-width="{{D}}" transform="rotate(7 1245.5 451)"/>
+<rect data-ice="1" x="1200.5" y="435" width="15" height="15" rx="3" fill="{{GLASS}}" stroke-width="{{D}}" transform="rotate(8 1208 442.5)"/><path d="M1202.9 438.4L1202.9 443.5" fill="none" stroke="{{PAPER}}" stroke-width="{{D}}" transform="rotate(8 1208 442.5)"/>
+<rect data-ice="1" x="1215.5" y="435" width="15" height="15" rx="3" fill="{{GLASS}}" stroke-width="{{D}}" transform="rotate(-5 1223 442.5)"/><path d="M1217.9 438.4L1217.9 443.5" fill="none" stroke="{{PAPER}}" stroke-width="{{D}}" transform="rotate(-5 1223 442.5)"/>
+<rect data-ice="1" x="1230.5" y="435" width="15" height="15" rx="3" fill="{{GLASS}}" stroke-width="{{D}}" transform="rotate(10 1238 442.5)"/><path d="M1232.9 438.4L1232.9 443.5" fill="none" stroke="{{PAPER}}" stroke-width="{{D}}" transform="rotate(10 1238 442.5)"/>
+<rect data-ice="1" x="1208" y="426.5" width="15" height="15" rx="3" fill="{{GLASS}}" stroke-width="{{D}}" transform="rotate(-10 1215.5 434)"/><path d="M1210.4 429.9L1210.4 435" fill="none" stroke="{{PAPER}}" stroke-width="{{D}}" transform="rotate(-10 1215.5 434)"/>
+<rect data-ice="1" x="1223" y="426.5" width="15" height="15" rx="3" fill="{{GLASS}}" stroke-width="{{D}}" transform="rotate(5 1230.5 434)"/><path d="M1225.4 429.9L1225.4 435" fill="none" stroke="{{PAPER}}" stroke-width="{{D}}" transform="rotate(5 1230.5 434)"/>
+<g data-front="1"><path d="M1193 452A30 5 0 0 0 1253 452L1247 506H1199Z" fill="{{STEEL_HI}}" stroke-width="{{M}}"/>
+<path d="M1197 484H1245L1246 498H1198Z" fill="{{GLASS_DP}}" stroke="none"/>
+<path d="M1196 486H1245" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<path d="M1197 496H1246" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<path d="M1198 460L1202 500" fill="none" stroke="{{HILITE}}" stroke-opacity="0.7" stroke-width="{{M}}"/>
+<path data-drop="1" d="M1206 466.2Q1204.2 468.6 1206 469.8Q1207.8 468.6 1206 466.2Z" fill="{{GLASS}}" stroke="{{GLASS_DP}}" stroke-width="{{D}}"/>
+<path data-drop="1" d="M1217 474.2Q1215.2 476.6 1217 477.8Q1218.8 476.6 1217 474.2Z" fill="{{GLASS}}" stroke="{{GLASS_DP}}" stroke-width="{{D}}"/>
+<path data-drop="1" d="M1237 464.2Q1235.2 466.6 1237 467.8Q1238.8 466.6 1237 464.2Z" fill="{{GLASS}}" stroke="{{GLASS_DP}}" stroke-width="{{D}}"/>
+</g>
+<g data-tongs="1230 438 1249 450"><path d="M1230 438L1249 450" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{M}}"/><path d="M1230 440.6L1249 451.4" fill="none" stroke="{{STEEL}}" stroke-width="{{D}}"/><ellipse cx="1229" cy="439" rx="2.4" ry="2" fill="{{STEEL}}" stroke-width="{{D}}"/></g>
 </g>
 </g>
 </g>

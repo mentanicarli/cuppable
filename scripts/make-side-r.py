@@ -279,22 +279,75 @@ for i, args in enumerate([(718, 36, 60, 'MUSTARD', 'TERRA', 28), (764, 40, 44, N
                           (860, 44, 40, None, None, 36), (916, 36, 62, 'SAGE_LT', 'MUSTARD', 28), (962, 30, 54, None, None, 22)]):
     g.append(shelf_glass(f'shelfGlass{i + 1}', *args))
 
-# ведёрко: слои — задний обод и внутренность, кубики льда горкой, передний край обода + корпус, кольца
-ice = [(1209.4, 440.5, 12, -6), (1220.6, 440.8, 12, 5), (1231.8, 440.2, 12, -4), (1215.0, 434.2, 12, 7), (1227.5, 434.4, 11.5, -7), (1221.2, 430.9, 11, 4)]
-k = [shadow(1221, 40),
-     '<g data-bucket="1" data-rim="1186 430 70 12">',
-     circ(1185, 452, 4.5, 'STEEL_HI', 'D'), circ(1257, 452, 4.5, 'STEEL_HI', 'D'),
-     ell(1221, 436, 35, 6, 'STEEL_HI', 'M'), ell(1221, 436.4, 31.5, 4, 'STEEL_SH', 'D')]
-for (cx, cy, s_, rot) in ice:
-    k.append(f'<rect data-ice="1" x="{cx - s_ / 2:g}" y="{cy - s_ / 2:g}" width="{s_:g}" height="{s_:g}" rx="2.5" fill="{col("GLASS")}" stroke-width="{sw("D")}" transform="rotate({rot} {cx:g} {cy:g})"/>')
-    k.append(f'<path d="M{cx - s_ / 2 + 2.2:g} {cy - s_ / 2 + 3.2:g}L{cx - s_ / 2 + 2.2:g} {cy + 1:g}" fill="none" stroke="{col("PAPER")}" stroke-width="{sw("D")}" transform="rotate({rot} {cx:g} {cy:g})"/>')
-k += [path('M1186 436A35 6 0 0 0 1256 436L1248 506H1194Z', 'STEEL', 'M'),
-      path('M1189 437.6A32 4.6 0 0 0 1253 437.6', 'none', 'D', 'STEEL_HI'), hl('M1194 446L1199 500', .7),
-      path('M1196 486H1246', 'none', 'D', 'STEEL_SH'), path('M1197 494H1245', 'none', 'D', 'STEEL_SH'),
-      '</g>']
+# ведёрко со льдом (30-4): вариант A (в игре) — стальное ведёрко с горкой льда и щипцами; вариант B — стеклянная чаша со льдом (только кадр).
+# Переключатель одной строкой: BUCKET = 'B' (или переменная окружения BUCKET=B) собирает в decor.svg вариант B; вариант B всегда лежит ещё и в art-src/side-r/variants/bucket-b.svg (под тестом).
+BUCKET = os.environ.get('BUCKET', 'A')
+# ряды кубиков: (центр x, центр y, сторона, поворот); ряд выше опирается на два кубика ряда ниже (шаг по y 8,5 → перекрытие ≥ 20 % площади)
+ICE_A = [(1200.5, 451, 15, -6), (1215.5, 451, 15, 4), (1230.5, 451, 15, -9), (1245.5, 451, 15, 7),
+         (1208, 442.5, 15, 8), (1223, 442.5, 15, -5), (1238, 442.5, 15, 10),
+         (1215.5, 434, 15, -10), (1230.5, 434, 15, 5)]
+ICE_B = [(1202, 483, 14, -6), (1216, 483, 14, 4), (1230, 483, 14, -8), (1244, 483, 14, 7),
+         (1209, 475, 14, 8), (1223, 475, 14, -5), (1237, 475, 14, 9),
+         (1216, 467, 14, -9), (1230, 467, 14, 5), (1223, 459, 14, 4)]
+
+
+def cube(cx, cy, s_, rot):
+    return (f'<rect data-ice="1" x="{cx - s_ / 2:g}" y="{cy - s_ / 2:g}" width="{s_:g}" height="{s_:g}" rx="3" fill="{col("GLASS")}" stroke-width="{sw("D")}" transform="rotate({rot} {cx:g} {cy:g})"/>'
+            f'<path d="M{cx - s_ / 2 + 2.4:g} {cy - s_ / 2 + 3.4:g}L{cx - s_ / 2 + 2.4:g} {cy + 1:g}" fill="none" stroke="{col("PAPER")}" stroke-width="{sw("D")}" transform="rotate({rot} {cx:g} {cy:g})"/>')
+
+
+def tongs(x1, y1, x2, y2):
+    """Щипцы: две стальные дужки от головки к ободу, длина по оси 20–24 px (data-tongs = концы оси)."""
+    return (f'<g data-tongs="{x1:g} {y1:g} {x2:g} {y2:g}">' + path(f'M{x1:g} {y1:g}L{x2:g} {y2:g}', 'none', 'M', 'STEEL_SH')
+            + path(f'M{x1:g} {y1 + 2.6:g}L{x2:g} {y2 + 1.4:g}', 'none', 'D', 'STEEL') + ell(x1 - 1, y1 + 1, 2.4, 2, 'STEEL', 'D') + '</g>')
+
+
+def bucket_a():
+    k = ['<g data-bucket="A" data-rim="1193 447 60 10">',
+         circ(1189, 468, 4.5, 'STEEL_HI', 'D'), circ(1257, 468, 4.5, 'STEEL_HI', 'D'),
+         ell(1223, 452, 30, 5, 'STEEL_HI', 'M'), ell(1223, 452.4, 27, 3.2, 'STEEL_SH', 'D')]
+    k += [cube(*c) for c in ICE_A]
+    k += ['<g data-front="1">' + path('M1193 452A30 5 0 0 0 1253 452L1247 506H1199Z', 'STEEL_HI', 'M'),
+          flat('M1197 484H1245L1246 498H1198Z', 'GLASS_DP'),
+          path('M1196 486H1245', 'none', 'D', 'STEEL_SH'), path('M1197 496H1246', 'none', 'D', 'STEEL_SH'),
+          hl('M1198 460L1202 500', .7)]
+    for (dx, dy) in [(1206, 468), (1217, 476), (1237, 466)]:  # капли конденсата
+        k.append(f'<path data-drop="1" d="M{dx} {dy - 1.8}Q{dx - 1.8} {dy + 0.6} {dx} {dy + 1.8}Q{dx + 1.8} {dy + 0.6} {dx} {dy - 1.8}Z" fill="{col("GLASS")}" stroke="{col("GLASS_DP")}" stroke-width="{sw("D")}"/>')
+    k.append('</g>')
+    k.append(tongs(1230, 438, 1249, 450))
+    k.append('</g>')
+    return k
+
+
+def bucket_b():
+    k = ['<g data-bucket="B" data-rim="1193 457 60 10">',
+         f'<path data-layer="back" d="M1193 462Q1193 492 1223 492Q1253 492 1253 462Z" fill="{col("GLASS")}" fill-opacity=".55" stroke="none"/>',
+         ell(1223, 490.6, 22, 1.7, 'GLASS_DP', 'D').replace(' stroke-width', ' data-puddle="1" stroke-width', 1)]
+    k += [cube(*c) for c in ICE_B]
+    k += [f'<path data-layer="front" d="M1193 462Q1193 492 1223 492Q1253 492 1253 462A30 5 0 0 1 1193 462Z" fill="{col("GLASS")}" fill-opacity=".4" stroke="none"/>',
+          f'<path data-layer="stem" d="M1219 492L1220 500H1226L1227 492Z" fill="{col("GLASS")}" fill-opacity=".7" stroke-width="{sw("D")}"/>',
+          ell(1223, 502.5, 18, 3.5, 'GLASS', 'D'),
+          f'<path data-layer="outline" d="M1193 462Q1193 492 1223 492Q1253 492 1253 462" fill="none" stroke-width="{sw("M")}"/>',
+          ell(1223, 462, 30, 5, 'GLASS', 'M').replace('fill="{{GLASS}}"', 'fill="none"'),
+          f'<path data-layer="shine" d="M1197 468Q1198 482 1206 488" fill="none" stroke="{col("HILITE")}" stroke-opacity=".8" stroke-width="{sw("M")}"/>',
+          tongs(1230, 455, 1250, 465), '</g>']
+    return k
+
+
+def bucket_item(variant):
+    k = bucket_a() if variant == 'A' else bucket_b()
+    box = (1183, 425, 79, 81) if variant == 'A' else (1183, 450, 79, 56)
+    return item('iceBucket', box, k)
+
+
 body = (f'<g data-wrap="glassShelf" transform="{T(706, 706, 176)}">\n' + item('glassShelf', (706, 176, 296, 80), g) + '\n</g>\n'
-        + f'<g data-wrap="iceBucket" transform="{T(1182, 1171.4, 506)}">\n' + k[0] + '\n' + item('iceBucket', (1180.5, 425, 81.5, 81), k[1:]) + '\n</g>\n')
-svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 520" data-part="decor" data-scale="{S}">\n<!--\n  Декор правой секции (30-2б): полка со стаканами (проектная рамка 706, 176, 296 × 80; верх y 176; шесть стаканов по общему порядку слоёв) и стальное ведёрко со льдом (без полотенца) (проектная 1180.5, 424, 81 × 82). Окна нет. ×1,10 через transform обёрток data-wrap; рисуется в одной текстуре с фоном.\n-->\n'
+        + f'<g data-wrap="iceBucket" transform="{T(1182, 1168, 506)}">\n' + shadow(1223, 36) + '\n' + bucket_item(BUCKET) + '\n</g>\n')
+svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 520" data-part="decor" data-scale="{S}">\n<!--\n  Декор правой секции (30-2б): полка со стаканами (проектная рамка 706, 176, 296 × 80; верх y 176; шесть стаканов по общему порядку слоёв) и стальное ведёрко со льдом (без полотенца) (30-4, проектная 1183, 425, 79 × 81; вариант B — стеклянная чаша — переключается BUCKET). Окна нет. ×1,10 через transform обёрток data-wrap; рисуется в одной текстуре с фоном.\n-->\n'
        f'<g stroke="{col("INK")}" stroke-linejoin="round" stroke-linecap="round">\n{body}</g>\n</svg>\n')
 open(f'{OUT}/decor.svg', 'w', encoding='utf-8', newline='').write(svg)
+# вариант B всегда рядом (data-out: проходит проверку палитры и толщин, в игру не попадает; тест test/artSrcSideR2.test.ts)
+os.makedirs(f'{OUT}/variants', exist_ok=True)
+vb = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="1160 400 120 120" data-out="bucket-b.svgf" data-scale="{S}">\n<!--\n  Вариант B ведёрка со льдом (30-4): стеклянная чаша на ножке со льдом, лужей и щипцами. Только для кадра, в игре вариант A (BUCKET).\n-->\n'
+      f'<g stroke="{col("INK")}" stroke-linejoin="round" stroke-linecap="round">\n<g data-wrap="iceBucket" transform="{T(1182, 1168, 506)}">\n' + shadow(1223, 36) + '\n' + bucket_item('B') + '\n</g>\n</g>\n</svg>\n')
+open(f'{OUT}/variants/bucket-b.svg', 'w', encoding='utf-8', newline='').write(vb)
 print('ok')

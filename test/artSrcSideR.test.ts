@@ -22,7 +22,7 @@ const WANT: Record<string, Box> = {
   boba: { x: 716, y: 388, w: 284, h: 122 },
   shaker: { x: 1012, y: 408, w: 150, h: 100 },
   glassShelf: { x: 706, y: 176, w: 296, h: 80 },
-  iceBucket: { x: 1182, y: 424, w: 78, h: 82 }
+  iceBucket: { x: 1183, y: 425, w: 79, h: 81 }
 };
 /** Раскладка ×1,10: куда переехал левый край проектной рамки (translate(a b) scale(1,1) translate(c d)). */
 const LAYOUT: Record<string, { a: number; b: number; c: number; d: number }> = {
@@ -33,7 +33,7 @@ const LAYOUT: Record<string, { a: number; b: number; c: number; d: number }> = {
   boba: { a: 658, b: 506, c: -716, d: -506 },
   shaker: { a: 988.4, b: 506, c: -1012, d: -506 },
   glassShelf: { a: 706, b: 176, c: -706, d: -176 },
-  iceBucket: { a: 1171.4, b: 506, c: -1182, d: -506 }
+  iceBucket: { a: 1168, b: 506, c: -1182, d: -506 }
 };
 const items = (part: string): ReturnType<typeof parseItems> => parseItems(svgOf(part));
 const all = (): ReturnType<typeof parseItems> => Object.keys(parts).flatMap((k) => items(k));

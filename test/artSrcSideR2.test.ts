@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import PARTS_R from '../src/assets/art/bar-parts-right.json';
 import PAL from '../art-src/palette.json';
+import BUCKET_RAW from '../art-src/side-r/variants/bucket-b.svg?raw';
 import { LAYER_RANK, parseBalls, parseGlasses, parseItems, strawTops, type Box } from './helpers/sideArt';
 
 /* Блок 30-2б: сосуды правой секции (стаканы, кувшин, жестяные стаканы), шарики бабл ти, стакан с трубочками, ведёрко со льдом, миксер пенок.
@@ -8,6 +9,8 @@ import { LAYER_RANK, parseBalls, parseGlasses, parseItems, strawTops, type Box }
 const parts = PARTS_R as unknown as Record<string, { svg: string }>;
 const svgOf = (id: string): string => (parts[id] as { svg: string }).svg;
 const S = 1.1;
+/* вариант B лежит в art-src с токенами {{ИМЯ}}: подставляем цвета палитры */
+const BUCKET_B = BUCKET_RAW.replace(/\{\{(\w+)\}\}/g, (m, k: string) => (PAL.colors as Record<string, string>)[k] ?? m);
 const finalBox = (part: string, id: string): Box => (parseItems(svgOf(part)).find((i) => i.id === id) as { final: Box }).final;
 
 describe('30-2б: порядок слоёв сосудов и жидкость', () => {
@@ -110,31 +113,87 @@ describe('30-2б: стакан с запасными трубочками', () =
   });
 });
 
-describe('30-2б: ведёрко со льдом', () => {
-  const svg = svgOf('decor');
-  const rim = /data-rim="([^"]+)"/.exec(svg) as RegExpExecArray;
-  const [rx, ry, rw] = (rim[1] as string).split(' ').map(Number) as [number, number, number, number];
-  const cubes = [...svg.matchAll(/<rect data-ice="1" x="([\d.]+)" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)"/g)].map((m) => ({ x: +(m[1] as string), y: +(m[2] as string), w: +(m[3] as string), h: +(m[4] as string) }));
-  test('5–6 кубиков; ни один не выше обода больше чем на ½ своей высоты', () => {
-    expect(cubes.length).toBeGreaterThanOrEqual(5);
-    expect(cubes.length).toBeLessThanOrEqual(6);
-    for (const c of cubes) expect(c.y, 'кубик над ободом').toBeGreaterThanOrEqual(ry - c.h / 2 - 0.01);
-  });
-  test('каждый кубик касается другого кубика или внутренней стенки', () => {
-    cubes.forEach((c, i) => {
-      const nb = cubes.some((o, j) => j !== i && c.x <= o.x + o.w && o.x <= c.x + c.w && c.y <= o.y + o.h && o.y <= c.y + c.h);
-      const wall = c.x <= rx + 1 || c.x + c.w >= rx + rw - 1;
-      expect(nb || wall, `кубик ${i}`).toBe(true);
+describe('30-4: ведёрко со льдом (вариант A в игре, вариант B — стеклянная чаша, только кадр)', () => {
+  const variants: Record<string, string> = { A: svgOf('decor'), B: BUCKET_B };
+  for (const [v, svg] of Object.entries(variants)) {
+    const rim = (/data-rim="([^"]+)"/.exec(svg) as RegExpExecArray)[1] as string;
+    const [rx, ry, rw, rh] = rim.split(' ').map(Number) as [number, number, number, number];
+    const cubes = [...svg.matchAll(/<rect data-ice="1" x="([\d.]+)" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)"([^>]*)/g)].map((m) => ({ x: +(m[1] as string), y: +(m[2] as string), w: +(m[3] as string), h: +(m[4] as string), tag: m[5] as string }));
+    const ov = (p: Box, q: Box): number => Math.max(0, Math.min(p.x + p.w, q.x + q.w) - Math.max(p.x, q.x)) * Math.max(0, Math.min(p.y + p.h, q.y + q.h) - Math.max(p.y, q.y));
+    const rowsOf = (): Box[][] => {
+      const rows: Box[][] = [];
+      for (const c of [...cubes].sort((a, b) => b.y - a.y)) {
+        const r = rows.find((row) => Math.abs((row[0] as Box).y - c.y) < 3);
+        if (r) r.push(c); else rows.push([c]);
+      }
+      return rows;
+    };
+    describe(`вариант ${v}`, () => {
+      test('8–10 видимых кубиков, сторона 14–16 px, скругление 3, поворот ±12°, светло-голубая заливка, контур D', () => {
+        expect(cubes.length).toBeGreaterThanOrEqual(8);
+        expect(cubes.length).toBeLessThanOrEqual(10);
+        for (const c of cubes) {
+          expect(c.w).toBeGreaterThanOrEqual(14);
+          expect(c.w).toBeLessThanOrEqual(16);
+          expect(c.w).toBe(c.h);
+          expect(c.tag).toContain('rx="3"');
+          expect(Math.abs(Number(/rotate\((-?[\d.]+)/.exec(c.tag)?.[1]))).toBeLessThanOrEqual(12);
+          expect(c.tag).toContain('fill="#DCEBEA"');
+        }
+        expect(new Set(cubes.map((c) => /rotate\((-?[\d.]+)/.exec(c.tag)?.[1])).size).toBeGreaterThanOrEqual(5);
+      });
+      test('горка: верхний кубик над ободом не больше 1,5 своей высоты; кубики среднего и верхнего рядов перекрывают ≥ 2 нижних по ≥ 20 % площади; никто не висит', () => {
+        const rows = rowsOf();
+        expect(rows.length).toBeGreaterThanOrEqual(3);
+        const top = Math.min(...cubes.map((c) => c.y));
+        expect(ry - top, 'над ободом').toBeLessThanOrEqual(1.5 * 15);
+        for (let r = 1; r < rows.length; r++) for (const c of rows[r] as Box[]) {
+          const lower = rows.slice(0, r).flat();
+          const hits = lower.filter((o) => ov(c, o) >= 0.2 * c.w * c.h);
+          expect(hits.length, `кубик ${c.x},${c.y}`).toBeGreaterThanOrEqual(2);
+        }
+        for (const c of cubes) expect(c.x >= rx - 4 && c.x + c.w <= rx + rw + 4, 'кубик в пределах обода').toBe(true);
+        expect(rh).toBeGreaterThan(0);
+      });
+      test('щипцы 20–24 px и касаются обода', () => {
+        const m = /data-tongs="([\d. -]+)"/.exec(svg) as RegExpExecArray;
+        const [x1, y1, x2, y2] = (m[1] as string).split(' ').map(Number) as [number, number, number, number];
+        expect(Math.hypot(x2 - x1, y2 - y1)).toBeGreaterThanOrEqual(20);
+        expect(Math.hypot(x2 - x1, y2 - y1)).toBeLessThanOrEqual(24);
+        const tb: Box = { x: Math.min(x1, x2), y: Math.min(y1, y2), w: Math.abs(x2 - x1), h: Math.abs(y2 - y1) };
+        expect(ov({ ...tb, w: tb.w + 0.01, h: tb.h + 0.01 }, { x: rx, y: ry, w: rw, h: rh })).toBeGreaterThan(0);
+      });
     });
-  });
-  test('слои: задний обод → кубики → корпус с передним краем; правый край 1259', () => {
-    const iRim = svg.indexOf('data-bucket="1"');
-    const iIce = svg.indexOf('data-ice="1"');
-    const iBody = svg.indexOf('A35 6 0 0 0 1256 436');
-    expect(iRim).toBeLessThan(iIce);
-    expect(iIce).toBeLessThan(iBody);
+  }
+  test('вариант A в игре: правый край итоговой рамки ≤ 1259, левый ≥ 1166, зазор до шейкера ≥ 12; низ 506', () => {
     const f = finalBox('decor', 'iceBucket');
-    expect(Math.abs(f.x + f.w - 1259)).toBeLessThan(1);
+    expect(f.x + f.w).toBeLessThanOrEqual(1259);
+    expect(f.x).toBeGreaterThanOrEqual(1166);
+    expect(f.x - (finalBox('shaker', 'shaker').x + finalBox('shaker', 'shaker').w)).toBeGreaterThanOrEqual(12);
+    expect(f.y + f.h).toBeCloseTo(506, 0);
+    expect(f.y).toBeGreaterThanOrEqual(330);
+  });
+  test('A: слои — задний обод → кубики → корпус с передним краем → щипцы; корпус светлее и холоднее, 3 капли 3–4 px, без полотенца', () => {
+    const svg = svgOf('decor');
+    const iRim = svg.indexOf('data-bucket="A"'), iIce = svg.indexOf('data-ice="1"'), iFront = svg.indexOf('data-front="1"'), iTongs = svg.indexOf('data-tongs=');
+    expect(iRim).toBeLessThan(iIce);
+    expect(iIce).toBeLessThan(iFront);
+    expect(iFront).toBeLessThan(iTongs);
+    expect(svg).toMatch(/fill="#E8E2D6" stroke-width="2\.73"/); /* корпус STEEL_HI светлее STEEL */
+    expect(svg).toContain('#BBD6D3'); /* холодная полоса GLASS_DP */
+    const drops = [...svg.matchAll(/<path data-drop="1" d="([^"]+)"/g)];
+    expect(drops).toHaveLength(3);
+    for (const d of drops) {
+      const nums = (d[1] as string).match(/-?[\d.]+/g)?.map(Number) as number[];
+      const ys = nums.filter((_, i) => i % 2 === 1), xs = nums.filter((_, i) => i % 2 === 0);
+      const h = Math.max(...ys) - Math.min(...ys), w = Math.max(...xs) - Math.min(...xs);
+      expect(h).toBeGreaterThanOrEqual(3); expect(h).toBeLessThanOrEqual(4); expect(w).toBeLessThanOrEqual(4);
+    }
+  });
+  test('B: слои стеклянной чаши — задняя стенка, лужа, лёд, передняя стенка, ножка, контур, блик', () => {
+    const order = ['data-layer="back"', 'data-puddle="1"', 'data-ice="1"', 'data-layer="front"', 'data-layer="stem"', 'data-layer="outline"', 'data-layer="shine"'].map((k) => BUCKET_B.indexOf(k));
+    expect(order.every((i) => i >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
   });
 });
 
