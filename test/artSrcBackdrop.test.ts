@@ -121,9 +121,37 @@ describe('29-3: полка и бутылки сиропов', () => {
     const liquids = [...SHELF.matchAll(/V-8Q18 -4 12 -4H-12Q-18 -4 -18 -8Z" fill="\{\{(\w+)\}\}"/g)].map((m) => m[1]);
     expect(liquids).toEqual(['MUSTARD', 'BAKE_SH', 'CHOC']);
     expect(count(SHELF, 'stroke="{{HILITE}}" stroke-opacity=".7"')).toBe(3); /* блик слева */
-    const labels = (parts.static as { texts: { t: string; x: number; y: number }[] }).texts.filter((t) => ['ваниль', 'карамель', 'миндаль'].includes(t.t));
-    expect(labels.map((t) => t.x)).toEqual([902, 968, 1034]);
-    for (const t of labels) expect(t.y).toBe(254);
+    /* слова сиропов ушли: Pixi-текстов подписей в static не осталось (блок 29-4, шаг 0) */
+    const words = (parts.static as { texts: { t: string }[] }).texts.map((t) => t.t);
+    for (const w of ['ваниль', 'карамель', 'миндаль']) expect(words.includes(w)).toBe(false);
+  });
+  test('на табличках ровно три иконки (ваниль — стручок и цветок, карамель — капля, миндаль — орех со швом), высота каждой 14–16 px, центр в центре таблички (y −46), внутри таблички 36 × 32, контур D', () => {
+    const icons = [...SHELF.matchAll(/<g data-icon="(\w+)">([\s\S]*?)<\/g>/g)];
+    expect(icons.map((m) => m[1])).toEqual(['vanilla', 'caramel', 'almond']);
+    expect(count(SHELF, '<g data-icon=')).toBe(3);
+    expect(count(svgOf('syrupShelf'), '<g data-icon=')).toBe(3);
+    for (const m of icons) {
+      const body = m[2] as string;
+      const ys: number[] = [];
+      const xs: number[] = [];
+      for (const d of body.matchAll(/ d="([^"]+)"/g)) {
+        const nums = [...(d[1] as string).matchAll(/-?\d+(?:\.\d+)?/g)].map((n) => +n[0]);
+        for (let i = 0; i + 1 < nums.length; i += 2) { xs.push(nums[i] as number); ys.push(nums[i + 1] as number); }
+      }
+      for (const c of body.matchAll(/<circle cx="(-?[\d.]+)" cy="(-?[\d.]+)" r="([\d.]+)"/g)) {
+        const [cx, cy, r] = [+(c[1] as string), +(c[2] as string), +(c[3] as string)];
+        xs.push(cx - r, cx + r);
+        ys.push(cy - r, cy + r);
+      }
+      const h = Math.max(...ys) - Math.min(...ys);
+      expect(h, m[1]).toBeGreaterThanOrEqual(14);
+      expect(h, m[1]).toBeLessThanOrEqual(16);
+      expect((Math.max(...ys) + Math.min(...ys)) / 2).toBeCloseTo(-46, 0);
+      expect(Math.min(...xs)).toBeGreaterThanOrEqual(-18 + 3); /* внутри таблички с полем */
+      expect(Math.max(...xs)).toBeLessThanOrEqual(18 - 3);
+      expect(body).toContain('stroke-width="{{D}}"');
+      for (const bad of ['stroke-width="{{L}}"', 'stroke-width="{{M}}"']) expect(body.includes(bad)).toBe(false);
+    }
   });
   test('край полки у холодильника молока в части milk — те же фигуры и заливка, что в syrupShelf (нет шва)', () => {
     for (const piece of ['<rect x="862" y="296" width="212" height="12" rx="4" fill="{{WOOD}}" stroke-width="{{M}}"/>', '<path d="M868 299H1068" fill="none" stroke="{{WOOD_HI}}" stroke-width="{{D}}"/>', '<rect x="866" y="308" width="204" height="3" fill="{{SHADOW}}" fill-opacity=".18" stroke="none"/>', '<path d="M1062 308V326L1046 308Z" fill="{{WOOD_SH}}" stroke-width="{{M}}"/>']) {

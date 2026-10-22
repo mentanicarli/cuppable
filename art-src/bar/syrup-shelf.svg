@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="854 170 228 162" data-part="syrupShelf" data-after="static" data-scale="1">
 <!--
-  Стойка сиропов (блок 29-3): деревянная полка 862–1074 × 296–308 (доска, блик сверху, тень снизу, два кронштейна) и три стеклянные бутылки 44 × 120 с цветной жидкостью (MUSTARD, BAKE_SH, CHOC), тёмным горлышком и насосом, светлым бликом слева. Центры бутылок x 902 / 968 / 1034 = центры зон syr1…syr3 (ZONE_POS); место подписей (этикетка 36 × 32, центр y 250) прежнее, подписи рисует Pixi-текстом static. Край полки у холодильника молока в части milk нарисован тем же.
+  Стойка сиропов (блок 29-3): деревянная полка 862–1074 × 296–308 (доска, блик сверху, тень снизу, два кронштейна) и три стеклянные бутылки 44 × 120 с цветной жидкостью (MUSTARD, BAKE_SH, CHOC), тёмным горлышком и насосом, светлым бликом слева. Центры бутылок x 902 / 968 / 1034 = центры зон syr1…syr3 (ZONE_POS); место подписей (этикетка 36 × 32, центр y 250) прежнее, иконки вместо слов (блок 29-4, шаг 0). Край полки у холодильника молока в части milk нарисован тем же.
 -->
 <g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
 <path d="M874 308V326L890 308Z" fill="{{WOOD_SH}}" stroke-width="{{M}}"/>
@@ -13,6 +13,15 @@
 <path d="M-22 -70Q-22 -84 -9 -86H9Q22 -84 22 -70V-8Q22 0 14 0H-14Q-22 0 -22 -8Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
 <path d="M-18 -68Q-18 -76 -8 -77H8Q18 -76 18 -68V-8Q18 -4 12 -4H-12Q-18 -4 -18 -8Z" fill="{{MUSTARD}}" stroke="none"/>
 <rect x="-18" y="-62" width="36" height="32" rx="5" fill="{{PAPER}}" stroke-width="{{D}}"/>
+<g data-icon="vanilla">
+<path d="M-10 -38Q-12 -48 3 -54Q-4 -46 -6 -39Q-8 -38 -10 -38Z" fill="{{CHOC}}" stroke-width="{{D}}"/>
+<circle cx="7" cy="-45" r="1.8" fill="{{PINK}}" stroke-width="{{D}}"/>
+<circle cx="9.3" cy="-43.3" r="1.8" fill="{{PINK}}" stroke-width="{{D}}"/>
+<circle cx="8.4" cy="-40.6" r="1.8" fill="{{PINK}}" stroke-width="{{D}}"/>
+<circle cx="5.6" cy="-40.6" r="1.8" fill="{{PINK}}" stroke-width="{{D}}"/>
+<circle cx="4.7" cy="-43.3" r="1.8" fill="{{PINK}}" stroke-width="{{D}}"/>
+<circle cx="7" cy="-42.7" r="1.2" fill="{{MUSTARD}}" stroke="none"/>
+</g>
 <path d="M-16 -74V-12" fill="none" stroke="{{HILITE}}" stroke-opacity=".7" stroke-width="{{L}}"/>
 <rect x="-9" y="-97" width="18" height="6" rx="2" fill="{{STEEL}}" stroke-width="{{D}}"/>
 <rect x="-3" y="-111" width="6" height="14" rx="2" fill="{{STEEL_SH}}" stroke-width="{{D}}"/>
@@ -23,6 +32,10 @@
 <path d="M-22 -70Q-22 -84 -9 -86H9Q22 -84 22 -70V-8Q22 0 14 0H-14Q-22 0 -22 -8Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
 <path d="M-18 -68Q-18 -76 -8 -77H8Q18 -76 18 -68V-8Q18 -4 12 -4H-12Q-18 -4 -18 -8Z" fill="{{BAKE_SH}}" stroke="none"/>
 <rect x="-18" y="-62" width="36" height="32" rx="5" fill="{{PAPER}}" stroke-width="{{D}}"/>
+<g data-icon="caramel">
+<path d="M0 -54Q-7 -45 -7 -42Q-7 -38 0 -38Q7 -38 7 -42Q7 -45 0 -54Z" fill="{{BAKE}}" stroke-width="{{D}}"/>
+<path d="M-3.5 -44Q-4.5 -42 -3.5 -40.5" fill="none" stroke="{{PAPER}}" stroke-width="{{D}}"/>
+</g>
 <path d="M-16 -74V-12" fill="none" stroke="{{HILITE}}" stroke-opacity=".7" stroke-width="{{L}}"/>
 <rect x="-9" y="-97" width="18" height="6" rx="2" fill="{{STEEL}}" stroke-width="{{D}}"/>
 <rect x="-3" y="-111" width="6" height="14" rx="2" fill="{{STEEL_SH}}" stroke-width="{{D}}"/>
@@ -33,6 +46,10 @@
 <path d="M-22 -70Q-22 -84 -9 -86H9Q22 -84 22 -70V-8Q22 0 14 0H-14Q-22 0 -22 -8Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
 <path d="M-18 -68Q-18 -76 -8 -77H8Q18 -76 18 -68V-8Q18 -4 12 -4H-12Q-18 -4 -18 -8Z" fill="{{CHOC}}" stroke="none"/>
 <rect x="-18" y="-62" width="36" height="32" rx="5" fill="{{PAPER}}" stroke-width="{{D}}"/>
+<g data-icon="almond">
+<path d="M0 -54Q8 -47 6.5 -42Q5 -38 0 -38Q-5 -38 -6.5 -42Q-8 -47 0 -54Z" fill="{{WOOD}}" stroke-width="{{D}}"/>
+<path d="M0 -52V-40" fill="none" stroke-width="{{D}}"/>
+</g>
 <path d="M-16 -74V-12" fill="none" stroke="{{HILITE}}" stroke-opacity=".7" stroke-width="{{L}}"/>
 <rect x="-9" y="-97" width="18" height="6" rx="2" fill="{{STEEL}}" stroke-width="{{D}}"/>
 <rect x="-3" y="-111" width="6" height="14" rx="2" fill="{{STEEL_SH}}" stroke-width="{{D}}"/>

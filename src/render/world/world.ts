@@ -381,7 +381,8 @@ export class World {
     hall.position.set(W / 2, H / 2);
     S.addChild(hall);
     this.hall = hall;
-    await this.bar.build(r, r);
+    /* тексты бара (подписи вывески, «молоко», названия станций): разрешение не ниже max(2, dpr · масштаб сцены), не выше 3; раньше брался texRes (1…2), и на экранах 1× слова расплывались */
+    await this.bar.build(r, Math.min(3, Math.max(2, res)));
     this.bar.root.pivot.set(W / 2, H / 2);
     S.addChild(this.bar.root);
     this.ready = true;

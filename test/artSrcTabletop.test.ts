@@ -110,12 +110,23 @@ describe('29-2: холодильник молока', () => {
     const z = zone('milk');
     expect(z.x).toBe(1066);
     expect(z.y).toBe(244);
-    expect(count(MILK, "V74L44 58H70L84 74V140Z") + count(MILK, "V74L112 58H138L152 74V140Z")).toBe(2);
+    expect(count(MILK, "V74L40 58H74L90 74V140Z") + count(MILK, "V74L112 58H138L152 74V140Z")).toBe(2);
     expect(MILK).toContain('<rect x="166" y="96" width="9" height="64"');
     expect(166).toBeGreaterThan(95);
     expect(MILK).toContain('<rect x="10" y="10" width="170" height="242" rx="10"');
     expect(count(MILK, 'height="6" rx="2" fill="{{DARK}}"')).toBe(2);
-    expect((parts.milk as { texts: { t: string }[] }).texts.map((t) => t.t)).toEqual(['молоко']);
+    const tx = (parts.milk as unknown as { texts: { t: string; x: number; y: number; size: number; tl?: number | null }[] }).texts;
+    expect(tx.map((t) => t.t)).toEqual(['молоко']);
+    const label = /<rect x="(\d+)" y="90" width="(\d+)" height="30" rx="5" fill="\{\{PINK\}\}"/.exec(MILK);
+    expect(label).not.toBeNull();
+    const lw = +((label as RegExpExecArray)[2] as string);
+    const word = tx[0] as { t: string; x: number; size: number; tl?: number | null };
+    expect(word.size).toBeGreaterThanOrEqual(12); /* было 9,5 */
+    expect(word.tl ?? null).toBeNull(); /* без сжатия по ширине */
+    const wordW = word.t.length * word.size * 0.62; /* оценка ширины Nunito 800: 0,62 кегля на букву */
+    expect(wordW).toBeLessThanOrEqual(lw - 8); /* поля слева и справа ≥ 4 px */
+    expect(word.x).toBe(1066 + +((label as RegExpExecArray)[1] as string) + lw / 2); /* центр слова в центре таблички */
+    expect(MILK).toContain('V74L112 58H138L152 74V140Z');
   });
 });
 

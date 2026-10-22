@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="1058 236 206 278" data-part="milk" data-scale="1">
 <!--
-  Холодильник с молоком (блок 29-2): маленький холодильник: корпус 190 × 262 (41 × 56 см по шкале 4,64; реальный настольный 45 × 60), дверца с рамкой, внутри верхняя полка с двумя пакетами молока (гребень, этикетка, листок), нижний ящик, вертикальная ручка, ножки. Подпись «молоко» рисует Pixi-текстом на пакете, как раньше (x 1123, y 353). Зона milk (1066–1256 × 244–506) и ZONE_POS.milk не менялись.
+  Холодильник с молоком (блок 29-2): маленький холодильник: корпус 190 × 262 (41 × 56 см по шкале 4,64; реальный настольный 45 × 60), дверца с рамкой, внутри верхняя полка с двумя пакетами молока (гребень, этикетка, листок), нижний ящик, вертикальная ручка, ножки. Подпись «молоко» рисует Pixi-текстом на пакете: размер 12 без сжатия (x 1124, y 354), табличка 56 px (поля слева и справа ≥ 4 px). Зона milk (1066–1256 × 244–506) и ZONE_POS.milk не менялись.
   В блок входит край полки сиропов (рисуется поверх корпуса, как раньше): те же фигуры и заливка, что в части syrupShelf (блок 29-3), поэтому шва нет.
 -->
 <g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
@@ -10,10 +10,10 @@
 <rect width="190" height="262" rx="16" fill="{{SAGE_LT}}" stroke-width="{{L}}"/>
 <path d="M168 5H174Q185 5 185 16V246Q185 257 174 257H168Z" fill="{{SAGE}}" fill-opacity=".5" stroke="none"/>
 <rect x="10" y="10" width="170" height="242" rx="10" fill="{{GLASS}}" stroke-width="{{M}}"/>
-<path d="M30 140V74L44 58H70L84 74V140Z" fill="{{PAPER}}" stroke-width="{{M}}"/>
-<path d="M30 74H84" fill="none" stroke-width="{{D}}"/>
-<path d="M62 140V74L70 58V132Z" fill="{{KRAFT_SH}}" fill-opacity=".55" stroke="none"/>
-<rect x="38" y="90" width="38" height="30" rx="5" fill="{{PINK}}" stroke-width="{{D}}"/>
+<path d="M24 140V74L40 58H74L90 74V140Z" fill="{{PAPER}}" stroke-width="{{M}}"/>
+<path d="M24 74H90" fill="none" stroke-width="{{D}}"/>
+<path d="M78 140V74L74 58V132Z" fill="{{KRAFT_SH}}" fill-opacity=".55" stroke="none"/>
+<rect x="30" y="90" width="56" height="30" rx="5" fill="{{PINK}}" stroke-width="{{D}}"/>
 <path d="M98 140V74L112 58H138L152 74V140Z" fill="{{PAPER}}" stroke-width="{{M}}"/>
 <path d="M98 74H152" fill="none" stroke-width="{{D}}"/>
 <path d="M130 140V74L138 58V132Z" fill="{{KRAFT_SH}}" fill-opacity=".55" stroke="none"/>
@@ -29,6 +29,6 @@
 <path d="M868 299H1068" fill="none" stroke="{{WOOD_HI}}" stroke-width="{{D}}"/>
 <rect x="866" y="308" width="204" height="3" fill="{{SHADOW}}" fill-opacity=".18" stroke="none"/>
 </g>
-<text x="1123" y="353" font-size="9.5" font-weight="800" fill="{{INK}}" font-family="Nunito">молоко</text>
+<text x="1124" y="354" font-size="12" font-weight="800" fill="{{INK}}" font-family="Nunito">молоко</text>
 </g>
 </svg>
