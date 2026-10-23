@@ -1,4 +1,4 @@
-import { CanvasTextMetrics, Container, Graphics, Text, TextStyle } from 'pixi.js';
+import { CanvasTextMetrics, Container, Graphics, Sprite, Text, TextStyle, Texture } from 'pixi.js';
 
 export const INK = '#4A2F25';
 export const SOFT = '#7A5A4A';
@@ -36,6 +36,7 @@ export class Brush {
   private order: Container[] = [];
   private readonly segs: Graphics[] = [];
   private segUsed = 0;
+  private readonly sprites = new Map<HTMLImageElement, Sprite>();
   private readonly texts: Text[] = [];
   private textUsed = 0;
 
@@ -70,6 +71,20 @@ export class Brush {
     this.g = this.seg();
     this.order.push(this.g);
     return this.g;
+  }
+
+  /** Готовая картинка (например питчер бара) в прямоугольник; порядок слоёв — порядок вызовов. */
+  image(img: HTMLImageElement, x: number, y: number, w: number, h: number): void {
+    let s = this.sprites.get(img);
+    if (!s) {
+      s = new Sprite(Texture.from(img));
+      this.sprites.set(img, s);
+    }
+    s.position.set(x, y);
+    s.width = w;
+    s.height = h;
+    this.order.push(s);
+    this.next();
   }
 
   /** Всё, что нарисует `draw`, обрезается по фигуре `shape` (аналог clip() на canvas). */

@@ -1,4 +1,5 @@
 import { INK, SOFT, clamp, type Brush } from './brush';
+import { PITCHER_BOX, PITCHER_INNER, PITCHER_K, pitcherImage, pitcherOrigin, pitcherPt } from './pitcherArt';
 
 export interface SteamView {
   ml: number;
@@ -15,30 +16,48 @@ export interface SteamView {
   cap: number;
   targetFoam: number;
   now: number;
+  /** картинка питчера бара загружена (иначе рисуется прежний питчер); флаг входит в подпись кадра, поэтому окно перерисуется, когда картинка готова */
+  art?: boolean;
 }
 
 export function drawSteam(b: Brush, v: SteamView): void {
   const cap = v.cap;
+  const img = v.art ? pitcherImage() : null;
+  /* столбец молока: у питчера бара полость 128…316, у прежнего рисунка 110…330 */
+  const yTop = img ? 128 : 110;
+  const yBot = img ? 316 : 330;
   const vol = (v.ml * (1 + 0.6 * v.foam)) / cap;
-  const surf = 330 - vol * 220;
-  const mil = 330 - (v.ml / cap) * 220;
+  const surf = yBot - vol * (yBot - yTop);
+  const mil = yBot - (v.ml / cap) * (yBot - yTop);
   const px = 62;
   const pw = 150;
-  // ручка
-  const handle = () => b.g.moveTo(px + pw - 2, 128).bezierCurveTo(px + pw + 46, 128, px + pw + 40, 230, px + pw - 8, 236);
-  handle().stroke({ width: 9, color: INK, cap: 'round', join: 'round' });
-  handle().stroke({ width: 4, color: '#C9C8C0', cap: 'round', join: 'round' });
-  const jug = [px, 110, px + pw, 110, px + pw - 12, 332, px + 12, 332];
-  b.shape(jug, '#E4E2DA');
-  b.clip((g) => g.poly(jug), () => {
-    b.g.rect(px, mil, pw, 340 - mil).fill('#FBF4E8');
-    b.g.rect(px, surf, pw, mil - surf).fill('#FFFFFF');
-    for (let i = 0; i < 20 && v.coarse > 0.3; i++) {
-      b.g.circle(px + 10 + ((i * 37) % (pw - 20)), surf + 2 + ((i * 11) % Math.max(4, mil - surf)), 2 + v.coarse * 3).stroke({ width: 1.5, color: 'rgba(74,47,37,.25)' });
-    }
-    b.g.rect(px, surf, pw, 16).fill('rgba(232,176,74,.3)');
-  });
-  b.shape(jug, null, { w: 3, col: INK, join: 'round' });
+  const draw = (jug: number[]): void => {
+    b.clip((g) => g.poly(jug), () => {
+      b.g.rect(px - 20, mil, pw + 40, 340 - mil).fill('#FBF4E8');
+      b.g.rect(px - 20, surf, pw + 40, mil - surf).fill('#FFFFFF');
+      for (let i = 0; i < 20 && v.coarse > 0.3; i++) {
+        b.g.circle(px + 10 + ((i * 37) % (pw - 20)), surf + 2 + ((i * 11) % Math.max(4, mil - surf)), 2 + v.coarse * 3).stroke({ width: 1.5, color: 'rgba(74,47,37,.25)' });
+      }
+      b.g.rect(px - 20, surf, pw + 40, 16).fill('rgba(232,176,74,.3)');
+    });
+  };
+  if (img) {
+    /* питчер бара (стальной, носик слева, ручка справа) и разрез корпуса с молоком */
+    const o = pitcherOrigin();
+    b.image(img, o.x, o.y, PITCHER_BOX.w * PITCHER_K, PITCHER_BOX.h * PITCHER_K);
+    const inner = PITCHER_INNER.flatMap((p) => pitcherPt(p));
+    b.shape(inner, '#E8E2D6');
+    draw(inner);
+  } else {
+    // ручка
+    const handle = () => b.g.moveTo(px + pw - 2, 128).bezierCurveTo(px + pw + 46, 128, px + pw + 40, 230, px + pw - 8, 236);
+    handle().stroke({ width: 9, color: INK, cap: 'round', join: 'round' });
+    handle().stroke({ width: 4, color: '#C9C8C0', cap: 'round', join: 'round' });
+    const jug = [px, 110, px + pw, 110, px + pw - 12, 332, px + 12, 332];
+    b.shape(jug, '#E4E2DA');
+    draw(jug);
+    b.shape(jug, null, { w: 3, col: INK, join: 'round' });
+  }
   // трубка
   const tipY = clamp(v.my, 70, 326);
   const depth = tipY - surf;

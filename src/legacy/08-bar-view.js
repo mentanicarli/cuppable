@@ -244,7 +244,7 @@ function pxScene(B, m, title) {
   if (m === 'grind') return { mode: m, title, view: { set: G.grindSet || 3, ideal: G.idealGrind || 3, pro: !!G.grinderPro, hold: !!B.hold, done: !!B.done.grind, dose: B.dose, target: B.tgtDose, now: performance.now() } };
   if (m === 'tamp') return { mode: m, title, view: { phase: B.tampPhase, press: B.tampP, uneven: B.uneven, hold: !!B.hold, mx: B.mx, my: B.my, wide: !!G.tamper, seeds: SEED } };
   if (m === 'shot') return { mode: m, title, view: { ml: B.shot.ml, t: B.shot.t, state: B.shot.st, locked: !!B.shot.locked, target: B.tgtMl, lastShot: B.shotNote ? B.shotNote.t : null, idx: B.shots > 1 ? B.shotIdx + '/' + B.shots : '', now: performance.now() } };
-  if (m === 'steam') { const p = B.pit; return { mode: m, title, view: { ml: p.ml + p.es, foam: p.foam, coarse: p.coarse, temp: p.T, steamed: !!p.steamed, hold: !!B.hold, my: B.my, thermo: !!G.thermo, zone: MENUAPI.steamZoneOf(B.c.order.id, !!G.thermo), cap: B.pitCap, targetFoam: B.rc.foam, now: performance.now() } }; }
+  if (m === 'steam') { const p = B.pit; return { mode: m, title, view: { ml: p.ml + p.es, foam: p.foam, coarse: p.coarse, temp: p.T, steamed: !!p.steamed, hold: !!B.hold, my: B.my, thermo: !!G.thermo, zone: MENUAPI.steamZoneOf(B.c.order.id, !!G.thermo), cap: B.pitCap, targetFoam: B.rc.foam, now: performance.now(), art: !!pitcherImage() } }; }
   if (m === 'pour') return { mode: m, title, view: { level: B.pourLevel, blobs: B.blobs, guide: (G.hints || G.stencil) ? (B.guide || guideFor(B.c.art)) : null, hold: !!B.hold, mx: B.mx, my: B.my, started: !!B.started } };
   const k = B.fillKind, tl = k === 'water' ? B.rc.total : k === 'ice' ? B.rc.ice : B.rc.milk;
   return { mode: m, title, view: { kind: k, ml: B.fill, espresso: B.cup.es, line: tl, holding: !!B.hold, label: k === 'water' ? 'Лить воду (держите)' : k === 'ice' ? 'Сыпать лёд (держите)' : B.rc.pitcherShot ? 'Лить сливки (держите)' : 'Лить молоко (держите)', now: performance.now() } };
@@ -378,9 +378,19 @@ function drawFill(B) {
   btnI('fillDone', 296, 356, 114, 56, 'Готово', { col: '#B9CAA9' });
 }
 function drawSteam(B) {
-  const p = B.pit, cap = B.pitCap, vol = ((p.ml + p.es) * (1 + .6 * p.foam)) / cap, surf = 330 - vol * 220, mil = 330 - ((p.ml + p.es) / cap) * 220;
+  /* питчер бара (31-3): картинка pitFront и разрез корпуса; пока картинка не загружена — прежний рисунок */
+  const pimg = pitcherImage(), yTop = pimg ? 128 : 110, yBot = pimg ? 316 : 330;
+  const p = B.pit, cap = B.pitCap, vol = ((p.ml + p.es) * (1 + .6 * p.foam)) / cap, surf = yBot - vol * (yBot - yTop), mil = yBot - ((p.ml + p.es) / cap) * (yBot - yTop);
   const px = 62, pw = 150;
   bx.save(); bx.lineWidth = 3; bx.strokeStyle = ICOL.ink; bx.lineJoin = 'round';
+  if (pimg) {
+    const po = pitcherOrigin(); bx.drawImage(pimg, po.x, po.y, PITCHER_BOX.w * PITCHER_K, PITCHER_BOX.h * PITCHER_K);
+    bx.beginPath(); PITCHER_INNER.forEach((q, i) => { const [qx, qy] = pitcherPt(q); if (i) bx.lineTo(qx, qy); else bx.moveTo(qx, qy); }); bx.closePath(); bx.fillStyle = '#E8E2D6'; bx.fill();
+    bx.save(); bx.clip(); bx.fillStyle = '#FBF4E8'; bx.fillRect(px - 20, mil, pw + 40, 340 - mil); bx.fillStyle = '#FFFFFF'; bx.fillRect(px - 20, surf, pw + 40, mil - surf);
+    for (let i = 0; i < 20 && p.coarse > .3; i++) { bx.beginPath(); bx.arc(px + 10 + (i * 37) % (pw - 20), surf + 2 + (i * 11) % Math.max(4, mil - surf), 2 + p.coarse * 3, 0, 7); bx.strokeStyle = 'rgba(74,47,37,.25)'; bx.lineWidth = 1.5; bx.stroke(); }
+    bx.fillStyle = 'rgba(232,176,74,.3)'; bx.fillRect(px - 20, surf, pw + 40, 16);
+    bx.restore(); bx.strokeStyle = ICOL.ink; bx.lineWidth = 3;
+  } else {
   /* ручка */
   bx.beginPath(); bx.moveTo(px + pw - 2, 128); bx.bezierCurveTo(px + pw + 46, 128, px + pw + 40, 230, px + pw - 8, 236); bx.lineWidth = 9; bx.strokeStyle = ICOL.ink; bx.stroke(); bx.lineWidth = 4; bx.strokeStyle = '#C9C8C0'; bx.stroke(); bx.lineWidth = 3; bx.strokeStyle = ICOL.ink;
   bx.beginPath(); bx.moveTo(px, 110); bx.lineTo(px + pw, 110); bx.lineTo(px + pw - 12, 332); bx.lineTo(px + 12, 332); bx.closePath(); bx.fillStyle = '#E4E2DA'; bx.fill();
@@ -389,6 +399,7 @@ function drawSteam(B) {
   bx.fillStyle = 'rgba(232,176,74,.3)'; bx.fillRect(px, surf, pw, 16);
   bx.restore(); bx.strokeStyle = ICOL.ink; bx.lineWidth = 3;
   bx.beginPath(); bx.moveTo(px, 110); bx.lineTo(px + pw, 110); bx.lineTo(px + pw - 12, 332); bx.lineTo(px + 12, 332); bx.closePath(); bx.stroke();
+  }
   /* трубка */
   const tipY = clamp(B.my, 70, 326), depth = tipY - surf, wx = px + pw - 34;
   lineW(wx, 62, wx, tipY, '#4A2F25', 12); lineW(wx, 62, wx, tipY, '#BFC4C2', 6); bx.beginPath(); bx.arc(wx, tipY, 6, 0, 7); bx.fillStyle = '#BFC4C2'; bx.fill(); bx.lineWidth = 2.5; bx.stroke();
