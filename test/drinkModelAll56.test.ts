@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { DRINKS } from '../src/game/menu';
-import { HEIGHT_CAP, allSpecs, lodFor, modelRefOf, modelTopColor, pilotRef, sizesOf, specOf, tinyOf, variantsOf, type Lod } from '../src/game/drinkModel';
+import { HEIGHT_CAP, allSpecs, hasSteam, lodFor, modelRefOf, modelTopColor, pilotRef, sizesOf, specOf, tinyOf, variantsOf, type Lod } from '../src/game/drinkModel';
 import { CUP_TOP_PX, cupPlan, cupUnit, type CupPlace } from '../src/render/world/cupPlan';
 import { drinkIconSvg, drinkParts, geomOf, seatOf } from '../src/render/world/drinkModel';
 import { MODEL_TEX_CAP, TexCache } from '../src/render/world/texCache';
@@ -119,5 +119,23 @@ describe('Н2-4: все виды × размеры × уровни', () => {
     expect(modelTopColor(stub)).toMatch(/^#[0-9A-Fa-f]{6}$/);
     expect(modelTopColor({ id: 'нет', size: '0.2', cold: false })).toBe('#5A3A2A');
     for (const d of DRINKS) expect(variantsOf(d).length, d.id).toBeGreaterThan(0);
+  });
+});
+
+describe('пар над чашкой (31-1): только у горячего варианта', () => {
+  test('hasSteam: горячий true, холодный и со льдом false, независимо от размера (56 видов)', () => {
+    expect(specs.length).toBeGreaterThanOrEqual(56);
+    for (const s of specs) {
+      expect(hasSteam(s), `${s.id} ${s.size} ${s.cold ? 'холодный' : 'горячий'}`).toBe(!s.cold);
+      if (s.ice.rows * s.ice.cols > 0) expect(hasSteam(s), `${s.id}: лёд`).toBe(false);
+    }
+    expect(specs.filter((s) => hasSteam(s)).length).toBeGreaterThan(0);
+    expect(specs.filter((s) => !hasSteam(s)).length).toBeGreaterThan(0);
+  });
+  test('вариант определяет пар: один напиток в двух размерах ведёт себя одинаково', () => {
+    for (const d of DRINKS) for (const cold of variantsOf(d)) {
+      const flags = new Set(sizesOf(d.id, cold).map((sz) => hasSteam(specOf(d.id, sz, cold))));
+      expect(flags.size, `${d.id} ${cold}`).toBe(1);
+    }
   });
 });

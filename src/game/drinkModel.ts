@@ -469,6 +469,11 @@ export function specOf(drinkId: string, size: Size, cold: boolean): DrinkSpec {
 }
 
 /** Все описания: каждый напиток × размер × вариант (горячий/холодный). Нужны листу проверки и тестам. */
+/** Пар над чашкой: только у горячего варианта; холодный и со льдом не парит (зависит от варианта, а не от размера). */
+export function hasSteam(spec: DrinkSpec): boolean {
+  return !spec.cold && spec.ice.rows * spec.ice.cols === 0;
+}
+
 export function allSpecs(): DrinkSpec[] {
   const out: DrinkSpec[] = [];
   for (const d of DRINKS) for (const cold of variantsOf(d)) for (const size of sizesOf(d.id, cold)) out.push(specOf(d.id, size, cold));

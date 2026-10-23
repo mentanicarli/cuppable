@@ -7,7 +7,7 @@ import { strokeAt } from './style';
 import { drinkIconPx } from './drinkModel';
 import { TexCache, modelTexKey } from './texCache';
 import { cupTexture } from './cupTex';
-import { specOf, type ModelRef } from '../../game/drinkModel';
+import { hasSteam, specOf, type ModelRef } from '../../game/drinkModel';
 import { readableOn } from '../../game/contrast';
 
 const INK = 0x4a2f25;
@@ -162,6 +162,8 @@ export class Actor {
   /** чашка в руке и на столе, нарисованная моделью напитка (Н2-4); пока текстура не готова, рисуется простая чашка */
   private cupSpr = new Sprite();
   private cupModel: ModelRef | null = null;
+  /** пар у чашки: только у горячего напитка (модель неизвестна — как раньше) */
+  private cupSteams = true;
   private cupState: 'none' | 'hand' | 'table' = 'none';
   private cupScale = new Spring(0, 14, 0.45);
   /** масштаб модели чашки по объёму напитка: умножается на рост гостя (чашка живёт внутри его контейнера) */
@@ -444,10 +446,16 @@ export class Actor {
     if (h) h.ovr = on ? { x: 40, y: 506 } : this.carry ? { x: 17, y: 507 } : null;
   }
 
+  private steamsFor(m: ModelRef | null): boolean {
+    const spec = m ? this.modelSpecOf(m) : null;
+    return spec ? hasSteam(spec) : true;
+  }
+
   /** Чашка оказалась в руке: рука подносит её к груди, гость радуется. */
   takeCup(top: string, k = 1, model: ModelRef | null = null): void {
     this.cupK = k;
     this.cupModel = model;
+    this.cupSteams = this.steamsFor(model);
     this.drawCup(top);
     this.cupState = 'hand';
     this.cup.visible = true;
@@ -462,6 +470,7 @@ export class Actor {
   holdCup(top: string, k = 1, model: ModelRef | null = null): void {
     this.cupK = k;
     this.cupModel = model;
+    this.cupSteams = this.steamsFor(model);
     this.drawCup(top);
     this.cupState = 'hand';
     this.cup.visible = true;
@@ -1121,7 +1130,7 @@ export class Actor {
     this.syncCupModel();
     this.cup.scale.set(clamp(k, 0.3, 1.25) * (this.cupSpr.visible ? 1 : this.cupK));
     this.steamT += dt;
-    if (this.steamT > 0.2 && this.o.steam && this.alive) {
+    if (this.steamT > 0.2 && this.o.steam && this.alive && this.cupSteams) {
       this.steamT = 0;
       const g = this.cup.getGlobalPosition();
       this.o.steam(g.x + (vr() - 0.5) * 6, g.y - 12);
