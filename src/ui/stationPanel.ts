@@ -126,14 +126,6 @@ export function panelUpdate(root: HTMLElement, v: PanelView, l: PanelLive): void
     const y = top - tgt * full;
     mark.setAttribute('d', `M${mark.getAttribute('data-x0') ?? 144} ${y.toFixed(1)}H${mark.getAttribute('data-x1') ?? 256}`);
   }
-  const foam = root.querySelector<SVGGraphicsElement>('#xpFoam');
-  if (foam) {
-    const top = Number(foam.getAttribute('data-top') ?? 112);
-    const full = Number(foam.getAttribute('data-full') ?? 30);
-    const h = Math.min(full, frac * full);
-    foam.setAttribute('y', (top - h).toFixed(1));
-    foam.setAttribute('height', h.toFixed(1));
-  }
   const liq2 = root.querySelector<SVGGraphicsElement>('#xpLiq2');
   if (liq2) { const h = Math.min(60, frac * 60); liq2.setAttribute('y', (172 - 70 - h).toFixed(1)); liq2.setAttribute('height', h.toFixed(1)); }
   const sg = root.querySelector<SVGGraphicsElement>('#xpSteamG');

@@ -122,8 +122,7 @@ export function sourceOf(task: string, drink?: string): { part: string; marker: 
     case 'boba': return [{ part: 'boba', marker: 'data-pot="1"' }];
     case 'blend': return [{ part: 'blender', marker: 'data-item="blender"' }];
     case 'shake': return [{ part: 'shaker', marker: 'data-glass="tinBig"' }, { part: 'shaker', marker: 'data-glass="tinSmall"' }];
-    case 'foam': return [{ part: 'foamer', marker: 'data-item="foamer"' }];
-    case 'whip': return [{ part: 'whipper', marker: 'data-item="whipper"' }];
+    case 'foam': return [{ part: 'whipper', marker: 'data-item="whipper"' }];
     default: return [];
   }
 }
@@ -137,7 +136,6 @@ const BOX = {
   blender: { x: 552, y: 288, w: 133, h: 218 },
   tinBig: { x: 1014, y: 404, w: 42, h: 102 },
   tinSmall: { x: 1062, y: 426, w: 44, h: 80 },
-  foamer: { x: 420, y: 342.6, w: 106, h: 163.4 },
   whipper: { x: 262.5, y: 328, w: 135, h: 178 }
 } as const;
 
@@ -373,17 +371,7 @@ ${place(empty, BOX.teapot, tx, ty, k)}
       return `<g ${WRAP}><ellipse cx="200" cy="186" rx="86" ry="6" fill="${col('SHADOW')}" fill-opacity=".25" stroke="none"/><defs><clipPath id="xpClip" clipPathUnits="userSpaceOnUse"><path d="${clip}"/></clipPath></defs><g class="xpShake">${place(bigLiq, BOX.tinBig, bx, by, k)}${place(small, BOX.tinSmall, bx + (BOX.tinSmall.x - BOX.tinBig.x) * k, 182 - BOX.tinSmall.h * k, k)}</g><path id="xpMark" d="M0 0" opacity="0"/></g>`;
     }
     case 'foam': {
-      /* пена взбивается в самом кувшине миксера: разрез корпуса, молоко внутри, пена поднимается, палочка ходит в молоке */
-      let fo = barObject('foamer', 'data-item="foamer"');
-      const caps = [...fo.matchAll(/<(?:path|circle) data-(?:cap|bubble|drop)="1"[^>]*\/>/g)].map((m) => m[0]);
-      for (const x of caps) fo = fo.replace(x, '');
-      const dw = `stroke-width="${(W.D / SRC_SCALE).toFixed(2)}"`;
-      const cut = `<clipPath id="xpClip"><path d="M443 376L446 478H494L497 376Z"/></clipPath><path d="M443 376L446 478H494L497 376Z" fill="${col('STEEL_HI')}" stroke="none"/><g clip-path="url(#xpClip)"><rect x="438" y="424" width="64" height="60" fill="${col('PAPER')}"/><rect id="xpFoam" data-top="424" data-full="46" x="438" y="424" width="64" height="0" fill="${c2}"/></g><g class="xpWhiskIn"><rect x="468" y="340" width="4" height="96" rx="2" fill="${col('STEEL')}" ${dw}/><ellipse cx="470" cy="438" rx="11" ry="3" fill="${col('STEEL_HI')}" ${dw}/></g><g data-at="0.9" opacity="0">${caps.join('')}</g>`;
-      fo = fo.replace('<ellipse cx="470" cy="372"', `${cut}<ellipse cx="470" cy="372"`);
-      return `<g ${WRAP}>${place(fo, BOX.foamer, 120, 10, 1.05)}<path id="xpMark" d="M0 0" opacity="0"/></g>`;
-    }
-    case 'whip': {
-      /* сифон бара взбивает сливки на напиток в стакане: приёмник — стакан с готовым напитком, сливки растут шапкой сверху */
+      /* сифон бара взбивает пенку на напиток в стакане: приёмник — стакан с готовым напитком, пенка растёт шапкой сверху */
       const wh = barObject('whipper', 'data-item="whipper"');
       const r = receiverDrink(drink, o.size, o.cold, 100, 52);
       const wrap = `<ellipse id="xpCream" data-grow="1" data-base="${r.surface.toFixed(1)}" data-ry="20" cx="258" cy="${r.surface.toFixed(1)}" rx="46" ry="0" fill="${c2}" ${sw('M')} transform="translate(-58 0)"/>`;

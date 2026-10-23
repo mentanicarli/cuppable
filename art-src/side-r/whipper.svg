@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="192 302 164 218" data-part="whipper" data-scale="1.1">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="241 302 164 218" data-part="whipper" data-scale="1.1">
 <!--
   Сифон для пены (30-2), секция R. Проектная рамка 262, 328, 134 × 182: стальной сифон-кремер с зарядником, головкой, рычагом и носиком в ведёрке со льдом, второй сифон, три баллончика. ×1,10 через transform обёртки.
 -->
 <g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
-<g data-wrap="whipper" transform="translate(199.2 506) scale(1.1) translate(-262 -506)">
+<g data-wrap="whipper" transform="translate(248.4 506) scale(1.1) translate(-262 -506)">
 <ellipse cx="328" cy="508" rx="66" ry="4" fill="{{SHADOW}}" fill-opacity=".22" stroke="none"/>
 <g data-item="whipper" data-box="262.5 328 135 178">
 <path d="M285.46 376Q284.1 384 279 398V449Q279 452 283 452H309Q313 452 313 449V398Q307.9 384 306.54 376Z" fill="{{STEEL}}" stroke-width="{{M}}"/>

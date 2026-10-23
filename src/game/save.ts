@@ -27,6 +27,17 @@ const num = (x: unknown): x is number => typeof x === 'number' && Number.isFinit
 /** Результат чтения: сохранения нет, оно прочитано (возможно, мигрировано) или повреждено. */
 export type SaveRead = { kind: 'none' } | { kind: 'ok'; data: SaveData } | { kind: 'broken'; reason: 'corrupt' | 'newer' };
 
+/** Купленное оборудование, переименованное или убранное из игры: 31-6 убрал миксер для пенок, его пенки делает сифон. */
+const MOVED_EQ: Readonly<Record<string, string>> = { eq_foamer: 'eq_whipper' };
+function migrateUp(up: string[]): string[] {
+  const out: string[] = [];
+  for (const id of up) {
+    const to = MOVED_EQ[id] ?? id;
+    if (!out.includes(to)) out.push(to);
+  }
+  return out;
+}
+
 /** Разбор и миграция сохранения любой версии. Лишние поля отбрасываются, числа проверяются. */
 export function readSave(raw: string | null): SaveRead {
   if (!raw) return { kind: 'none' };
@@ -44,7 +55,7 @@ export function readSave(raw: string | null): SaveRead {
   const money = r['money'];
   const rating = r['rating'];
   if (!num(day) || !num(money) || day < 1) return { kind: 'broken', reason: 'corrupt' };
-  const up = Array.isArray(r['up']) ? r['up'].filter((x): x is string => typeof x === 'string') : [];
+  const up = migrateUp(Array.isArray(r['up']) ? r['up'].filter((x): x is string => typeof x === 'string') : []);
   const data: SaveData = {
     v: SAVE_VERSION,
     day: Math.floor(day),

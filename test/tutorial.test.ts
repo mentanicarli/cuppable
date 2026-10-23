@@ -12,7 +12,7 @@ describe('подсказки новых станций', () => {
   });
   test('шаги бара ведут к своему оборудованию', () => {
     expect(tutorialEqs('whisk')).toEqual(['matcha']);
-    expect(tutorialEqs('whip')).toEqual(['whipper']);
+    expect(tutorialEqs('foam')).toEqual(['whipper']);
     expect(tutorialEqs('tonic')).toEqual(['juice']);
     expect(tutorialEqs('grind')).toEqual([]);
     expect(tutorialEqs('food', { case: 'pastry', heat: true })).toEqual(['case_pastry', 'microwave']);
@@ -25,7 +25,7 @@ describe('подсказки новых станций', () => {
     expect(exampleDrink('shaker')).not.toBeNull();
   });
   test('30-3: покупка каждой из девяти боковых (31-2: бабл ти в «Чайном баре») станций называет свою секцию, центральные — нет', () => {
-    const sides: Record<string, 'L' | 'R'> = { tea: 'L', matcha: 'L', powders: 'L', boba: 'L', juice: 'R', whipper: 'R', foamer: 'R', blender: 'R', shaker: 'R' };
+    const sides: Record<string, 'L' | 'R'> = { tea: 'L', matcha: 'L', powders: 'L', boba: 'L', juice: 'R', whipper: 'R', blender: 'R', shaker: 'R' };
     for (const [eq, sec] of Object.entries(sides)) {
       const t = purchaseToast(eq) ?? '';
       expect(t, eq).toContain(`секции «${SECTION_NAMES[sec]}»: нажмите стрелку с этим названием.`);

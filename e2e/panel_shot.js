@@ -14,7 +14,7 @@ const PANELS = { whisk: 'matcha_latte', brew: 'tea_sencha', juice: 'orange_bumbl
   p.on('pageerror', e => console.log('PAGEERROR', e.message));
   await p.goto(PW.url(tmp) + '#dev'); await p.waitForSelector('[data-sandbox]', { timeout: 60000 }); await p.waitForTimeout(400);
   await p.evaluate(() => window.__sandbox.start({ day: 10, profile: 'medium' })); await p.waitForSelector('#screen', { state: 'hidden', timeout: 20000 });
-  await p.evaluate(() => { const d = __dbg; ['tea', 'matcha', 'powders', 'juice', 'whipper', 'foamer', 'blender', 'boba', 'shaker'].forEach(k => { d.G['eq_' + k] = true; }); d.G.eq_ice = true; d.G.milk = true; d.G.tutOff = true; d.applyUpgrades(); });
+  await p.evaluate(() => { const d = __dbg; ['tea', 'matcha', 'powders', 'juice', 'whipper', 'blender', 'boba', 'shaker'].forEach(k => { d.G['eq_' + k] = true; }); d.G.eq_ice = true; d.G.milk = true; d.G.tutOff = true; d.applyUpgrades(); });
   await p.waitForFunction(() => __dbg.D.customers[0] && __dbg.D.customers[0].arrived, null, { timeout: 90000 });
   const list = process.env.PAIRS ? process.env.PAIRS.split(',').map(x => x.split('=')) : Object.entries(PANELS); /* PAIRS=станция=напиток,… — произвольные пары */
   for (const [task, id] of list) {

@@ -85,7 +85,7 @@ function overlaps(items) {
   const url = PW.url(tmp);
   const start = async (o) => { await p.goto('about:blank'); await p.goto(url + '#dev'); await p.waitForSelector('[data-sandbox]', { timeout: 60000 }); await p.waitForTimeout(400); await p.evaluate(c => window.__sandbox.start(c), o); await p.waitForSelector('#screen', { state: 'hidden', timeout: 20000 }); };
   await start({ day: 10, profile: 'medium' });
-  await p.evaluate(() => { const G = __dbg.G; ['ice', 'tea', 'matcha', 'powders', 'juice', 'whipper', 'foamer', 'blender', 'boba', 'shaker', 'case_snacks', 'case_pastry', 'case_dessert', 'fridge_deli', 'microwave', 'siphon'].forEach(k => G['eq_' + k] = true); G.milk = true; __dbg.applyUpgrades(); __dbg.G.tutOff = true; __dbg.G.hints = true; });
+  await p.evaluate(() => { const G = __dbg.G; ['ice', 'tea', 'matcha', 'powders', 'juice', 'whipper', 'blender', 'boba', 'shaker', 'case_snacks', 'case_pastry', 'case_dessert', 'fridge_deli', 'microwave', 'siphon'].forEach(k => G['eq_' + k] = true); G.milk = true; __dbg.applyUpgrades(); __dbg.G.tutOff = true; __dbg.G.hints = true; });
   /* перехват кадра бара для проверок налива */
   await p.evaluate(() => { const W = __dbg.WORLD, o = W.paintBar.bind(W); W.paintBar = f => { window.__frame = f; return o(f); }; });
   const report = { sizes: SIZES.map(s => s.join('x')), states: {}, minOverlap: MIN_OVERLAP };

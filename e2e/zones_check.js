@@ -3,7 +3,7 @@
 const { chromium } = require('playwright'); const path = require('path'); const fs = require('fs'); const PW = require('./pw');
 const OUT = path.resolve(process.argv[3] || 'out/zc'); fs.mkdirSync(OUT, { recursive: true });
 const HOOK = 'newGame(); updateHud(); showTitle(); window.__dbg = { get G() { return G; }, get D() { return D; }, get BR() { return BR; }, spawn, barOpen, applyUpgrades };';
-const ALL = ['milk', 'eq_ice', 'eq_tea', 'eq_matcha', 'eq_powders', 'eq_juice', 'eq_whipper', 'eq_foamer', 'eq_blender', 'eq_boba', 'eq_shaker'];
+const ALL = ['milk', 'eq_ice', 'eq_tea', 'eq_matcha', 'eq_powders', 'eq_juice', 'eq_whipper', 'eq_blender', 'eq_boba', 'eq_shaker'];
 let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' : 'FAIL ') + m); };
 (async () => {
   const src = fs.readFileSync(path.resolve(process.argv[2]), 'utf8').replace('newGame(); updateHud(); showTitle();', HOOK);

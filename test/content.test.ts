@@ -36,8 +36,8 @@ describe('тексты К1 в игре', () => {
     for (const t of GLOSSARY) expect(t.text.length, t.name).toBeGreaterThan(20);
     expect(GLOSSARY.find((t) => /ристретто/i.test(t.name))).toBeUndefined();
   });
-  test('24 экрана «Зачем» с заголовком и текстом, среди них why:sections («Как листать бар»)', () => {
-    expect(WHY_KEYS).toHaveLength(24);
+  test('23 экрана «Зачем» с заголовком и текстом, среди них why:sections («Как листать бар»)', () => {
+    expect(WHY_KEYS).toHaveLength(23);
     for (const w of Object.values(WHY_TEXTS)) {
       expect(w.title.length).toBeGreaterThan(5);
       expect(w.text.length).toBeGreaterThan(1);
@@ -84,8 +84,8 @@ describe('тексты К1 в игре', () => {
     }
   });
   test('названия станций в подсказках — из списка guide.md', () => {
-    expect(STATION_NAMES).toHaveLength(19);
-    for (const key of ['tea', 'matcha', 'powders', 'juice', 'whipper', 'foamer', 'blender', 'boba', 'shaker', 'ice', 'cream']) {
+    expect(STATION_NAMES).toHaveLength(18);
+    for (const key of ['tea', 'matcha', 'powders', 'juice', 'whipper', 'blender', 'boba', 'shaker', 'ice', 'cream']) {
       const title = lesson(key, { drinkId: 'latte' })?.title ?? '';
       expect(STATION_NAMES.map((n) => n.toLowerCase()), key).toContain(title.toLowerCase());
     }

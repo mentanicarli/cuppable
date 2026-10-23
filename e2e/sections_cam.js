@@ -38,7 +38,7 @@ let fails = 0; const ok = (c, m) => { if (!c) { fails++; console.log('FAIL ' + m
   const { ctx, p } = await open('#dev', 2, true);
   const shot = async (name) => { await p.evaluate(() => window.scrollTo(0, 0)); await p.locator('#stage').screenshot({ path: `${out}/${name}.png`, timeout: 120000 }); };
   await p.waitForTimeout(600);
-  { const r = await p.evaluate(() => ({ n: __dbg.WORLD.barSideTextures(), ownL: ['tea', 'matcha', 'boba', 'powders'].filter(k => __dbg.G['eq_' + k]).length, ownR: ['juice', 'whipper', 'foamer', 'blender', 'shaker'].filter(k => __dbg.G['eq_' + k]).length }));
+  { const r = await p.evaluate(() => ({ n: __dbg.WORLD.barSideTextures(), ownL: ['tea', 'matcha', 'boba', 'powders'].filter(k => __dbg.G['eq_' + k]).length, ownR: ['juice', 'whipper', 'blender', 'shaker'].filter(k => __dbg.G['eq_' + k]).length }));
     /* 30-1, 30-2: по секции фон + по текстуре на купленный предмет (L до 4, R до 7) */
     ok(r.n === (1 + r.ownL) + (1 + r.ownR), `#dev: обе боковые секции открыты, текстур ${r.n} = L (1 фон + ${r.ownL}) + R (1 фон + ${r.ownR})`); }
   await shot('b11_1_center');

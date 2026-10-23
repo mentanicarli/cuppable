@@ -14,7 +14,7 @@ const drinks = (process.argv[4] || 'matcha_bumble,orange_bumble,espresso_tonic')
   p.on('pageerror', e => console.log('PAGEERROR', e.message));
   await p.goto(PW.url(tmp) + '#dev'); await p.waitForSelector('[data-sandbox]', { timeout: 60000 }); await p.waitForTimeout(400);
   await p.evaluate(() => window.__sandbox.start({ day: 10, profile: 'medium' })); await p.waitForSelector('#screen', { state: 'hidden', timeout: 20000 });
-  await p.evaluate(() => { const d = __dbg; ['tea', 'matcha', 'powders', 'juice', 'whipper', 'foamer', 'blender', 'boba', 'shaker'].forEach(k => { d.G['eq_' + k] = true; }); d.G.eq_ice = true; d.G.milk = true; d.G.tutOff = true; d.applyUpgrades(); });
+  await p.evaluate(() => { const d = __dbg; ['tea', 'matcha', 'powders', 'juice', 'whipper', 'blender', 'boba', 'shaker'].forEach(k => { d.G['eq_' + k] = true; }); d.G.eq_ice = true; d.G.milk = true; d.G.tutOff = true; d.applyUpgrades(); });
   await p.waitForFunction(() => __dbg.D.customers[0] && __dbg.D.customers[0].arrived, null, { timeout: 90000 });
   for (const id of drinks) {
     await p.evaluate(() => { if (__dbg.D) __dbg.D.t = Math.min(__dbg.D.t, 60); __dbg.resetBar(); }); await p.waitForTimeout(150);

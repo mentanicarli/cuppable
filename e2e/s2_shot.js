@@ -22,7 +22,7 @@ const HOOK = 'newGame(); updateHud(); showTitle(); window.__dbg = { MENUAPI: win
     await p.evaluate(() => { setInterval(() => { __dbg.D.t = Math.max(__dbg.D.t, 100); }, 16); document.querySelectorAll('#hud,#bTk,#bCoach,#toast,#bFloat,#bGoal,#frontHint,#devBtn,#devPanel,#bBack,#secNav').forEach(e => { e.style.visibility = 'hidden'; }); });
     return { ctx, p };
   };
-  const LK = ['tea', 'matcha', 'powders'], RK = ['juice', 'whipper', 'foamer', 'blender', 'boba', 'shaker'];
+  const LK = ['tea', 'matcha', 'powders'], RK = ['juice', 'whipper', 'blender', 'boba', 'shaker'];
   const own = (p, l, r) => p.evaluate(([a, b, LK, RK]) => { LK.forEach(k => { __dbg.G['eq_' + k] = a.includes(k); }); RK.forEach(k => { __dbg.G['eq_' + k] = b.includes(k); }); __dbg.applyUpgrades(); }, [l, r, LK, RK]);
   /* секция, камера: ждём текстуры (счётчик WORLD.barSideTextures() считает только живые секции — по одной, камера на ней) */
   const settle = async (p, n) => { for (let i = 0; i < 80; i++) { const t = await p.evaluate(() => __dbg.WORLD.barSideTextures()); if (t >= n) break; await p.waitForTimeout(100); } await p.waitForTimeout(500); };
@@ -36,7 +36,7 @@ const HOOK = 'newGame(); updateHud(); showTitle(); window.__dbg = { MENUAPI: win
     await ctx.close(); }
   { const { ctx, p } = await open({ width: 1312, height: 752 }, 1);
     await PW.goSection(p, 'R'); await own(p, [], ['juice']); await settle(p, 2); await shot(p, 'R_one_1x');
-    await own(p, [], ['juice', 'whipper', 'foamer']); await settle(p, 4); await shot(p, 'R_three_1x');
+    await own(p, [], ['juice', 'whipper']); await settle(p, 4); await shot(p, 'R_three_1x');
     await own(p, [], RK); await settle(p, 7); await shot(p, 'R_all_1x');
     await p.evaluate(() => { __dbg.D.t = 270; __dbg.tickDay(0.1); }); await p.waitForTimeout(1500); await shot(p, 'R_eve_1x');
     await ctx.close(); }

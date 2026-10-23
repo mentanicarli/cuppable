@@ -54,7 +54,7 @@ exports.sandboxStart = async (p, url, o = {}) => {
 exports.goSection = (p, id, instant = true) => p.evaluate(([i, n]) => window.__sec.go(i, n), [id, instant]);
 
 /** Станция бокового ряда (чай, матча, порошки, соки, сифон, пенка, блендер, бабл ти, шейкер) — зона в боковой секции. */
-const SIDE = ['tea', 'matcha', 'powders', 'juice', 'whipper', 'foamer', 'blender', 'boba', 'shaker'];
+const SIDE = ['tea', 'matcha', 'powders', 'juice', 'whipper', 'blender', 'boba', 'shaker'];
 /** Селектор нужной зоны: зоны боковых станций лежат в группах секций (в центре их плиток нет). */
 exports.zoneSel = z => (SIDE.includes(z) ? `#bZones [data-sec] [data-z=${z}]` : `#bZones > [data-z=${z}]`);
 /** Камера к секции станции (листание включено игроку, 30-3): через window.__cam (отладочная сборка); возвращает секцию или null, если перейти нельзя. */

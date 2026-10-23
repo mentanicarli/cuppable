@@ -21,7 +21,7 @@ if (parts.length > 1 && !process.env.ART_MISC_CHILD) {
   const url = PW.url(tmp);
   await p.goto('about:blank'); await p.goto(url + '#dev'); await p.waitForSelector('[data-sandbox]', { timeout: 60000 }); await p.waitForTimeout(400);
   await p.evaluate(() => window.__sandbox.start({ day: 10, profile: 'medium' })); await p.waitForSelector('#screen', { state: 'hidden', timeout: 20000 });
-  await p.evaluate(() => { const G = __dbg.G; ['ice', 'tea', 'matcha', 'powders', 'juice', 'whipper', 'foamer', 'blender', 'boba', 'shaker', 'case_snacks', 'case_pastry', 'case_dessert', 'fridge_deli', 'microwave', 'siphon'].forEach(k => G['eq_' + k] = true); G.milk = true; G.tutOff = true; G.hints = true; __dbg.applyUpgrades(); const d = __dbg; d.D.nextArr = 1e9; for (let i = 0; i < 3; i++) d.spawn(); d.D.customers.forEach(c => { c.pat = c.max = 1e9; }); });
+  await p.evaluate(() => { const G = __dbg.G; ['ice', 'tea', 'matcha', 'powders', 'juice', 'whipper', 'blender', 'boba', 'shaker', 'case_snacks', 'case_pastry', 'case_dessert', 'fridge_deli', 'microwave', 'siphon'].forEach(k => G['eq_' + k] = true); G.milk = true; G.tutOff = true; G.hints = true; __dbg.applyUpgrades(); const d = __dbg; d.D.nextArr = 1e9; for (let i = 0; i < 3; i++) d.spawn(); d.D.customers.forEach(c => { c.pat = c.max = 1e9; }); });
   await p.waitForFunction(() => __dbg.D.customers[0] && __dbg.D.customers[0].arrived, null, { timeout: 90000 });
   const shot = async (n, clip) => { await p.screenshot({ path: `${out}/${n}.png`, timeout: 120000, ...(clip ? { clip } : {}) }); };
   const hideUi = sel => p.evaluate(s => document.querySelectorAll(s).forEach(e => { e.style.visibility = 'hidden'; }), sel);

@@ -276,7 +276,7 @@ function closeInset() {
   BR.inset = null; BR.hold = false; UI.close.hidden = true; coachKey = '';
 }
 /* Зона активна, только если то, что в ней, нарисовано на баре (те же условия, что у WORLD.setBarUpgrades). Остальное — пустое место стола. */
-const SIDE_ZONE_IDS = new Set(['tea', 'matcha', 'powders', 'juice', 'whipper', 'foamer', 'blender', 'boba', 'shaker']);
+const SIDE_ZONE_IDS = new Set(['tea', 'matcha', 'powders', 'juice', 'whipper', 'blender', 'boba', 'shaker']);
 function zoneShown(z) {
   if (z === 'milk') return !!G.milk || !!G.eq_cream; /* кувшин сливок для рафа стоит у холодильника */
   if (z === 'ice') return !!G.eq_ice;
@@ -317,7 +317,7 @@ function zoneClick(z) {
   openInset(t);
 }
 function zoneNoNeed(z) {
-  return { grind: 'Помол здесь не нужен', tamp: 'Темпер не нужен', shot: 'Шот не нужен', water: 'Вода в этом напитке не нужна', ice: 'Лёд в этом напитке не нужен', food: 'Еду гость не просил', milk: 'Молоко в этом напитке не нужно', steam: 'Пар не нужен', pour: 'Заливать нечего', syrup: 'Клиент не просил сироп', tea: 'Чай здесь не нужен', matcha: 'Матча здесь не нужна', powders: 'Порошок не нужен', juice: 'Сок и тоник не нужны', whipper: 'Сифон не нужен', foamer: 'Пенка не нужна', blender: 'Блендер не нужен', boba: 'Шарики не нужны', shaker: 'Шейкер не нужен' }[z] || 'Здесь ничего не нужно';
+  return { grind: 'Помол здесь не нужен', tamp: 'Темпер не нужен', shot: 'Шот не нужен', water: 'Вода в этом напитке не нужна', ice: 'Лёд в этом напитке не нужен', food: 'Еду гость не просил', milk: 'Молоко в этом напитке не нужно', steam: 'Пар не нужен', pour: 'Заливать нечего', syrup: 'Клиент не просил сироп', tea: 'Чай здесь не нужен', matcha: 'Матча здесь не нужна', powders: 'Порошок не нужен', juice: 'Сок и тоник не нужны', whipper: 'Сифон не нужен', blender: 'Блендер не нужен', boba: 'Шарики не нужны', shaker: 'Шейкер не нужен' }[z] || 'Здесь ничего не нужно';
 }
 /* Мост к станциям из src/game/stations: состояние живёт в BR, логика — в чистых модулях. */
 function runStep(step, t) {
@@ -356,8 +356,8 @@ window.addEventListener('pointerup', () => { if (BR && BR.inset === 'food') BR.h
 
 /* Панели станций нового ядра: налив, таймер, заварка (src/ui/stationPanel, src/game/stations) */
 const xEl = $('#xPanel'); let xKey = '';
-const X_TITLE = { juice: 'Налить сок или пюре', tonic: 'Налить тоник', powder: 'Добавить порошок', boba: 'Добавить шарики', topping: 'Украсить', whisk: 'Взбить матчу венчиком', brew: 'Заварить чай', blend: 'Взбить в блендере', shake: 'Взболтать в шейкере', foam: 'Взбить пенку', whip: 'Взбить сливочную пену', layer: 'Налить слоями' };
-const X_HOLD = { juice: 'Лить (держите)', tonic: 'Лить (держите)', powder: 'Сыпать (держите)', boba: 'Сыпать (держите)', topping: 'Посыпать (держите)', whisk: 'Взбивать (держите)', blend: 'Блендер (держите)', shake: 'Встряхивать (держите)', foam: 'Взбивать (держите)', whip: 'Взбивать (держите)', layer: 'Лить медленно (держите)' };
+const X_TITLE = { juice: 'Налить сок или пюре', tonic: 'Налить тоник', powder: 'Добавить порошок', boba: 'Добавить шарики', topping: 'Украсить', whisk: 'Взбить матчу венчиком', brew: 'Заварить чай', blend: 'Взбить в блендере', shake: 'Взболтать в шейкере', foam: 'Взбить пенку', layer: 'Налить слоями' };
+const X_HOLD = { juice: 'Лить (держите)', tonic: 'Лить (держите)', powder: 'Сыпать (держите)', boba: 'Сыпать (держите)', topping: 'Посыпать (держите)', whisk: 'Взбивать (держите)', blend: 'Блендер (держите)', shake: 'Встряхивать (держите)', foam: 'Взбивать (держите)', layer: 'Лить медленно (держите)' };
 const X_FILL = new Set(['juice', 'tonic', 'powder', 'boba', 'topping']);
 function xOpen(t) {
   const B = BR; if (B.xs[t]) return;
@@ -371,7 +371,7 @@ function xOpen(t) {
     v = { kind: 'fill', max: tg * 1.7, zone: [tg - tol, tg + tol], col: { juice: pal.juice, tonic: pal.tonic, powder: pal.powder, boba: pal.tea, topping: pal.topping }[t], col2: pal.foam, holdLabel: X_HOLD[t], hint: 'Держите кнопку (или Пробел) и остановитесь у линии. Лишнее можно вылить.' };
   } else {
     B.xs[t] = MENUAPI.timedStation.init({ kind: t, target: tg }); const tol = MENUAPI.TIMED[t].tol;
-    const col = { whisk: pal.matcha, blend: pal.blend, shake: B.tasks.includes('powder') ? pal.powder : pal.blend, foam: '#C99B6E', whip: pal.foam, layer: B.tasks.includes('tonic') ? pal.tonic : pal.juice }[t];
+    const col = { whisk: pal.matcha, blend: pal.blend, shake: B.tasks.includes('powder') ? pal.powder : pal.blend, foam: pal.foam, layer: B.tasks.includes('tonic') ? pal.tonic : pal.juice }[t];
     v = { kind: 'timed', max: tg * 1.7, zone: [tg - tol, tg + tol], col, col2: pal.foam, holdLabel: X_HOLD[t], hint: 'Держите кнопку (или Пробел), пока шкала не дойдёт до зелёной зоны. Потом «Готово».' };
   }
   B.xv[t] = Object.assign({ task: t, drink: d, size: String(size), cold: !!B.c.order.cold, title: t === 'layer' ? MENUAPI.layerTitle(d) : X_TITLE[t] }, v);

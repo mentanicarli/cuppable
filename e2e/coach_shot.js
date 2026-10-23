@@ -19,7 +19,7 @@ let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' 
     if (sandbox) { await p.waitForSelector('[data-sandbox]', { timeout: 60000 }); await p.waitForTimeout(400); await p.evaluate(() => window.__sandbox.start({ day: 10, profile: 'medium' })); await p.waitForSelector('#screen', { state: 'hidden', timeout: 20000 }); }
     else await PW.startNew(p);
     await p.waitForFunction(() => window.__dbg && __dbg.D && __dbg.G.phase === 'day', null, { timeout: 60000 });
-    await p.evaluate(() => { const d = __dbg, G = d.G; G.tutOff = true; G.hints = true; ['ice', 'tea', 'matcha', 'powders', 'juice', 'whipper', 'foamer', 'blender', 'boba', 'shaker'].forEach(k => { G['eq_' + k] = true; }); G.milk = true; d.applyUpgrades(); d.D.nextArr = 1e9; d.spawn(); d.D.customers.forEach(c => { c.pat = c.max = 1e9; c.syrup = null; }); });
+    await p.evaluate(() => { const d = __dbg, G = d.G; G.tutOff = true; G.hints = true; ['ice', 'tea', 'matcha', 'powders', 'juice', 'whipper', 'blender', 'boba', 'shaker'].forEach(k => { G['eq_' + k] = true; }); G.milk = true; d.applyUpgrades(); d.D.nextArr = 1e9; d.spawn(); d.D.customers.forEach(c => { c.pat = c.max = 1e9; c.syrup = null; }); });
     await p.waitForFunction(() => __dbg.D.customers[0] && __dbg.D.customers[0].arrived, null, { timeout: 90000 });
     return { ctx, p };
   };

@@ -9,13 +9,13 @@ import { LAYER_GLASS, barObject, fillCounts, groupOf, jarFor, layerSourceRect, p
 
 /* 31-2, шаг 3: окна станций нового ядра рисуются теми же предметами, что стоят на баре. Тест падает, если окно потеряло главные цвета
    предмета бара, использует цвет вне палитры или толщину вне L/M/D. */
-const TASKS = ['whisk', 'brew', 'juice', 'tonic', 'powder', 'boba', 'topping', 'blend', 'shake', 'foam', 'whip', 'layer'] as const;
+const TASKS = ['whisk', 'brew', 'juice', 'tonic', 'powder', 'boba', 'topping', 'blend', 'shake', 'foam', 'layer'] as const;
 const colors = new Set(Object.values(PAL.colors).map((c) => c.toLowerCase()));
 const TOKENS = [PAL.stroke.L, PAL.stroke.M, PAL.stroke.D];
 /** Заливки предмета, которые окно заменяет цветом напитка (налив вместо встроенного чая, порошок банки). */
 const REPLACED: Record<string, string[]> = { brew: ['TERRA', 'BAKE'], powder: ['CHOC'] };
 const col = (task: string): string => (task === 'powder' ? PAL.colors.CHOC : PAL.colors.MUSTARD);
-const art = (task: string, drink?: string): string => panelArt({ task, col: col(task), col2: PAL.colors.PAPER, drink: task === 'layer' ? 'orange_bumble' : task === 'topping' ? 'cappuccino_pumpkin' : task === 'whip' ? 'latte_coconut' : drink });
+const art = (task: string, drink?: string): string => panelArt({ task, col: col(task), col2: PAL.colors.PAPER, drink: task === 'layer' ? 'orange_bumble' : task === 'topping' ? 'cappuccino_pumpkin' : task === 'foam' ? 'latte_coconut' : drink });
 /** цвета слоёв — данные напитка (спецификация), не палитра */
 const espressoSpec = specOf('espresso', sizesOf('espresso', false)[0] as never, false);
 const specColors = new Set([...layerView('orange_bumble', 1).map((l) => l.color), ...specOf('latte_coconut', sizesOf('latte_coconut', false)[0] as never, false).liquid.map((l) => l.color), ...espressoSpec.liquid.map((l) => l.color), espressoSpec.top.color].map((c) => c.toLowerCase()));
@@ -67,8 +67,8 @@ describe('окна станций: предметы бара', () => {
   test('налив: у каждого окна есть #xpLiq с data-top и data-full; у окон «залить» есть #xpMark', () => {
     for (const t of TASKS) {
       const svg = art(t);
-      /* у каждого окна есть то, что растёт по прогрессу: налив (#xpLiq), слой (#xpLayer), жидкость матчи (#xpMat), шарики (data-at), топпинг (#xpTop), пена (#xpFoam), сливки (#xpCream) */
-      const grows: Record<string, RegExp> = { whisk: /id="xpMat"/, layer: /id="xpLayer" data-top="[\d.]+" data-full="[\d.]+"/, boba: /data-at="1\.00"/, topping: /id="xpTop" data-grow/, foam: /id="xpFoam" data-top="[\d.]+" data-full="[\d.]+"/, whip: /id="xpCream" data-grow/ };
+      /* у каждого окна есть то, что растёт по прогрессу: налив (#xpLiq), слой (#xpLayer), жидкость матчи (#xpMat), шарики (data-at), топпинг (#xpTop), пенка (#xpCream) */
+      const grows: Record<string, RegExp> = { whisk: /id="xpMat"/, layer: /id="xpLayer" data-top="[\d.]+" data-full="[\d.]+"/, boba: /data-at="1\.00"/, topping: /id="xpTop" data-grow/, foam: /id="xpCream" data-grow/ };
       expect(svg, t).toMatch(grows[t] ?? /id="xpLiq"( data-start="[\d.]+")? data-top="[\d.]+" data-full="[\d.]+"/);
     }
     for (const t of ['juice', 'tonic', 'powder', 'boba', 'topping']) expect(art(t), t).toMatch(/id="xpMark" data-top=/);
@@ -151,8 +151,8 @@ describe('окно «Налить слоями»: источник, ложка, 
 describe('аудит окон (31-3): приёмник и источник по предыдущим шагам рецепта', () => {
   const win = (task: string, drink: string, cold = true): string => panelArt({ task, col: PAL.colors.MUSTARD, col2: PAL.colors.PAPER, drink, size: '0.3', cold });
   const cubes = (s: string): number => s.split('rx="4" fill="' + PAL.colors.GLASS).length - 1;
-  test('лёд, насыпанный шагом «Лёд», лежит в приёмнике: сок, тоник, шарики, сливки', () => {
-    for (const [t, d] of [['juice', 'orange_bumble'], ['tonic', 'espresso_tonic'], ['boba', 'boba_guava'], ['whip', 'latte_coconut']] as const) expect(cubes(win(t, d)), `${t} ${d}`).toBeGreaterThanOrEqual(5);
+  test('лёд, насыпанный шагом «Лёд», лежит в приёмнике: сок, тоник, шарики', () => {
+    for (const [t, d] of [['juice', 'orange_bumble'], ['tonic', 'espresso_tonic'], ['boba', 'boba_guava']] as const) expect(cubes(win(t, d)), `${t} ${d}`).toBeGreaterThanOrEqual(5);
     expect(cubes(win('juice', 'hot_bumble', false)), 'горячий бамбл без льда').toBe(0);
   });
   test('блендер и шейкер: кувшин уже полон (data-start), лёд тает по прогрессу (data-fade); без льда кубиков нет', () => {
@@ -166,14 +166,15 @@ describe('аудит окон (31-3): приёмник и источник по 
     expect(s).toContain('data-pot="1"');
     expect([...s.matchAll(/data-at="/g)].length).toBeGreaterThanOrEqual(15);
   });
-  test('пена: разрез кувшина миксера (молоко и поднимающаяся пена), а не стакан; шапка пены появляется в конце', () => {
+  test('пенка (31-6: сифон для пены): сифон бара и стакан с напитком, шапка растёт эллипсом сверху, цвет пенки из спецификации напитка', () => {
     const s = win('foam', 'latte_coconut', false);
-    expect(s).toContain('id="xpFoam"');
-    expect(s).toContain('data-at="0.9"');
-    expect(s).not.toContain(`d="${'M140 28H260L250 172H150Z'}"`);
+    expect(s).toContain('data-item="whipper"');
+    expect(s).toContain('id="xpCream"');
+    expect(s).not.toContain('id="xpFoam"');
+    expect(s).not.toContain('data-item="foamer"');
   });
-  test('сливки и топпинг лежат на напитке в стакане: растущие эллипсы, а не жидкость с дна', () => {
-    expect(win('whip', 'latte_coconut')).toContain('id="xpCream"');
+  test('пенка и топпинг лежат на напитке в стакане: растущие эллипсы, а не жидкость с дна', () => {
+    expect(win('foam', 'latte_coconut')).toContain('id="xpCream"');
     expect(win('topping', 'cappuccino_pumpkin')).toContain('id="xpTop"');
     expect(win('topping', 'cappuccino_pumpkin')).not.toContain('id="xpLiq"');
   });

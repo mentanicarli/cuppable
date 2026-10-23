@@ -2,7 +2,7 @@ import type { Station } from './station';
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
-export type TimedKind = 'whisk' | 'blend' | 'shake' | 'foam' | 'whip' | 'layer';
+export type TimedKind = 'whisk' | 'blend' | 'shake' | 'foam' | 'layer';
 
 interface TimedCfg {
   /** Сколько секунд держать. */
@@ -20,7 +20,6 @@ export const TIMED: Readonly<Record<TimedKind, TimedCfg>> = {
   blend: { target: 6, tol: 1, verb: 'Блендер', noun: 'Взбито', low: 'остались кусочки', high: 'слишком жидко', ok: 'как надо' },
   shake: { target: 5, tol: 1, verb: 'Встряхивать', noun: 'Взболтано', low: 'не размешалось', high: 'долго', ok: 'отлично' },
   foam: { target: 4, tol: 0.8, verb: 'Взбивать пенку', noun: 'Пенка', low: 'жидковата', high: 'плотная, как масло', ok: 'воздушная' },
-  whip: { target: 3, tol: 0.6, verb: 'Взбивать', noun: 'Сливочная пена', low: 'жидкая', high: 'слишком густая', ok: 'как облако' },
   layer: { target: 4, tol: 0.7, verb: 'Лить медленно', noun: 'Слои', low: 'слои не легли', high: 'слои смешались', ok: 'слои ровные' }
 };
 

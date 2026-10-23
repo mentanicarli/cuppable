@@ -220,8 +220,8 @@ let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' 
     const order3 = async (id) => { await p.evaluate(() => __dbg.resetBar()); await p.evaluate((id) => { const M = window.__MENUAPI, c = __dbg.D.customers[0], dk = M.drinkById[id]; c.drink = id; c.order.key = id; c.order.id = id; c.order.name = dk.name; c.order.size = '0.3'; c.order.cold = false; c.order.food = null; c.syrup = null; c.pat = c.max = 1e9; __dbg.barOpen(c); }, id); await p.waitForTimeout(900); await PW.dismissCard(p); await p.waitForTimeout(500); };
     const active = () => p.evaluate(() => [...document.querySelectorAll('#bZones [data-z]')].filter(r => r.style.pointerEvents !== 'none').map(r => r.dataset.z));
     const sameSet = (a, b) => a.length === b.length && b.every(x => a.includes(x));
-    const SIDE_L = ['tea', 'matcha', 'boba', 'powders'], SIDE_R = ['juice', 'whipper', 'foamer', 'blender', 'shaker'];
-    await p.evaluate(() => { const G = __dbg.G; G.tutOff = true; G.hints = true; ['tea', 'matcha', 'powders', 'juice', 'whipper', 'foamer', 'blender', 'boba', 'shaker'].forEach(k => { G['eq_' + k] = true; }); __dbg.applyUpgrades(); });
+    const SIDE_L = ['tea', 'matcha', 'boba', 'powders'], SIDE_R = ['juice', 'whipper', 'blender', 'shaker'];
+    await p.evaluate(() => { const G = __dbg.G; G.tutOff = true; G.hints = true; ['tea', 'matcha', 'powders', 'juice', 'whipper', 'blender', 'boba', 'shaker'].forEach(k => { G['eq_' + k] = true; }); __dbg.applyUpgrades(); });
     await order3('tea_sencha');
     /* какие зоны активны в каждой секции */
     let a = await active(); ok(!a.some(z => SIDE_L.concat(SIDE_R).includes(z)) && a.includes('grind') && a.includes('bell'), `${vp.width}: центр — активны зоны центра, плитки боковых станций не активны (${a.length} зон)`);
@@ -268,7 +268,7 @@ let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' 
   }
   /* окно станции в секции R (кадр): заказ с соком */
   { const { ctx, p } = await open('#dev', true, { width: 1312, height: 752 }, shots3 ? 2 : 1);
-    await p.evaluate(() => { document.querySelectorAll('#devBtn,#devPanel').forEach(e => { e.style.visibility = 'hidden'; }); const G = __dbg.G; G.tutOff = true; G.hints = false; ['tea', 'matcha', 'powders', 'juice', 'whipper', 'foamer', 'blender', 'boba', 'shaker'].forEach(k => { G['eq_' + k] = true; }); __dbg.applyUpgrades(); });
+    await p.evaluate(() => { document.querySelectorAll('#devBtn,#devPanel').forEach(e => { e.style.visibility = 'hidden'; }); const G = __dbg.G; G.tutOff = true; G.hints = false; ['tea', 'matcha', 'powders', 'juice', 'whipper', 'blender', 'boba', 'shaker'].forEach(k => { G['eq_' + k] = true; }); __dbg.applyUpgrades(); });
     await p.evaluate(() => __dbg.resetBar()); await p.evaluate(() => { const M = window.__MENUAPI, c = __dbg.D.customers[0], dk = M.drinkById.orange_bumble; c.drink = 'orange_bumble'; c.order.key = c.order.id = 'orange_bumble'; c.order.name = dk.name; c.order.size = '0.4'; c.order.cold = true; c.order.food = null; c.syrup = null; c.pat = c.max = 1e9; __dbg.barOpen(c); }); await p.waitForTimeout(900); await PW.dismissCard(p);
     await p.evaluate(() => { const B = __dbg.BR; B.done.grind = B.done.tamp = B.done.shot = true; });
     await p.evaluate(() => __dbg.camGo('R', true)); await p.waitForTimeout(400);
@@ -286,7 +286,7 @@ let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' 
   /* обычная игра: зоны боковых станций только в своих секциях, в центре плиток нет */
   { const { ctx, p } = await open('', false, { width: 1312, height: 752 }, shots3 ? 2 : 1);
     ok(await p.evaluate(() => !!document.querySelector('#bZones [data-sec]') && document.querySelector('#barSvg').getAttribute('viewBox') === '0 0 1280 720'), 'группы боковых зон есть, камера в центре: viewBox 0 0 1280 720');
-    await p.evaluate(() => { const G = __dbg.G; ['tea', 'matcha', 'powders', 'juice', 'whipper', 'foamer', 'blender', 'boba', 'shaker'].forEach(k => { G['eq_' + k] = true; }); __dbg.applyUpgrades(); });
+    await p.evaluate(() => { const G = __dbg.G; ['tea', 'matcha', 'powders', 'juice', 'whipper', 'blender', 'boba', 'shaker'].forEach(k => { G['eq_' + k] = true; }); __dbg.applyUpgrades(); });
     ok(await p.evaluate(() => document.querySelectorAll('#bZones > [data-z=tea], #bZones > [data-z=matcha], #bZones > [data-z=boba], #bZones > [data-z=shaker]').length === 0 && ['tea', 'matcha', 'boba', 'shaker'].every(z => document.querySelector(`#bZones [data-z=${z}]`).style.pointerEvents === 'none')), 'плиток боковых станций в центре нет, а их зоны при камере в центре не активны');
     if (shots3) { await p.evaluate(() => window.scrollTo(0, 0)); await p.locator('#stage').screenshot({ path: `${shots3}/b14_8_center_no_dev.png`, timeout: 120000 }); }
     await ctx.close(); }

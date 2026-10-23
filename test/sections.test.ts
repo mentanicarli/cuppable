@@ -21,13 +21,13 @@ describe('секции: карта станций', () => {
     expect(SECTION_NAMES).toEqual({ L: 'Чайный бар', C: 'Кофейный бар', R: 'Холодный бар' });
   });
 
-  test('19 станций: 10 в центре, 4 слева, 5 справа (31-2: бабл ти в «Чайном баре»)', () => {
-    expect(STATIONS).toHaveLength(19);
-    expect(new Set(STATIONS.map((s) => s.id)).size).toBe(19);
+  test('18 станций: 10 в центре, 4 слева, 4 справа (31-2: бабл ти в «Чайном баре»)', () => {
+    expect(STATIONS).toHaveLength(18);
+    expect(new Set(STATIONS.map((s) => s.id)).size).toBe(18);
     const by = (id: string): string[] => STATIONS.filter((s) => s.section === id).map((s) => s.id);
     expect(by('C')).toEqual(['grind', 'tamp', 'shot', 'water', 'steam', 'milk', 'pour', 'syrup', 'ice', 'cream']);
     expect(by('L')).toEqual(['matcha', 'tea', 'powders', 'boba']);
-    expect(by('R')).toEqual(['juice', 'whipper', 'foamer', 'blender', 'shaker']);
+    expect(by('R')).toEqual(['juice', 'whipper', 'blender', 'shaker']);
   });
 
   test('каждая зона ZONE_POS и каждое значение TASK_ZONE принадлежит секции', () => {
@@ -226,14 +226,14 @@ const sideUnion = (svg: string): { x: number; y: number; w: number; h: number } 
 describe('секции: подсказки и тосты (Б1-3)', () => {
   /* таблица раздела 11 sections.md — источник правды для текстов */
   const rows = SECTIONS_MD.split('\n').filter((l) => /^\| \d+ \| [^|]+ \| [^|]+ \| Станция «/.test(l)).map((l) => l.split('|').map((c) => c.trim()).slice(1, -1));
-  test('в таблице раздела 11 19 станций', () => expect(rows).toHaveLength(19));
+  test('в таблице раздела 11 18 станций', () => expect(rows).toHaveLength(18));
 
   test('зоны в боковых секциях включены вместе с листанием', () => {
     expect(zonesInSideSections(false)).toBe(true);
     expect(zonesInSideSections(true)).toBe(true);
   });
 
-  test('зоны боковых секций: покрывают все 9 станций, внутри секции, не пересекаются, не лежат под стрелками, билетом, коучем и тостами', () => {
+  test('зоны боковых секций: покрывают все 8 станций, внутри секции, не пересекаются, не лежат под стрелками, билетом, коучем и тостами', () => {
     expect(SIDE_ZONES.map((z) => z.id).sort()).toEqual([...SECTION_EQ.L, ...SECTION_EQ.R].sort());
     const hit = (a: { x: number; y: number; w: number; h: number }, b: { x: number; y: number; w: number; h: number }): boolean => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
     const fixed = [
@@ -250,10 +250,10 @@ describe('секции: подсказки и тосты (Б1-3)', () => {
       for (const o of SIDE_ZONES) if (o !== z && o.section === z.section) expect(hit(z, o), `${z.id} × ${o.id}`).toBe(false);
     }
     expect(sideZoneCenter(SIDE_ZONES[0] as (typeof SIDE_ZONES)[number])).toEqual([-1280 + 14 + 125.5, 364 + 73]);
-    expect(sideZoneCenter(SIDE_ZONES[8] as (typeof SIDE_ZONES)[number])).toEqual([1280 + 701 + 81, 383 + 63.5]);
+    expect(sideZoneCenter(SIDE_ZONES[7] as (typeof SIDE_ZONES)[number])).toEqual([1280 + 680 + 81, 383 + 63.5]);
   });
 
-  test('30-4: зазор между зонами одной секции ≥ 12 px; рамка предмета каждой из девяти станций внутри своей зоны (±1 px), зона не выше 24 px над предметом', () => {
+  test('30-4: зазор между зонами одной секции ≥ 12 px; рамка предмета каждой из восьми станций внутри своей зоны (±1 px), зона не выше 24 px над предметом', () => {
     const parts = { ...(PARTS_SIDE_L as unknown as Record<string, { svg: string }>), ...(PARTS_SIDE_R as unknown as Record<string, { svg: string }>) };
     for (const sec of ['L', 'R'] as const) {
       const zs = SIDE_ZONES.filter((z) => z.section === sec).sort((a, b) => a.x - b.x);

@@ -32,11 +32,7 @@ export const TUTORIALS: Readonly<Record<string, Tutorial>> = {
     steps: ['Держите «Лить», пока уровень не дойдёт до линии.', 'Нажмите «Готово». Лишнее можно вылить.']
   },
   whipper: {
-    where: 'Нажмите на сифон для сливочной пены.',
-    steps: ['Держите «Взбивать» (или Пробел), пока шкала не дойдёт до зелёной зоны.', 'Отпустите и нажмите «Готово».']
-  },
-  foamer: {
-    where: 'Нажмите на миксер для пенок.',
+    where: 'Нажмите на сифон для пены.',
     steps: ['Держите «Взбивать» (или Пробел), пока шкала не дойдёт до зелёной зоны.', 'Отпустите и нажмите «Готово».']
   },
   blender: {
@@ -72,7 +68,7 @@ export const TUTORIALS: Readonly<Record<string, Tutorial>> = {
 /** Оборудование под шаг бара. */
 const TASK_EQ: Readonly<Record<string, string>> = {
   whisk: 'matcha', brew: 'tea', powder: 'powders', juice: 'juice', tonic: 'juice', layer: 'juice', blend: 'blender', boba: 'boba', topping: 'boba',
-  shake: 'shaker', foam: 'foamer', whip: 'whipper', ice: 'ice'
+  shake: 'shaker', foam: 'whipper', ice: 'ice'
 };
 
 /** Оборудование, чьи подсказки относятся к шагу. У еды: витрина заказа и, если просят разогреть, микроволновка. */

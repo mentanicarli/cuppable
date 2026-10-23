@@ -133,7 +133,7 @@ function barSim(dt) {
   loopSet('sweep', (xl === 'powder' || xl === 'boba' || xl === 'topping') ? .5 : 0, 1.2);
   loopSet('pour', (filling && B.fillKind === 'milk') ? .55 : pouring ? .45 : 0, pouring ? .85 : 1);
   loopSet('steam', steamMode === 2 ? .5 : 0, 1);
-  loopSet('steam_air', steamMode === 1 ? .55 : (xl === 'whisk' || xl === 'foam' || xl === 'whip') ? .4 : 0, 1 + (B.pit.T - 8) / 140);
+  loopSet('steam_air', steamMode === 1 ? .55 : (xl === 'whisk' || xl === 'foam') ? .4 : 0, 1 + (B.pit.T - 8) / 140);
   loopSet('steam_bad', steamMode === 3 ? .45 : 0, 1);
 }
 function loopSet(id, v, r) {

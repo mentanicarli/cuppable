@@ -18,7 +18,7 @@ const P = PARTS as unknown as Record<string, Part>;
 /** Части боковых секций (блоки 30-1, 30-2): секция-локальные координаты 0…1280 × 0…720. */
 const PS: Record<'L' | 'R', Record<string, Part>> = { L: PARTS_L as unknown as Record<string, Part>, R: PARTS_R as unknown as Record<string, Part> };
 /** Предметы боковых секций: часть → покупка `eq_<id>` (видны только купленные). */
-export const SIDE_ITEMS: Readonly<Record<'L' | 'R', readonly string[]>> = { L: ['tea', 'matcha', 'boba', 'powders'], R: ['juice', 'whipper', 'foamer', 'blender', 'shaker'] };
+export const SIDE_ITEMS: Readonly<Record<'L' | 'R', readonly string[]>> = { L: ['tea', 'matcha', 'boba', 'powders'], R: ['juice', 'whipper', 'blender', 'shaker'] };
 
 /** Слой жидкости в чашке: от дна вверх, y/h в координатах чашки. */
 export interface CupRect { y: number; h: number; col: string }

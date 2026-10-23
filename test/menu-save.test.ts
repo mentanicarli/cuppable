@@ -37,6 +37,12 @@ describe('формат сохранения', () => {
       expect(r.data).not.toHaveProperty('лишнее');
     }
   });
+  test('31-6: купленный миксер для пенок превращается в сифон, повторов нет', () => {
+    const r = readSave('{"day":9,"money":1,"up":["eq_juice","eq_foamer","milk"]}');
+    expect(r.kind === 'ok' && r.data.up).toEqual(['eq_juice', 'eq_whipper', 'milk']);
+    const both = readSave('{"day":9,"money":1,"up":["eq_whipper","eq_foamer"]}');
+    expect(both.kind === 'ok' && both.data.up).toEqual(['eq_whipper']);
+  });
   test('битое: не json, не объект, нет обязательных полей, числа не числа', () => {
     for (const raw of ['{', '[]', '"x"', '{"day":2}', '{"day":"2","money":1}', '{"day":0,"money":1}']) expect(readSave(raw).kind).toBe('broken');
     expect(readSave(null).kind).toBe('none');

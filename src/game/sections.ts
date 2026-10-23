@@ -29,7 +29,7 @@ export interface Station {
   zones: readonly string[];
 }
 
-/** 19 станций из раздела 11 sections.md. «Кувшин сливок» стоит у холодильника молока и делит с ним зону `milk`. */
+/** 18 станций из раздела 11 sections.md. «Кувшин сливок» стоит у холодильника молока и делит с ним зону `milk`. */
 export const STATIONS: readonly Station[] = [
   { id: 'grind', name: 'Кофемолка', section: 'C', zones: ['grind'] },
   { id: 'tamp', name: 'Темпер', section: 'C', zones: ['tamp'] },
@@ -45,8 +45,7 @@ export const STATIONS: readonly Station[] = [
   { id: 'tea', name: 'Чайная станция', section: 'L', zones: ['tea'] },
   { id: 'powders', name: 'Полка порошков', section: 'L', zones: ['powders'] },
   { id: 'juice', name: 'Холодильник соков и тоника', section: 'R', zones: ['juice'] },
-  { id: 'whipper', name: 'Сифон для сливочной пены', section: 'R', zones: ['whipper'] },
-  { id: 'foamer', name: 'Миксер для пенок', section: 'R', zones: ['foamer'] },
+  { id: 'whipper', name: 'Сифон для пены', section: 'R', zones: ['whipper'] },
   { id: 'blender', name: 'Блендер', section: 'R', zones: ['blender'] },
   { id: 'boba', name: 'Станция бабл ти', section: 'L', zones: ['boba'] },
   { id: 'shaker', name: 'Шейкер', section: 'R', zones: ['shaker'] }
@@ -68,7 +67,7 @@ export function sectionOfStation(id: string): SectionId | undefined {
 /** Покупки (`G.eq_<id>`), которые открывают боковую секцию: первая же из списка. Центр открыт всегда. */
 export const SECTION_EQ: Readonly<Record<'L' | 'R', readonly string[]>> = {
   L: ['tea', 'matcha', 'boba', 'powders'],
-  R: ['juice', 'whipper', 'foamer', 'blender', 'shaker']
+  R: ['juice', 'whipper', 'blender', 'shaker']
 };
 
 export type SectionsOpen = Readonly<Record<SectionId, boolean>>;
@@ -169,10 +168,9 @@ export const SIDE_ZONES: readonly SideZone[] = [
   { id: 'boba', section: 'L', x: 598, y: 362, w: 310, h: 148 },
   { id: 'powders', section: 'L', x: 924, y: 366, w: 342, h: 146 },
   { id: 'juice', section: 'R', x: 14, y: 261, w: 167, h: 249 },
-  { id: 'whipper', section: 'R', x: 200, y: 300, w: 148, h: 210 },
-  { id: 'foamer', section: 'R', x: 367, y: 320, w: 116, h: 190 },
-  { id: 'blender', section: 'R', x: 497, y: 256, w: 146, h: 254 },
-  { id: 'shaker', section: 'R', x: 701, y: 383, w: 162, h: 127 }
+  { id: 'whipper', section: 'R', x: 249, y: 300, w: 148, h: 210 },
+  { id: 'blender', section: 'R', x: 466, y: 256, w: 146, h: 254 },
+  { id: 'shaker', section: 'R', x: 680, y: 383, w: 162, h: 127 }
 ];
 
 /** Что интерфейс занимает в боковой секции (экранные координаты = секция-локальные, камера стоит на секции); предметы и зоны сюда не заходят (docs/art/sides/plan.md, разд. 2). `always: false` — только по клику (развёрнутый билет): декору выше y 232 нельзя. */
@@ -193,7 +191,7 @@ export function sideZoneCenter(z: SideZone): [number, number] {
   return [SECTION_CAM[z.section] + z.x + z.w / 2, z.y + z.h / 2];
 }
 
-/** Станция по id зоны бара (`syr1` → полка сиропов, `milk` → холодильник с молоком); для зон вне 19 станций (витрина, микроволновка, звонок) — undefined. */
+/** Станция по id зоны бара (`syr1` → полка сиропов, `milk` → холодильник с молоком); для зон вне 18 станций (витрина, микроволновка, звонок) — undefined. */
 export function stationOfZone(zone: string): Station | undefined {
   return STATIONS.find((s) => s.id === zone) ?? STATIONS.find((s) => s.zones.includes(zone));
 }
@@ -204,7 +202,7 @@ export function stationSection(x: string, zonesInSide: boolean): SectionId {
   return sectionOfStation(x) ?? sectionOfZone(x) ?? 'C';
 }
 
-/** Тост «станция в другой секции» по таблице раздела 11 docs/design/sections.md; null, если это не одна из 19 станций или камера уже в её секции. */
+/** Тост «станция в другой секции» по таблице раздела 11 docs/design/sections.md; null, если это не одна из 18 станций или камера уже в её секции. */
 export function stationToast(station: string, from: SectionId): string | null {
   const st = STATIONS.find((s) => s.id === station);
   if (!st || st.section === from) return null;

@@ -35,7 +35,6 @@ const SECTIONS = {
     boxes: [
       { id: 'juice', name: 'Холодильник соков и тоника', kind: 'item', x: 66, y: 296, w: 152, h: 214 },
       { id: 'whipper', name: 'Сифон для пены', kind: 'item', x: 262, y: 328, w: 134, h: 182 },
-      { id: 'foamer', name: 'Миксер для пенок', kind: 'item', x: 418, y: 344, w: 104, h: 166 },
       { id: 'blender', name: 'Блендер', kind: 'item', x: 552, y: 288, w: 130, h: 220 },
       { id: 'boba', name: 'Бабл ти', kind: 'item', x: 716, y: 388, w: 284, h: 122 },
       { id: 'shaker', name: 'Шейкер', kind: 'item', x: 1012, y: 408, w: 150, h: 100 },

@@ -3,7 +3,7 @@
 const { chromium } = require('playwright'); const path = require('path'); const fs = require('fs'); const PW = require('./pw');
 const OUT = path.resolve(process.argv[3] || 'out/s3'); fs.mkdirSync(OUT, { recursive: true });
 const HOOK = 'newGame(); updateHud(); showTitle(); window.__dbg = { get G() { return G; }, get D() { return D; }, get BR() { return BR; }, spawn, barOpen, applyUpgrades };';
-const ALL = ['milk', 'eq_ice', 'eq_cream', 'eq_case_snacks', 'eq_case_pastry', 'eq_case_dessert', 'eq_fridge_deli', 'eq_microwave', 'eq_tea', 'eq_matcha', 'eq_powders', 'eq_juice', 'eq_whipper', 'eq_foamer', 'eq_blender', 'eq_boba', 'eq_shaker'];
+const ALL = ['milk', 'eq_ice', 'eq_cream', 'eq_case_snacks', 'eq_case_pastry', 'eq_case_dessert', 'eq_fridge_deli', 'eq_microwave', 'eq_tea', 'eq_matcha', 'eq_powders', 'eq_juice', 'eq_whipper', 'eq_blender', 'eq_boba', 'eq_shaker'];
 async function shoot(file, vp, dsf, keys, name) {
   const src = fs.readFileSync(path.resolve(file), 'utf8').replace('newGame(); updateHud(); showTitle();', HOOK);
   const tmp = path.resolve(file).replace('.html', '.s3.html'); fs.writeFileSync(tmp, src);

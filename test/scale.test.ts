@@ -211,7 +211,6 @@ describe('шкала: станции боковых секций (×1,10)', () =
     { src: 'L', part: 'boba', cm: [61, 26], px: [310.2, 134.2] },
     { src: 'R', part: 'juice', cm: [33, 46], px: [167.2, 235.4] },
     { src: 'R', part: 'whipper', cm: [29, 38], px: [148.5, 195.8] },
-    { src: 'R', part: 'foamer', cm: [22, 35], px: [116.6, 180.4] },
     { src: 'R', part: 'blender', cm: [27, 46], px: [146.3, 239.8] },
     { src: 'R', part: 'shaker', cm: [32, 21], px: [162.8, 112.8] }
   ] as const;

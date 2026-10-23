@@ -10,7 +10,7 @@ function xLayers(B, px) {
     else if (t === 'whisk') list.push({ col: pal.matcha, h: st.t > 0 || B.done.whisk ? (rc.matcha ? rc.matcha.waterMl : 50) * px * (.5 + .5 * Math.min(1, st.t / st.target)) : 0 });
     else if (t === 'powder') list.push({ col: pal.powder, h: st.ml * px });
     else if (t === 'boba') bobaH = st.ml * px; /* шарики всегда на дне стакана, даже если их кладут после шейкера */
-    else if (t === 'foam' || t === 'whip') top.push({ col: pal.foam, h: Math.min(1, st.t / st.target) * (rc.topFoam || 40) * px });
+    else if (t === 'foam') top.push({ col: pal.foam, h: Math.min(1, st.t / st.target) * (rc.topFoam || 40) * px });
   });
   const h = list.reduce((a, x) => a + x.h, 0);
   return { list: list.filter(x => x.h > .2), h, bobaH, top, mix: !!(B.done.blend || B.done.shake), pal, topCol: null };

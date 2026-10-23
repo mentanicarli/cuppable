@@ -7,17 +7,17 @@ import { SAUCE_G, SPICE_G, cupScale, recipeNumbers } from './volumes';
 export const TASK_NAME: Readonly<Record<string, string>> = {
   syrup: 'Сироп', grind: 'Помол', tamp: 'Темпер', shot: 'Шот', water: 'Вода', ice: 'Лёд', food: 'Еда', milk: 'Молоко', steam: 'Пар', pour: 'Заливка',
   whisk: 'Матча', brew: 'Заварка', juice: 'Сок', tonic: 'Тоник', powder: 'Порошок', boba: 'Шарики', topping: 'Топпинг',
-  blend: 'Блендер', shake: 'Шейкер', foam: 'Пенка', whip: 'Пена', layer: 'Слои'
+  blend: 'Блендер', shake: 'Шейкер', foam: 'Пенка', layer: 'Слои'
 };
 
 /** Шаги, которые идут в панели «станция» (не в крупном плане Pixi). */
-export const PANEL_TASKS: ReadonlySet<string> = new Set(['whisk', 'brew', 'juice', 'tonic', 'powder', 'boba', 'topping', 'blend', 'shake', 'foam', 'whip', 'layer']);
+export const PANEL_TASKS: ReadonlySet<string> = new Set(['whisk', 'brew', 'juice', 'tonic', 'powder', 'boba', 'topping', 'blend', 'shake', 'foam', 'layer']);
 
 /** Где на баре делается шаг: id зоны. */
 export const TASK_ZONE: Readonly<Record<string, string>> = {
   syrup: 'syrup', grind: 'grind', tamp: 'tamp', shot: 'shot', water: 'water', ice: 'ice', food: 'food', milk: 'milk', steam: 'steam', pour: 'pour',
   whisk: 'matcha', brew: 'tea', juice: 'juice', tonic: 'juice', powder: 'powders', boba: 'boba', topping: 'pour',
-  blend: 'blender', shake: 'shaker', foam: 'foamer', whip: 'whipper', layer: 'pour'
+  blend: 'blender', shake: 'shaker', foam: 'whipper', layer: 'pour'
 };
 
 /** Это напиток нового ядра (рецепт собирается из шагов меню)? */
@@ -92,8 +92,7 @@ export function buildTasks(key: string, o: BuildOpts): string[] {
       case 'cream': break; // сливки входят в раф (раф идёт по ключам старой механики)
       case 'shot_only': t.push('grind', 'tamp', 'shot'); break;
       case 'pour': t.push(s.arg === 'layer' ? 'layer' : 'pour'); break;
-      case 'foam': t.push(s.arg === 'cream' ? 'whip' : 'foam'); break;
-      default: t.push(s.st);
+            default: t.push(s.st);
     }
   }
   /* шаг «лёд» в конце холодного заказа — только там, где в рецепте есть цель льда: у протеина лёд не нужен (recipeNumbers.ice не задан), раньше шаг добавлялся без цели */
@@ -123,7 +122,6 @@ export function taskTarget(key: string, task: string, size: Size = '0.3', cold =
     case 'blend': return 6;
     case 'shake': return 5;
     case 'foam': return 4;
-    case 'whip': return 3;
     case 'layer': return 4;
     default: return 0;
   }

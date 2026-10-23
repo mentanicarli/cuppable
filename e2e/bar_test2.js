@@ -6,7 +6,7 @@
    Ключи механики: espresso, espresso2 (двойной), americano, icedamericano, cappuccino, icedcappuccino, latte, icedlatte, flatwhite, raf, vanillaraf, rafhalva.
    Цели берутся из самой игры (BR.rc: шоты, молоко, вода, лёд, зона пара), поэтому сценарий не зависит от размера. */
 const { chromium } = require('playwright'); const path = require('path'); const fs = require('fs');
-const PANEL = new Set(['juice', 'tonic', 'powder', 'boba', 'topping', 'whisk', 'blend', 'shake', 'foam', 'whip', 'layer']);
+const PANEL = new Set(['juice', 'tonic', 'powder', 'boba', 'topping', 'whisk', 'blend', 'shake', 'foam', 'layer']);
 const specs = (process.argv[4] || 'espresso').split(',').map(s => { const [drink, size, temp] = s.split(':'); return { drink, size: size || '0.2', cold: temp === 'cold' }; });
 (async () => {
   const src = fs.readFileSync(path.resolve(process.argv[2]), 'utf8').replace('newGame(); updateHud(); showTitle();', 'newGame(); updateHud(); showTitle(); window.__dbg = { get G() { return G; }, get D() { return D; }, get BR() { return BR; }, endDay, barOpen, spawn };');

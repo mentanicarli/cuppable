@@ -8,7 +8,7 @@ const PW = require('./pw');
 const shots = process.argv[3] ? path.resolve(process.argv[3]) : null; if (shots) fs.mkdirSync(shots, { recursive: true });
 const HOOK = 'newGame(); updateHud(); showTitle(); window.__dbg = { get G() { return G; }, get D() { return D; }, get BR() { return BR; }, CAM, spawn, barOpen, barShow, applyUpgrades, endDay, ringTarget, exit };';
 let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' : 'FAIL ') + m); };
-const PANEL = new Set(['juice', 'tonic', 'powder', 'boba', 'topping', 'whisk', 'blend', 'shake', 'foam', 'whip', 'layer']);
+const PANEL = new Set(['juice', 'tonic', 'powder', 'boba', 'topping', 'whisk', 'blend', 'shake', 'foam', 'layer']);
 (async () => {
   const src = fs.readFileSync(path.resolve(process.argv[2]), 'utf8').replace('newGame(); updateHud(); showTitle();', HOOK);
   if (!src.includes('window.__dbg')) { console.error('нужна отладочная сборка'); process.exit(2); }

@@ -50,8 +50,10 @@ describe('магазин: что показывается', () => {
     expect(shown(9, ['eq_fridge_deli'])).toContain('eq_microwave');
   });
   test('станция, у всех напитков которой есть ещё одна нужная станция, ждёт её', () => {
-    expect(shown(6, ['milk'])).toContain('eq_foamer');
-    expect(shown(6)).not.toContain('eq_foamer');
+    // сифон для пены открывает все пенки (латте с пенкой, ранг 6) и им нужно молоко
+    expect(shown(6, ['milk'])).toContain('eq_whipper');
+    expect(shown(5, ['milk'])).not.toContain('eq_whipper');
+    expect(shown(6)).not.toContain('eq_whipper');
   });
   test('купленное остаётся в списке при любом ранге и без зависимостей', () => {
     expect(isShopItemAvailable(item('milk'), st(1, ['milk']))).toBe(true);
@@ -104,7 +106,7 @@ describe('гарантия отдачи покупки', () => {
     const cases: [string, number, string[]][] = [
       ['eq_ice', 4, ['ice']], ['eq_powders', 4, ['powders']], ['eq_tea', 5, ['tea']], ['eq_matcha', 5, ['matcha']],
       ['eq_case_snacks', 3, ['case_snacks']], ['eq_microwave', 7, ['case_deli', 'fridge_deli', 'microwave', 'case_snacks', 'case_pastry']],
-      ['eq_cream', 4, ['cream']], ['eq_foamer', 7, ['foamer']]
+      ['eq_cream', 4, ['cream']], ['eq_whipper', 7, ['whipper']]
     ];
     for (const [id, rank, eqs] of cases) {
       for (let s = 1; s < 60; s++) {

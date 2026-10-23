@@ -36,7 +36,7 @@ if (!process.env.ONLY && !process.env.ART_PC_CHILD) {
     const mem = async () => { try { const { metrics } = await cdp.send('Performance.getMetrics'); const g = n => (metrics.find(x => x.name === n) || {}).value || 0; return 'heap=' + (g('JSHeapUsedSize') / 1e6).toFixed(0) + 'MB nodes=' + g('Nodes') + ' listeners=' + g('JSEventListeners'); } catch (e) { return 'mem?'; } };
     await p.goto('about:blank'); await p.goto(PW.url(tmp) + '#dev'); await p.waitForSelector('[data-sandbox]', { timeout: 60000 }); await p.waitForTimeout(400);
     await p.evaluate(() => window.__sandbox.start({ day: 10, profile: 'medium' })); await p.waitForSelector('#screen', { state: 'hidden', timeout: 20000 });
-    await p.evaluate(() => { const d = __dbg; ['tea', 'matcha', 'powders', 'juice', 'whipper', 'foamer', 'blender', 'boba', 'shaker'].forEach(k => { d.G['eq_' + k] = true; }); d.G.ice = true; d.G.eq_ice = true; d.G.milk = true; d.G.tutOff = true; d.applyUpgrades(); d.D.nextArr = 1e9; d.spawn(); d.D.customers.forEach(c => { c.pat = c.max = 1e9; }); });
+    await p.evaluate(() => { const d = __dbg; ['tea', 'matcha', 'powders', 'juice', 'whipper', 'blender', 'boba', 'shaker'].forEach(k => { d.G['eq_' + k] = true; }); d.G.ice = true; d.G.eq_ice = true; d.G.milk = true; d.G.tutOff = true; d.applyUpgrades(); d.D.nextArr = 1e9; d.spawn(); d.D.customers.forEach(c => { c.pat = c.max = 1e9; }); });
     await p.waitForFunction(() => __dbg.D.customers[0] && __dbg.D.customers[0].arrived, null, { timeout: 90000 });
     await p.evaluate(() => {
       window.__cnt = {}; const sel = '[data-xtemp],[data-xstart],[data-xdone],[data-xhold],[data-xdump]';

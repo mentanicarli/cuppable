@@ -11,7 +11,7 @@ const SETS = {
   milk_ice: ['milk', 'eq_ice'],
   food: ['eq_ice', 'eq_case_snacks', 'eq_case_pastry', 'eq_case_dessert', 'eq_fridge_deli', 'eq_microwave'],
   sides_bought: ['milk', 'eq_tea', 'eq_matcha', 'eq_powders', 'eq_juice', 'eq_blender', 'eq_boba'],
-  everything: ['milk', 'eq_ice', 'eq_cream', 'eq_case_snacks', 'eq_case_pastry', 'eq_case_dessert', 'eq_fridge_deli', 'eq_microwave', 'eq_tea', 'eq_matcha', 'eq_powders', 'eq_juice', 'eq_whipper', 'eq_foamer', 'eq_blender', 'eq_boba', 'eq_shaker']
+  everything: ['milk', 'eq_ice', 'eq_cream', 'eq_case_snacks', 'eq_case_pastry', 'eq_case_dessert', 'eq_fridge_deli', 'eq_microwave', 'eq_tea', 'eq_matcha', 'eq_powders', 'eq_juice', 'eq_whipper', 'eq_blender', 'eq_boba', 'eq_shaker']
 };
 async function shoot(file, dsf, keys, name) {
   const src = fs.readFileSync(path.resolve(file), 'utf8').replace('newGame(); updateHud(); showTitle();', HOOK);

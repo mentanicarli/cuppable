@@ -11,13 +11,12 @@ const svgOf = (id: string): string => (parts[id] as { svg: string }).svg;
 const count = (s: string, sub: string): number => s.split(sub).length - 1;
 const near = (a: number, b: number, tol: number): boolean => Math.abs(a - b) <= tol;
 const S = 1.1;
-const STATIONS = ['juice', 'whipper', 'foamer', 'blender', 'shaker'] as const;
+const STATIONS = ['juice', 'whipper', 'blender', 'shaker'] as const;
 
 /** Проектные размеры (план, разд. 1). */
 const WANT: Record<string, Box> = {
   juice: { x: 66, y: 296, w: 152, h: 214 },
   whipper: { x: 262, y: 328, w: 134, h: 182 },
-  foamer: { x: 418, y: 344, w: 104, h: 166 },
   blender: { x: 552, y: 288, w: 130, h: 220 },
   shaker: { x: 1012, y: 408, w: 150, h: 100 },
   glassShelf: { x: 706, y: 176, w: 296, h: 80 },
@@ -27,12 +26,11 @@ const WANT: Record<string, Box> = {
 /** Раскладка ×1,10: куда переехал левый край проектной рамки (translate(a b) scale(1,1) translate(c d)). */
 const LAYOUT: Record<string, { a: number; b: number; c: number; d: number }> = {
   juice: { a: 14, b: 506, c: -66, d: -506 },
-  whipper: { a: 199.2, b: 506, c: -262, d: -506 },
-  foamer: { a: 364.6, b: 506, c: -418, d: -506 },
-  blender: { a: 497, b: 506, c: -552, d: -506 },
-  shaker: { a: 698.4, b: 506, c: -1012, d: -506 },
+  whipper: { a: 248.4, b: 506, c: -262, d: -506 },
+  blender: { a: 466, b: 506, c: -552, d: -506 },
+  shaker: { a: 677.8, b: 506, c: -1012, d: -506 },
   glassShelf: { a: 706, b: 176, c: -706, d: -176 },
-  iceBucket: { a: 920, b: 506, c: -1182, d: -506 },
+  iceBucket: { a: 909.8, b: 506, c: -1182, d: -506 },
   sink: { a: 1066, b: 506, c: -1000, d: -506 }
 };
 const items = (part: string): ReturnType<typeof parseItems> => parseItems(svgOf(part));
@@ -40,7 +38,7 @@ const all = (): ReturnType<typeof parseItems> => Object.keys(parts).flatMap((k) 
 const final = (id: string): Box => (all().find((i) => i.id === id) as { final: Box }).final;
 
 describe('30-2: правая секция, состав частей', () => {
-  test('ровно шесть частей: пять станций и decor (31-2: boba в левой секции); текстов и слов нет', () => {
+  test('ровно пять частей: четыре станции и decor (31-2: boba в левой секции; 31-6: миксера для пенок нет); текстов и слов нет', () => {
     expect(Object.keys(parts).sort()).toEqual([...STATIONS, 'decor'].sort());
     for (const k of Object.keys(parts)) {
       expect((parts[k] as { texts: unknown[] }).texts).toEqual([]);
@@ -52,9 +50,8 @@ describe('30-2: правая секция, состав частей', () => {
     expect(items('decor').map((i) => i.id).sort()).toEqual(['glassShelf', 'iceBucket', 'sink']);
     expect(svgOf('decor')).not.toContain('window');
   });
-  test('иконки: снежинка у холодильника, пузырьки у миксера, нигде больше', () => {
+  test('иконка: снежинка у холодильника, нигде больше', () => {
     expect(count(svgOf('juice'), 'data-icon="snow"')).toBe(1);
-    expect(count(svgOf('foamer'), 'data-icon="foam"')).toBe(1);
     for (const k of ['whipper', 'blender', 'shaker', 'decor']) expect(count(svgOf(k), 'data-icon=')).toBe(0);
   });
 });
@@ -81,7 +78,7 @@ describe('30-2: проектные размеры и раскладка ×1,10',
       expect(f.y + f.h, k).toBeLessThanOrEqual(514);
     }
   });
-  test('порядок слева направо: juice, whipper, foamer, blender, shaker, ведро, раковина; промежутки ≥ 12 px, у трёх последних равные (31-2)', () => {
+  test('порядок слева направо: juice, whipper, blender, shaker, ведро, раковина; промежутки ≥ 12 px и равные ±6 (31-6)', () => {
     const seq = [...STATIONS, 'iceBucket', 'sink'].map((k) => final(k));
     for (let i = 0; i < seq.length - 1; i++) {
       const a = seq[i] as Box, b = seq[i + 1] as Box;
@@ -90,8 +87,7 @@ describe('30-2: проектные размеры и раскладка ×1,10',
     const last = seq[seq.length - 1] as Box;
     expect(last.x + last.w).toBeLessThanOrEqual(1270);
     const gap = (i: number): number => (seq[i + 1] as Box).x - ((seq[i] as Box).x + (seq[i] as Box).w);
-    expect(Math.abs(gap(3) - gap(4)), 'зазоры blender–shaker и shaker–ведро').toBeLessThanOrEqual(6);
-    expect(Math.abs(gap(4) - gap(5)), 'зазоры shaker–ведро и ведро–раковина').toBeLessThanOrEqual(6);
+    for (let i = 0; i < 4; i++) expect(Math.abs(gap(i) - gap(i + 1)), `зазоры ${i} и ${i + 1}`).toBeLessThanOrEqual(6);
     expect((seq[0] as Box).x).toBeGreaterThanOrEqual(8);
   });
   test('box части содержит итоговые рамки её предметов', () => {
@@ -115,7 +111,7 @@ describe('30-2: предметы в зонах и вне занятых поло
   });
   test('зоны R не пересекаются (зазор ≥ 12), не заходят в интерфейс и стрелку; низ не ниже 514', () => {
     const zs = SIDE_ZONES.filter((z) => z.section === 'R');
-    expect(zs).toHaveLength(5);
+    expect(zs).toHaveLength(4);
     for (let i = 0; i < zs.length; i++) {
       const a = zs[i] as Box & { id: string };
       for (let j = i + 1; j < zs.length; j++) {

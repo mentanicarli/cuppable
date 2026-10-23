@@ -47,7 +47,7 @@ for (const d of DRINKS) if (!(d.id in ENGINE)) (ENGINE as Record<string, string>
 /** Оборудование, которое уже работает в баре. */
 export const EQ_IMPL: readonly string[] = [
   'cream', 'ice', 'case_snacks', 'case_pastry', 'case_dessert', 'fridge_deli', 'microwave',
-  'powders', 'matcha', 'tea', 'juice', 'whipper', 'foamer', 'blender', 'boba', 'shaker'
+  'powders', 'matcha', 'tea', 'juice', 'whipper', 'blender', 'boba', 'shaker'
 ];
 /** Оборудование под шаг рецепта. */
 const STEP_EQ: Readonly<Record<string, string>> = {
@@ -58,7 +58,7 @@ export const DRINK_NEEDS: Readonly<Record<string, readonly string[]>> = Object.f
   DRINKS.map((d) => {
     const need = new Set<string>();
     for (const st of d.steps) {
-      if (st.st === 'foam') need.add(st.arg === 'cream' ? 'whipper' : 'foamer');
+      if (st.st === 'foam') need.add('whipper');
       else if (STEP_EQ[st.st]) need.add(STEP_EQ[st.st] as string);
     }
     return [d.id, [...need]] as const;

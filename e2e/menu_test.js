@@ -21,7 +21,7 @@ const id = process.argv[4]; const out = process.argv[3];
   const tasks = await p.evaluate(() => window.__dbg.BR.tasks.slice()); console.log('tasks', tasks.join(','));
   await p.screenshot({ path: out + '_0.png' });
   const money0 = await p.evaluate(() => window.__dbg.G.money);
-  const PANEL = ['whisk', 'brew', 'juice', 'tonic', 'powder', 'boba', 'topping', 'blend', 'shake', 'foam', 'whip', 'layer'];
+  const PANEL = ['whisk', 'brew', 'juice', 'tonic', 'powder', 'boba', 'topping', 'blend', 'shake', 'foam', 'layer'];
   let shotN = 0;
   for (const t of tasks) {
     if (!PANEL.includes(t)) {
