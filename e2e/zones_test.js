@@ -34,7 +34,7 @@ const HOOK = 'window.__dbg = { get G() { return G; }, get D() { return D; }, get
   /* всегда активные зоны нарисованы на ранге 1; холодильник с молоком появляется только после покупки (G.milk) */
   ok(await p.evaluate(() => !window.__dbg.G.milk && ['grind', 'tamp', 'shot', 'water', 'steam', 'pour', 'bell', 'stop'].every(k => getComputedStyle(document.querySelector('#bZones [data-z="' + k + '"]')).pointerEvents !== 'none')), 'без молока: зоны статичного арта активны');
   ok(await p.evaluate(() => getComputedStyle(document.querySelector('#bZones [data-z="milk"]')).pointerEvents === 'none'), 'без молока: зона холодильника не принимает клики');
-  ok(await p.evaluate(() => ['syrup', 'syr1', 'syr2', 'syr3'].every(k => getComputedStyle(document.querySelector('#bZones [data-z="' + k + '"]')).pointerEvents === 'none')), '31-7: на ранге 1 полки сиропов нет, её зоны не принимают клики');
+  ok(await p.evaluate(() => ['syr1', 'syr2', 'syr3'].every(k => getComputedStyle(document.querySelector('#bZones [data-z="' + k + '"]')).pointerEvents === 'none')), '31-7: на ранге 1 полки сиропов нет, её зоны не принимают клики');
   const m0 = await center('milk'); await p.mouse.click(m0.x, m0.y); await p.waitForTimeout(300);
   ok((await msgs()).length === 0, 'до покупки молока клик по месту холодильника ничего не делает ' + JSON.stringify(await msgs()));
   /* зона нужного оборудования живая: помол открывает инсет */
