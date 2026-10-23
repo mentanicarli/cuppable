@@ -5,7 +5,7 @@
 const { chromium } = require('playwright'); const path = require('path'); const fs = require('fs');
 const out = process.argv[3] || 'out/tn';
 (async () => {
-  const src = fs.readFileSync(path.resolve(process.argv[2]), 'utf8').replace('newGame(); updateHud(); showTitle();', 'newGame(); updateHud(); showTitle(); window.__dbg = { get G() { return G; }, get D() { return D; }, get BR() { return BR; }, WORLD, MENUAPI: window.__MENUAPI, NAME, SYR, drawTicket, resetTk() { tkKey = \'\'; }, barShow };');
+  const src = fs.readFileSync(path.resolve(process.argv[2]), 'utf8').replace('newGame(); updateHud(); showTitle();', 'newGame(); updateHud(); showTitle(); window.__dbg = { get G() { return G; }, get D() { return D; }, get BR() { return BR; }, WORLD, MENUAPI: window.__MENUAPI, NAME, SYR, drawTicket, resetTk() { tkKey = \'\'; }, barShow, barMsg, setOpen(v) { tkOpen = v; } };');
   const tmp = path.resolve(process.argv[2]).replace('.html', '.dbg.html'); fs.writeFileSync(tmp, src);
   const b = await chromium.launch({ ...(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}) });
   const PW = require('./pw'), p = await PW.page(b, { width: 1312, height: 752 });
@@ -33,6 +33,10 @@ const out = process.argv[3] || 'out/tn';
       const cs = getComputedStyle(nm), tags = [...tk.querySelectorAll('.tkMain i')];
       const bad = [];
       if ((r.bottom - sr.top) / k > 190) bad.push('билет ниже y 190: ' + ((r.bottom - sr.top) / k).toFixed(0));
+      /* тост «Заказ принят» и длинный тост: ниже билета, не пересекают его */
+      document.querySelector('#bFloat').innerHTML = ''; d.barMsg('Заказ принят: ' + d.NAME[key]); d.barMsg('Станция «Чашка» в секции «Кофейный бар». Нажмите стрелку с этим названием.', true);
+      const rects = [r, ...[...tk.querySelectorAll('.tkDrop')].map(e => e.getBoundingClientRect())];
+      for (const m of document.querySelectorAll('#bFloat .bmsg')) { const q = m.getBoundingClientRect(); if (rects.some(a => a.left < q.right && q.left < a.right && a.top < q.bottom && q.top < a.bottom)) bad.push('тост пересекает билет'); }
       if (nm.textContent !== d.NAME[key]) bad.push('текст названия изменён');
       if (nm.scrollWidth > nm.clientWidth + 0.5 || cs.textOverflow === 'ellipsis' || cs.overflow === 'hidden') bad.push('название обрезается');
       if (main.scrollWidth > main.clientWidth + 0.5) bad.push('tkMain переполнен');
@@ -51,8 +55,11 @@ const out = process.argv[3] || 'out/tn';
     await p.setViewportSize({ width: w + 32, height: h + 32 }); await p.waitForTimeout(500);
     const r = await check(); ok(`билет ${w}x${h}: проблем ${r.res.length}: ${r.res.slice(0, 3).join('; ')}`, r.res.length === 0);
     console.log(`билет ${w}x${h}: проверено ${r.n} названий, самое широкое «${r.worst.n}» ${r.worst.w} px (логических), нижний край билета до y ${r.worst.b}`);
-    await p.evaluate(key => { const d = window.__dbg, B = d.BR; B.drink = key; d.resetTk(); d.drawTicket(); }, r.worst.tall);
+    await p.evaluate(key => { const d = window.__dbg, B = d.BR; B.drink = key; d.resetTk(); d.drawTicket(); document.querySelector('#bFloat').innerHTML = ''; d.barMsg('Заказ принят: ' + d.NAME[key]); document.querySelectorAll('.bmsg').forEach(e => { e.style.animation = 'none'; }); }, r.worst.tall);
     await p.screenshot({ path: `${out}_ticket_worst_${w}.png` });
+    /* раскрытый билет (▾): тосты ещё ниже */
+    const open = await p.evaluate(() => { const d = window.__dbg; d.setOpen(true); d.resetTk(); d.drawTicket(); document.querySelector('#bFloat').innerHTML = ''; d.barMsg('Заказ принят'); const t = document.querySelector('#bTk'), dr = t.querySelector('.tkDrop'), m = document.querySelector('#bFloat .bmsg').getBoundingClientRect(), a = (dr || t).getBoundingClientRect(); const ok = !dr || !(a.left < m.right && m.left < a.right && a.top < m.bottom && m.top < a.bottom); d.setOpen(false); d.resetTk(); d.drawTicket(); return ok; });
+    ok(`раскрытый билет ${w}x${h}: тост не пересекает раскрытую часть`, open);
   }
 
   /* ---- пузырь ---- */

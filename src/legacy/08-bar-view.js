@@ -104,7 +104,7 @@ function ticketChips() {
 }
 const sizeTxt = o => String(o.size).replace('.', ',') + ' л';
 function drawTicket() {
-  const B = BR; if (!B) { UI.tk.innerHTML = ''; return; }
+  const B = BR; if (!B) { UI.tk.innerHTML = ''; stage.style.removeProperty('--toastTop'); return; }
   const c = B.c, f = Math.max(0, c.pat / c.max), cs = ticketChips();
   const key = [cs.map(x => (x.done ? 1 : 0)).join(''), tkOpen, B.shotIdx, B.inset, B.shot.st, B.ready, Math.round(f * 20), G.hints, B.pumps].join('|');
   if (key === tkKey) return; tkKey = key;
@@ -125,6 +125,9 @@ function drawTicket() {
 <div class="tkMain">${mIcon}<b class="tkName${NAME[B.drink].length > 24 ? ' long' : ''}">${NAME[B.drink]}</b>${tags}</div>
 <div class="tkNow">${now}<button type="button" class="tkMore" data-tkmore="1" aria-expanded="${tkOpen}" title="Все шаги и реплика гостя">${tkOpen ? '▴' : '▾'}</button></div>
 <div class="tkBtns"><button type="button" data-hint="1" class="${G.hints ? 'on' : ''}" title="Подсказки">?</button></div>${tkOpen ? `<div class="tkDrop"><div class="tkSay">«${c.order ? c.order.line : ''}»</div><div class="tkSteps${cs.length > 7 ? ' many' : ''}">${chips}</div></div>` : ''}`;
+  /* тосты бара начинаются ниже реального низа билета (вторая строка плашек, раскрытая часть ▾) */
+  const dr = UI.tk.querySelector('.tkDrop');
+  stage.style.setProperty('--toastTop', MENUAPI.toastTop(UI.tk.offsetTop + UI.tk.offsetHeight + (dr ? dr.offsetHeight + 8 : 0)) + 'px');
 }
 /* Подсказки новых станций и шагов (молоко, пар, заливка, сироп): пока не пройдены и пока игрок не выключил подсказки (настройкой или кнопкой «?») */
 const tutOffNow = () => (SET.hintsSet && !SET.hints) || G.tutOff;
