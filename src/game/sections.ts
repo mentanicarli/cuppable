@@ -41,6 +41,7 @@ export const STATIONS: readonly Station[] = [
   { id: 'syrup', name: 'Полка сиропов', section: 'C', zones: ['syrup', 'syr1', 'syr2', 'syr3'] },
   { id: 'ice', name: 'Льдогенератор', section: 'C', zones: ['ice'] },
   { id: 'cream', name: 'Кувшин сливок', section: 'C', zones: ['milk'] },
+  { id: 'drip', name: 'Капельная кофеварка', section: 'C', zones: ['drip'] },
   { id: 'matcha', name: 'Набор для матчи', section: 'L', zones: ['matcha'] },
   { id: 'tea', name: 'Чайная станция', section: 'L', zones: ['tea'] },
   { id: 'powders', name: 'Полка порошков', section: 'L', zones: ['powders'] },

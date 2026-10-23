@@ -21,11 +21,11 @@ describe('секции: карта станций', () => {
     expect(SECTION_NAMES).toEqual({ L: 'Чайный бар', C: 'Кофейный бар', R: 'Холодный бар' });
   });
 
-  test('18 станций: 10 в центре, 4 слева, 4 справа (31-2: бабл ти в «Чайном баре»)', () => {
-    expect(STATIONS).toHaveLength(18);
-    expect(new Set(STATIONS.map((s) => s.id)).size).toBe(18);
+  test('19 станций: 11 в центре, 4 слева, 4 справа (31-8Б: капельная кофеварка в центре) (31-2: бабл ти в «Чайном баре»)', () => {
+    expect(STATIONS).toHaveLength(19);
+    expect(new Set(STATIONS.map((s) => s.id)).size).toBe(19);
     const by = (id: string): string[] => STATIONS.filter((s) => s.section === id).map((s) => s.id);
-    expect(by('C')).toEqual(['grind', 'tamp', 'shot', 'water', 'steam', 'milk', 'pour', 'syrup', 'ice', 'cream']);
+    expect(by('C')).toEqual(['grind', 'tamp', 'shot', 'water', 'steam', 'milk', 'pour', 'syrup', 'ice', 'cream', 'drip']);
     expect(by('L')).toEqual(['matcha', 'tea', 'powders', 'boba']);
     expect(by('R')).toEqual(['juice', 'whipper', 'blender', 'shaker']);
   });
@@ -37,7 +37,7 @@ describe('секции: карта станций', () => {
 
   test('зоны index.html покрыты, боковые зоны по ключам оборудования', () => {
     const ids = [...INDEX.matchAll(/data-z="(\w+)"/g)].map((m) => m[1] as string);
-    expect(ids).toHaveLength(15); /* 30-3: без девяти боковых */
+    expect(ids).toHaveLength(16); /* 30-3: без девяти боковых; 31-8Б: плюс зона drip */
     for (const z of ids) expect(sectionOfZone(z), z).toBeDefined();
     for (const [sec, eq] of Object.entries(SECTION_EQ)) for (const k of eq) expect(sectionOfZone(k)).toBe(sec);
   });
@@ -226,7 +226,7 @@ const sideUnion = (svg: string): { x: number; y: number; w: number; h: number } 
 describe('секции: подсказки и тосты (Б1-3)', () => {
   /* таблица раздела 11 sections.md — источник правды для текстов */
   const rows = SECTIONS_MD.split('\n').filter((l) => /^\| \d+ \| [^|]+ \| [^|]+ \| Станция «/.test(l)).map((l) => l.split('|').map((c) => c.trim()).slice(1, -1));
-  test('в таблице раздела 11 18 станций', () => expect(rows).toHaveLength(18));
+  test('в таблице раздела 11 19 станций', () => expect(rows).toHaveLength(19));
 
   test('зоны в боковых секциях включены вместе с листанием', () => {
     expect(zonesInSideSections(false)).toBe(true);

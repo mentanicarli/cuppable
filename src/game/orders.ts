@@ -24,7 +24,9 @@ const WEIGHTS: Readonly<Record<string, number>> = {
   latte: 0.25,
   flat_white: 0.15,
   raf: 0.2,
-  raf_halva: 0.15
+  raf_halva: 0.15,
+  /* 31-8Б: приятный недорогой напиток, не лучший способ заработка; 0,4 — около 18 % заказов на ранге 3 и 5 % на ранге 9 */
+  filter_coffee: 0.4
 };
 const baseW = (d: Drink): number => WEIGHTS[d.id] ?? 0.2;
 

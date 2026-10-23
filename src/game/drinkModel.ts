@@ -258,7 +258,7 @@ export function groupOf(d: Drink, cold: boolean): ModelGroup {
   const id = d.id;
   if (!cold) {
     if (DEMITAS_IDS.has(id)) return 'H1';
-    if (id === 'americano' || id === 'hot_bumble') return 'H2';
+    if (id === 'americano' || id === 'hot_bumble' || id === 'filter_coffee') return 'H2';
     if (id === 'cappuccino' || id === 'cappuccino_pumpkin') return 'H3';
     if (id === 'flat_white') return 'H4';
     if (id === 'raf' || id === 'raf_halva' || id === 'cocoa') return 'H5';
@@ -526,7 +526,7 @@ export interface ModelRef { id: string; size: Size; cold: boolean }
 export const PILOT_IDS: ReadonlySet<string> = new Set(['latte', 'cappuccino', 'orange_bumble']);
 /** Горячие напитки групп H1–H8 (Н2-1): рисуются моделью только в горячем варианте, холодные варианты ждут Н2-2. 24 вида вместе с горячими латте и капучино. */
 export const HOT_MODEL_IDS: ReadonlySet<string> = new Set([
-  'espresso', 'espresso_double', 'americano', 'hot_bumble', 'cappuccino', 'cappuccino_pumpkin', 'flat_white',
+  'espresso', 'espresso_double', 'americano', 'filter_coffee', 'hot_bumble', 'cappuccino', 'cappuccino_pumpkin', 'flat_white',
   'cocoa', 'raf', 'raf_halva', 'tea_sencha', 'tea_assam', 'tea_hibiscus', 'tea_buckwheat', 'tea_currant',
   'latte', 'latte_sakura', 'latte_banana', 'latte_lemon', 'latte_coconut', 'matcha_latte', 'chicory_latte', 'matcha_coconut'
 ]);

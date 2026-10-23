@@ -3,7 +3,7 @@ function interval() { const v = MENUAPI.arrivalInterval({ day: G.day, rating: G.
 function startDay() {
   G.phase = 'day'; paused = false; scr.hidden = true;
   clearDayVisuals(); WORLD.clearActors(); ACT.clear();
-  D = { t: 0, customers: [], nextArr: 4, closing: false, closeT: 0, cup: null, hold: null, rushShown: false, idc: 0, focus: G.fresh.slice(), focusDone: new Set(), stats: { served: 0, lost: 0, revenue: 0, tips: 0, costs: 0, perfect: 0 } };
+  D = { t: 0, customers: [], nextArr: 4, closing: false, closeT: 0, cup: null, hold: null, rushShown: false, idc: 0, focus: G.fresh.slice(), focusDone: new Set(), carafe: MENUAPI.newCarafe() /* колба пуста в начале дня и в сохранение не пишется */, stats: { served: 0, lost: 0, revenue: 0, tips: 0, costs: 0, perfect: 0 } };
   if (SBX.on) { SBX.log = []; SBX.clock = 0; }
   BR = null; renderCup(); lastHud = ''; updateHud(); stopLoops(); stage.classList.remove('inbar');
   G.fresh = [];
@@ -14,6 +14,7 @@ function startDay() {
 }
 function tickDay(dt) {
   D.t += dt;
+  if (MENUAPI.tickBrew(D.carafe, dt)) drip_ready(); /* колба капельной кофеварки: заварка идёт в фоне, пока смена тикает (пауза замораживает цикл) */
   if (SBX.inf && G.money < 1e6) G.money = 1e6;
   const clock = OPEN_MIN + Math.min(1, D.t / DAY_LEN) * SPAN_MIN;
   if (!D.rushShown && clock >= 720 && !D.closing) { D.rushShown = true; toast('Обеденный час пик: клиентов станет больше'); }

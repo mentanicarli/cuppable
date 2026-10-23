@@ -99,6 +99,7 @@ function stepDetail(task: string, d: Drink, r: Recipe, i: number, tasks: readonl
     case 'shake': return d.family === 'boba' ? 'чай, сироп и лёд вместе, шарики не кладём' : 'встряхнуть';
     case 'foam': return `${r.topFoam ?? ''} мл${d.id === 'latte_banana' ? ' протеиновой пенки' : ' холодной пенки'} сверху`.trim();
     case 'layer': return d.id === 'espresso_tonic' || d.id === 'orange_bumble' || d.id === 'pomegranate_bumble' ? 'эспрессо сверху по ложке, слои не смешивать' : 'матча сверху по ложке, слои не смешивать';
+    case 'drip': return `${r.drinkMl} мл из колбы (${r.filter?.g ?? ''} г кофе и ${r.filter?.waterMl ?? ''} мл воды на чашку)`;
     case 'food': return '';
     default: return tasks[i] ?? '';
   }

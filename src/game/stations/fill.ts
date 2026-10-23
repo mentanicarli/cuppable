@@ -2,7 +2,7 @@ import type { Station } from './station';
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
-export type FillKind = 'water' | 'milk' | 'ice' | 'juice' | 'tonic' | 'powder' | 'boba' | 'topping';
+export type FillKind = 'water' | 'milk' | 'ice' | 'juice' | 'tonic' | 'powder' | 'boba' | 'topping' | 'drip';
 
 export interface FillCfg {
   /** Скорость налива: единиц в секунду. */
@@ -29,11 +29,13 @@ export const FILL: Readonly<Record<FillKind, FillCfg>> = {
   tonic: { rate: 34, max: 300, tol: 10, span: 50, unit: 'мл', noun: 'Тоника', ok: 'по линии', low: 'маловато', high: 'многовато', min: 20, minMsg: 'Налейте больше' },
   powder: { rate: 8, max: 60, tol: 2.5, span: 14, unit: 'г', noun: 'Порошка', ok: 'в точку', low: 'маловато', high: 'многовато', min: 4, minMsg: 'Насыпьте больше' },
   boba: { rate: 20, max: 160, tol: 8, span: 40, unit: 'г', noun: 'Шариков', ok: 'в самый раз', low: 'маловато', high: 'многовато', min: 10, minMsg: 'Насыпьте больше' },
-  topping: { rate: 4, max: 20, tol: 1.5, span: 8, unit: 'г', noun: 'Топпинга', ok: 'в самый раз', low: 'маловато', high: 'многовато' }
+  topping: { rate: 4, max: 20, tol: 1.5, span: 8, unit: 'г', noun: 'Топпинга', ok: 'в самый раз', low: 'маловато', high: 'многовато' },
+  /* налив из колбы капельной кофеварки (31-8Б): объём чашки 200–400 мл, скорость как у сока */
+  drip: { rate: 40, max: 420, tol: 10, span: 50, unit: 'мл', noun: 'Кофе', ok: 'по линии', low: 'маловато', high: 'многовато', min: 40, minMsg: 'Налейте больше: чашка почти пустая' }
 };
 
 /** Целевое количество, при котором настройки выше «как раньше»; больше цель (крупный размер) — быстрее налив и шире допуск, чтобы время и сложность не росли с размером. */
-const REF: Readonly<Record<FillKind, number>> = { water: 114, milk: 200, ice: 100, juice: 100, tonic: 120, powder: 25, boba: 60, topping: 8 };
+const REF: Readonly<Record<FillKind, number>> = { water: 114, milk: 200, ice: 100, juice: 100, tonic: 120, powder: 25, boba: 60, topping: 8, drip: 300 };
 const scaleOf = (kind: FillKind, target: number, cfg?: Partial<FillCfg>): number => (cfg?.rate !== undefined ? 1 : Math.max(1, target / REF[kind]));
 /** Скорость налива, единиц в секунду. */
 export const fillRate = (kind: FillKind, target: number): number => FILL[kind].rate * scaleOf(kind, target);

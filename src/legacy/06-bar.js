@@ -7,7 +7,7 @@ const pitCapOf = rc => rc.milk && !rc.cupMilk ? Math.max(330, Math.ceil((rc.milk
 const MILKY = new Set(['cappuccino', 'latte', 'flatwhite', 'raf', 'rafhalva']);
 const TASK_NAME = MENUAPI.TASK_NAME;
 const SYR = Object.fromEntries(MENUAPI.SYRUPS.filter(s => MENUAPI.SYRUP_META[s.name]).map(s => { const m = MENUAPI.SYRUP_META[s.name]; return [m.key, { name: s.name, short: m.short, col: m.col, z: 'syrup', rank: s.rank, recipe: MENUAPI.RECIPE_SYRUPS.has(s.name) }]; }));
-const ZONE_POS = { grind: [160, 330], tamp: [330, 496], shot: [630, 380], water: [500, 336], ice: [680, 676], food: [405, 676], micro: [932, 676], milk: [1160, 380], steam: [836, 420], pour: [630, 430], bell: [1032, 500], syrup: [968, 250], syr1: [902, 250], syr2: [968, 250], syr3: [1034, 250] };
+const ZONE_POS = { grind: [160, 330], tamp: [330, 496], shot: [630, 380], water: [500, 336], ice: [680, 676], food: [405, 676], micro: [932, 676], milk: [1160, 380], steam: [836, 420], pour: [630, 430], bell: [1032, 500], syrup: [968, 250], syr1: [902, 250], syr2: [968, 250], syr3: [1034, 250], drip: [332, 335] };
 /* центры зон боковых станций (секция-локальные координаты SIDE_ZONES → мировые); зоны в центре больше не рисуются */
 MENUAPI.SIDE_ZONES.forEach(z => { ZONE_POS[z.id] = MENUAPI.sideZoneCenter(z); });
 const WEIGHT = MENUAPI.WEIGHT;
@@ -278,6 +278,7 @@ const SIDE_ZONE_IDS = new Set(['tea', 'matcha', 'powders', 'juice', 'whipper', '
 function zoneShown(z) {
   if (z === 'milk') return !!G.milk || !!G.eq_cream; /* кувшин сливок для рафа стоит у холодильника */
   if (z === 'ice') return !!G.eq_ice;
+  if (z === 'drip') return !!G.eq_drip; /* капельная кофеварка на стенной полке (31-8Б) */
   if (z === 'syrup' || z === 'syr1' || z === 'syr2' || z === 'syr3') return MENUAPI.barItems({ rank: G.rank, milk: !!G.milk, cream: !!G.eq_cream }).syrupShelf; /* полка сиропов появляется с рангом (31-7) */
   if (z === 'micro') return !!G.eq_microwave; /* микроволновка стоит в нише справа от холодильной витрины; клик ведёт на ту же станцию «Еда» */
   if (z === 'food') return !!(G.eq_case_snacks || G.eq_case_pastry || G.eq_case_dessert || G.eq_fridge_deli);
@@ -315,6 +316,8 @@ function zoneClick(z) {
   if (t === 'tamp') { BR.pf = 'mat'; }
   openInset(t);
 }
+/* заварка колбы закончилась (31-8Б): тост и звук */
+function drip_ready() { toast('Фильтр-кофе готов: колба полна'); play('ui_success-warm-chime', .5); }
 function zoneNoNeed(z) {
   return { grind: 'Помол здесь не нужен', tamp: 'Темпер не нужен', shot: 'Шот не нужен', water: 'Вода в этом напитке не нужна', ice: 'Лёд в этом напитке не нужен', food: 'Еду гость не просил', milk: 'Молоко в этом напитке не нужно', steam: 'Пар не нужен', pour: 'Заливать нечего', syrup: 'Клиент не просил сироп', tea: 'Чай здесь не нужен', matcha: 'Матча здесь не нужна', powders: 'Порошок не нужен', juice: 'Сок и тоник не нужны', whipper: 'Сифон не нужен', blender: 'Блендер не нужен', boba: 'Шарики не нужны', shaker: 'Шейкер не нужен' }[z] || 'Здесь ничего не нужно';
 }

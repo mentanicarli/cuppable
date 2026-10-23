@@ -68,12 +68,12 @@ describe('кэш текстур модели (LRU 40)', () => {
   });
 });
 
-describe('Н2-1: 23 горячих вида в кэше', () => {
+describe('Н2-1: 24 горячих вида в кэше', () => {
   test('обход всех горячих видов × размеров × уровней × разрешений оставляет в кэше ровно 40 живых, ключи уникальны', () => {
     Fake.live = 0;
     const c = new TexCache<Fake>();
     const hot = allSpecs().filter((s) => !s.cold && HOT_MODEL_IDS.has(s.id));
-    expect(new Set(hot.map((s) => s.id)).size).toBe(23);
+    expect(new Set(hot.map((s) => s.id)).size).toBe(24);
     const keys: string[] = [];
     for (const sp of hot) for (const lod of ['full', 'compact'] as const) for (const res of [1, 2]) keys.push(modelTexKey(sp, lod, res));
     expect(new Set(keys).size).toBe(keys.length);

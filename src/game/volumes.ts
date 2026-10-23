@@ -1,5 +1,6 @@
 import { drinkById } from './menu';
 import type { Drink, Size } from './types';
+import { CUP_COFFEE_G, CUP_WATER_ML } from './stations/drip';
 
 /* ---------- Объёмы и рецептуры по размеру ----------
    Размер в литрах = итоговый объём напитка в чашке V (мл). Всё, что зависит от размера, считается здесь
@@ -127,6 +128,8 @@ export interface Recipe {
   /** заварка */
   tea?: { g: number; waterMl: number };
   matcha?: { g: number; waterMl: number };
+  /** фильтр-кофе: кофе на чашку, г, и вода на чашку, мл (доля партии колбы) */
+  filter?: { g: number; waterMl: number };
   /** пенка или сливочная пена сверху, мл */
   topFoam?: number;
 }
@@ -301,6 +304,13 @@ export function recipeNumbers(d: Drink, size: Size, coldIn = false): Recipe {
         out.tonic = rest;
         parts.push({ task: 'tonic', label: 'Тоник', amount: rest, unit: 'мл', vol: rest });
       }
+      return out;
+    }
+    case 'filter_coffee': {
+      /* капельная кофеварка (31-8Б): напиток наливается из колбы одним шагом; кофе и вода на чашку нужны для себестоимости и книги */
+      const g = CUP_COFFEE_G[size] ?? round(V / 14.5), waterMl = CUP_WATER_ML[size] ?? round(V + 2 * g);
+      out.filter = { g, waterMl };
+      parts.push({ task: 'drip', label: 'Фильтр-кофе из колбы', amount: V, unit: 'мл', vol: V, note: `${g} г кофе и ${waterMl} мл воды на чашку` });
       return out;
     }
     case 'tea_sencha':

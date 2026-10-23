@@ -15,7 +15,7 @@ const TEMP: Record<Temp, string> = { hot: 'горячий', cold: 'холодн�
 const FAM: Record<Family, string> = {
   espresso: 'Эспрессо', milk: 'Молочные', raf: 'Раф', powder: 'Порошковые', matcha: 'Матча', tea: 'Чай',
   bumble: 'Бамблы', tonic: 'Тоники', foamlatte: 'Латте с пенкой', shake: 'Шейки',
-  boba: 'Бабл ти', protein: 'Протеин'
+  boba: 'Бабл ти', protein: 'Протеин', filter: 'Фильтр'
 };
 export type BookTab = 'drinks' | 'food' | 'extra';
 const BOOK_TABS: readonly (readonly [BookTab, string])[] = [

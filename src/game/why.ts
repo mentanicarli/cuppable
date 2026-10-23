@@ -13,11 +13,11 @@ export const isWhyKey = (k: string): boolean => k.startsWith('why:');
 /** Окно станции → экран. Для заказов с особой механикой (раф, слои, топпинг, два шота) см. whyOfOrder. */
 const INSET_WHY: Readonly<Record<string, string>> = {
   grind: 'why:grind', tamp: 'why:tamp', shot: 'why:shot', water: 'why:water', milk: 'why:milk', steam: 'why:steam', pour: 'why:pour', syrup: 'why:syrup', ice: 'why:ice',
-  whisk: 'why:matcha', brew: 'why:brew', juice: 'why:juice', tonic: 'why:juice', powder: 'why:powder', foam: 'why:foam', blend: 'why:blend', boba: 'why:boba', shake: 'why:shake'
+  whisk: 'why:matcha', brew: 'why:brew', juice: 'why:juice', tonic: 'why:juice', powder: 'why:powder', foam: 'why:foam', blend: 'why:blend', boba: 'why:boba', shake: 'why:shake', drip: 'why:drip', carafe: 'why:drip'
 };
 /** Оборудование из магазина → экран его станции. */
 const EQ_WHY: Readonly<Record<string, string>> = {
-  ice: 'why:ice', matcha: 'why:matcha', tea: 'why:brew', juice: 'why:juice', powders: 'why:powder', whipper: 'why:foam', blender: 'why:blend', boba: 'why:boba', shaker: 'why:shake', cream: 'why:cream'
+  ice: 'why:ice', matcha: 'why:matcha', tea: 'why:brew', juice: 'why:juice', powders: 'why:powder', whipper: 'why:foam', blender: 'why:blend', boba: 'why:boba', shaker: 'why:shake', cream: 'why:cream', drip: 'why:drip'
 };
 
 const steamArg = (drinkId: string): string | null => {
@@ -45,6 +45,7 @@ export function whyOfOrder(drinkId: string, shots: number, seen: readonly string
   if (!d) return [];
   const out: string[] = [];
   if (d.family === 'raf') out.push('why:cream');
+  if (d.family === 'filter') out.push('why:filter');
   if (shots > 1) out.push('why:shots');
   if (d.steps.some((s) => s.st === 'pour' && s.arg === 'layer')) out.push('why:layer');
   if (d.steps.some((s) => s.st === 'topping')) out.push('why:topping');

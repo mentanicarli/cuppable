@@ -46,11 +46,11 @@ for (const d of DRINKS) if (!(d.id in ENGINE)) (ENGINE as Record<string, string>
 /** Оборудование, которое уже работает в баре. */
 export const EQ_IMPL: readonly string[] = [
   'cream', 'ice', 'case_snacks', 'case_pastry', 'case_dessert', 'fridge_deli', 'microwave',
-  'powders', 'matcha', 'tea', 'juice', 'whipper', 'blender', 'boba', 'shaker'
+  'powders', 'matcha', 'tea', 'juice', 'whipper', 'blender', 'boba', 'shaker', 'drip'
 ];
 /** Оборудование под шаг рецепта. */
 const STEP_EQ: Readonly<Record<string, string>> = {
-  whisk: 'matcha', brew: 'tea', powder: 'powders', juice: 'juice', tonic: 'juice', blend: 'blender', boba: 'boba', shake: 'shaker', ice: 'ice', cream: 'cream'
+  whisk: 'matcha', brew: 'tea', powder: 'powders', juice: 'juice', tonic: 'juice', blend: 'blender', boba: 'boba', shake: 'shaker', ice: 'ice', cream: 'cream', drip: 'drip'
 };
 /** Оборудование, необходимое напитку: вычисляется из шагов рецепта. */
 export const DRINK_NEEDS: Readonly<Record<string, readonly string[]>> = Object.fromEntries(

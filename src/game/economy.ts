@@ -15,6 +15,8 @@ export const UNIT_COST = {
   juice: { orange_bumble: 0.12, pomegranate_bumble: 0.2, hot_bumble: 0.12, matcha_bumble: 0.12, tea_currant: 0.3, milkshake_banana: 0.25 } as Readonly<Record<string, number>>,
   powder: { cocoa: 0.5, chicory_latte: 0.6, protein_milk: 1.2, protein_water: 1.2 } as Readonly<Record<string, number>>,
   tea: 1.5,
+  /** молотый кофе для фильтра, ₽ за грамм (шот 18 ₽ на 9 г) */
+  coffee: 2,
   matcha: 6,
   tapioca: 0.5,
   iceCream: 0.35,
@@ -91,6 +93,7 @@ export function recipeCost(r: Recipe): number {
   if (r.tonic !== undefined) c += r.tonic * UNIT_COST.tonic;
   if (r.powder !== undefined) c += r.powder * (UNIT_COST.powder[r.id] ?? 0.5);
   if (r.tea) c += r.tea.g * UNIT_COST.tea;
+  if (r.filter) c += r.filter.g * UNIT_COST.coffee + r.filter.waterMl * COST.W;
   if (r.matcha) c += r.matcha.g * UNIT_COST.matcha;
   if (r.boba !== undefined) c += r.boba * UNIT_COST.tapioca;
   if (r.topFoam) c += r.topFoam * UNIT_COST.topFoam;

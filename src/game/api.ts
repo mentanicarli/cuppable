@@ -24,6 +24,7 @@ export * from './stations/food';
 export * from './food';
 export * from './stations/timed';
 export * from './stations/brew';
+export * from './stations/drip';
 export * from './recipes';
 export * from './volumes';
 export * from './recipeCard';

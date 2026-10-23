@@ -7,17 +7,17 @@ import { SAUCE_G, SPICE_G, cupScale, recipeNumbers } from './volumes';
 export const TASK_NAME: Readonly<Record<string, string>> = {
   syrup: 'Сироп', grind: 'Помол', tamp: 'Темпер', shot: 'Шот', water: 'Вода', ice: 'Лёд', food: 'Еда', milk: 'Молоко', steam: 'Пар', pour: 'Заливка',
   whisk: 'Матча', brew: 'Заварка', juice: 'Сок', tonic: 'Тоник', powder: 'Порошок', boba: 'Шарики', topping: 'Топпинг',
-  blend: 'Блендер', shake: 'Шейкер', foam: 'Пенка', layer: 'Слои'
+  blend: 'Блендер', shake: 'Шейкер', foam: 'Пенка', layer: 'Слои', drip: 'Налить из колбы'
 };
 
 /** Шаги, которые идут в панели «станция» (не в крупном плане Pixi). */
-export const PANEL_TASKS: ReadonlySet<string> = new Set(['whisk', 'brew', 'juice', 'tonic', 'powder', 'boba', 'topping', 'blend', 'shake', 'foam', 'layer']);
+export const PANEL_TASKS: ReadonlySet<string> = new Set(['whisk', 'brew', 'juice', 'tonic', 'powder', 'boba', 'topping', 'blend', 'shake', 'foam', 'layer', 'drip']);
 
 /** Где на баре делается шаг: id зоны. */
 export const TASK_ZONE: Readonly<Record<string, string>> = {
   syrup: 'syrup', grind: 'grind', tamp: 'tamp', shot: 'shot', water: 'water', ice: 'ice', food: 'food', milk: 'milk', steam: 'steam', pour: 'pour',
   whisk: 'matcha', brew: 'tea', juice: 'juice', tonic: 'juice', powder: 'powders', boba: 'boba', topping: 'pour',
-  blend: 'blender', shake: 'shaker', foam: 'whipper', layer: 'pour'
+  blend: 'blender', shake: 'shaker', foam: 'whipper', layer: 'pour', drip: 'drip'
 };
 
 /** Это напиток нового ядра (рецепт собирается из шагов меню)? */
@@ -123,6 +123,7 @@ export function taskTarget(key: string, task: string, size: Size = '0.3', cold =
     case 'shake': return 5;
     case 'foam': return 4;
     case 'layer': return 4;
+    case 'drip': return r.drinkMl;
     default: return 0;
   }
 }

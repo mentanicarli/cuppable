@@ -8,7 +8,7 @@ import type { CustomerType, Rng } from './types';
 /** Типичные секунды на шаг бара (из реального замера: около 10 с на шаг). */
 export const STEP_SECONDS: Readonly<Record<string, number>> = {
   grind: 8, tamp: 7, shot: 11, water: 5, milk: 7, steam: 10, pour: 11, syrup: 7, ice: 6, food: 8,
-  whisk: 8, brew: 12, juice: 6, tonic: 6, powder: 6, boba: 6, topping: 5, blend: 8, shake: 7, foam: 7, layer: 8
+  whisk: 8, brew: 12, juice: 6, tonic: 6, powder: 6, boba: 6, topping: 5, blend: 8, shake: 7, foam: 7, layer: 8, drip: 8
 };
 /** Запас на заказ: принять, отдать, гость подходит. */
 export const ORDER_OVERHEAD_SECONDS = 11;

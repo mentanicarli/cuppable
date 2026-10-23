@@ -39,7 +39,7 @@ describe('карточка «Новый напиток»', () => {
       const c = newDrinkCard(d.id, []);
       expect(c?.what.length, d.id).toBeGreaterThan(10);
       expect(c?.steps.length, d.id).toBeGreaterThan(1);
-      expect(c?.exact.length, d.id).toBeGreaterThan(2);
+      expect(c?.exact.length, d.id).toBeGreaterThanOrEqual(2); /* у фильтр-кофе одна строка рецепта (налив из колбы) и цена */
     }
   });
 });

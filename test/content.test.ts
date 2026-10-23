@@ -14,8 +14,8 @@ const allTexts = (): { id: string; t: string }[] => {
 };
 
 describe('тексты К1 в игре', () => {
-  test('у всех 34 напитков меню есть текст, лишних нет', () => {
-    expect(DRINKS).toHaveLength(34);
+  test('у всех 35 напитков меню есть текст, лишних нет', () => {
+    expect(DRINKS).toHaveLength(35);
     for (const d of DRINKS) expect(DRINK_TEXTS[d.id], d.id).toBeTruthy();
     expect(Object.keys(DRINK_TEXTS).sort()).toEqual(DRINKS.map((d) => d.id).sort());
   });
@@ -36,8 +36,8 @@ describe('тексты К1 в игре', () => {
     for (const t of GLOSSARY) expect(t.text.length, t.name).toBeGreaterThan(20);
     expect(GLOSSARY.find((t) => /ристретто/i.test(t.name))).toBeUndefined();
   });
-  test('22 экрана «Зачем» с заголовком и текстом; экрана «Как листать бар» нет (31-7)', () => {
-    expect(WHY_KEYS).toHaveLength(22);
+  test('24 экрана «Зачем» с заголовком и текстом; экрана «Как листать бар» нет (31-7)', () => {
+    expect(WHY_KEYS).toHaveLength(24);
     for (const w of Object.values(WHY_TEXTS)) {
       expect(w.title.length).toBeGreaterThan(5);
       expect(w.text.length).toBeGreaterThan(1);
@@ -82,8 +82,8 @@ describe('тексты К1 в игре', () => {
     }
   });
   test('названия станций в подсказках — из списка guide.md', () => {
-    expect(STATION_NAMES).toHaveLength(18);
-    for (const key of ['tea', 'matcha', 'powders', 'juice', 'whipper', 'blender', 'boba', 'shaker', 'ice', 'cream']) {
+    expect(STATION_NAMES).toHaveLength(19);
+    for (const key of ['tea', 'matcha', 'powders', 'juice', 'whipper', 'blender', 'boba', 'shaker', 'ice', 'cream', 'drip']) {
       const title = lesson(key, { drinkId: 'latte' })?.title ?? '';
       expect(STATION_NAMES.map((n) => n.toLowerCase()), key).toContain(title.toLowerCase());
     }
