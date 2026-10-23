@@ -16,7 +16,8 @@ function legacyPlugin() {
       const files = readdirSync(LEGACY).filter(f => f.endsWith('.js')).sort();
       files.forEach(f => this.addWatchFile(resolve(LEGACY, f)));
       // Как и раньше, всё внутри одной функции: так повторные function-объявления (старый и новый drawGrind и т.п.) разрешены, побеждает последнее.
-      const head = `import * as MENUAPI from '/src/game/api';\nimport { bookHTML, guideHTML } from '/src/ui/book';\nimport { InsetRenderer } from '/src/render/inset';\nimport { pitcherImage, pitcherOrigin, pitcherPt, PITCHER_BOX, PITCHER_K, PITCHER_INNER } from '/src/render/pitcherArt';\nimport { foodPanelHTML, heatPct } from '/src/ui/foodPanel';\nimport { World, lookFor } from '/src/render/world/world';\nimport { MusicPlayer, trackLabel } from '/src/ui/music';
+      const head = `import * as MENUAPI from '/src/game/api';\nimport { bookHTML, guideHTML } from '/src/ui/book';\nimport { InsetRenderer } from '/src/render/inset';\nimport { pitcherImage, pitcherOrigin, pitcherPt, PITCHER_BOX, PITCHER_K, PITCHER_INNER } from '/src/render/pitcherArt';\nimport { foodPanelHTML, heatPct } from '/src/ui/foodPanel';
+import { shopBarIcon } from '/src/ui/shopIcons';\nimport { World, lookFor } from '/src/render/world/world';\nimport { MusicPlayer, trackLabel } from '/src/ui/music';
 import { sandboxScreenHTML, devPanelHTML } from '/src/ui/sandbox';
 import { sectionNavHTML, navArrows, navLabelHTML } from '/src/ui/sectionNav';
 import { titleHTML, howtoHTML, settingsHTML, confirmHTML, pauseHTML } from '/src/ui/menus';

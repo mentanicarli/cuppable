@@ -73,7 +73,7 @@ const out = process.argv[3] || 'out/milk';
   await p.keyboard.press('Space'); await p.waitForTimeout(900);
   const card = await p.evaluate(() => { const e = document.querySelector('#drinkCard'); return e.hidden ? '' : e.textContent; });
   console.log('карточка:', JSON.stringify(card));
-  ok('перед приготовлением карточка «Новый напиток» с рецептом', /Новый напиток/.test(card) && /Латте/.test(card) && /Пар: до 55–62/.test(card) && /22%/.test(card) && /Понятно/.test(card) && /Точные цифры/.test(card) && /Чем отличается/.test(card));
+  ok('перед приготовлением карточка «Новый напиток» с рецептом', /Новый напиток/.test(card) && /Латте/.test(card) && /Пар: до 55–62/.test(card) && /22%/.test(card) && /Понятно/.test(card) && /Точные цифры/.test(card) && !/Чем отличается/.test(card));
   ok('цифры в карточке спрятаны за «Точные цифры» (по умолчанию закрыто)', await p.evaluate(() => { const b = document.querySelector('.dcExact'); return !!b && b.hidden; }));
   ok('пока карточка открыта, бар не начат', await p.evaluate(() => window.__dbg.BR === null));
   await p.screenshot({ path: out + '_4card.png' });
