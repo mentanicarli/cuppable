@@ -123,6 +123,8 @@ export function sourceOf(task: string, drink?: string): { part: string; marker: 
     case 'blend': return [{ part: 'blender', marker: 'data-item="blender"' }];
     case 'shake': return [{ part: 'shaker', marker: 'data-glass="tinBig"' }, { part: 'shaker', marker: 'data-glass="tinSmall"' }];
     case 'foam': return [{ part: 'whipper', marker: 'data-item="whipper"' }];
+    case 'drip':
+    case 'carafe': return [{ part: 'drip', marker: 'data-item="drip"' }];
     default: return [];
   }
 }
@@ -244,9 +246,29 @@ function receiverLayersSpec(drink: string | undefined, size: string | undefined,
 export interface ArtOpts { task: string; col: string; col2: string; drink?: string; size?: string; cold?: boolean }
 
 /** Иллюстрация к шагу. Налив растёт через #xpLiq (его высоту ставит panelUpdate по data-top / data-full). */
+/** Кофеварка бара (корпус, колба, полка не нужна в окне, но она часть группы) и её передний слой; сцена окна 400 × 190: предмет 112 × 158 ставится в (x, 16). */
+const DRIP_ITEM: Box = { x: 276, y: 252, w: 112, h: 158 };
+const CARAFE_IN = { dx: 22, bottom: 140, w: 38, full: 52 }; /* стеклянная колба внутри предмета: левый край, дно от верха предмета, ширина, высота кофе */
+function dripScene(x: number, level: number): string {
+  const y = 16;
+  const body = place(barObject('drip', 'data-item="drip"'), DRIP_ITEM, x, y, 1, '', 0, { src: 1 });
+  const front = place((PARTS_C['dripFront'] as Part).svg.replace(/^<svg[^>]*>/, '').replace(/<\/svg>\s*$/, ''), { x: 292, y: 330, w: 50, h: 66 }, x + 16, y + 78, 1, '', 0, { src: 1 });
+  const cx = x + CARAFE_IN.dx, bottom = y + CARAFE_IN.bottom;
+  const liq = `<rect id="xpCar" data-top="${bottom}" data-full="${CARAFE_IN.full}" data-level="${level.toFixed(3)}" x="${cx}" y="${(bottom - CARAFE_IN.full * level).toFixed(1)}" width="${CARAFE_IN.w}" height="${(CARAFE_IN.full * level).toFixed(1)}" rx="3" fill="${col('CHOC')}" stroke="none"/>`;
+  return `${body}${liq}${front}`;
+}
+
 export function panelArt(o: ArtOpts): string {
   const { task, col: c, col2: c2, drink } = o;
   switch (task) {
+    case 'carafe':
+      /* окно заварки колбы: кофеварка по центру, уровень кофе в колбе обновляет panelUpdate (#xpCar, PanelLive.level) */
+      return `<g ${WRAP}>${dripScene(144, 0)}<path id="xpMark" d="M0 0" opacity="0"/></g>`;
+    case 'drip': {
+      /* налив из колбы: кофеварка слева (уровень падает по мере налива), стакан справа; налив растёт через #xpLiq */
+      const pre = { base: '', top: 172, full: 140 };
+      return `<g ${WRAP}>${dripScene(20, 0)}${cup(c, '', pre)}</g>`;
+    }
     case 'layer':
       return layerArt(drink ?? 'orange_bumble', o.size ?? '0.3', o.cold ?? true);
     case 'juice':

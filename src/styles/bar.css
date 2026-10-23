@@ -102,6 +102,7 @@ html.kbd .fpItem:focus-visible, html.kbd .fpHold:focus-visible, html.kbd .fpDone
 .xpGo { flex: 1; background: #E0745A; }
 .xpDump { width: 92px; background: #F0B3A0; font-size: 15px; }
 .xpDone { width: 108px; background: #B9CAA9; }
+.xpBtns.four .xpDump, .xpBtns.four .xpDone { width: 78px; font-size: 14px; padding: 0 4px; } /* окно заварки колбы: четыре кнопки в ряд (31-8Б) */
 .xpHold:active, .xp.hold .xpHold { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
 .xpGo:disabled { opacity: .5; cursor: default; box-shadow: none; }
 .xpTemps { display: flex; gap: 8px; flex: none; }

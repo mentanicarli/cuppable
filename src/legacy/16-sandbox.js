@@ -117,6 +117,7 @@ function sbxAction(a, v) {
   if (a === 'speed') { if (day) SBX.scale = +v; }
   else if (a === 'step') { if (day) for (let i = 0; i < 10 && G.phase === 'day'; i++) { SBX.clock += .1; tickDay(.1); } }
   else if (a === 'endday') sbxEndDay();
+  else if (a === 'carafe') { D.carafe.brew = null; D.carafe.ml = MENUAPI.CARAFE_ML; toast('Колба фильтр-кофе полная'); } /* 31-8Б: песочница, без ожидания заварки */
   else if (a === 'money') { G.money += +v; lastHud = ''; updateHud(true); }
   else if (a === 'rate') { G.rating = clamp(Math.round((G.rating + +v) * 100) / 100, 1, 5); lastHud = ''; updateHud(); }
   else if (a === 'rank') { if (day) sbxNextRank(); }

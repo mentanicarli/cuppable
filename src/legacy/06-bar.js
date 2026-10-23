@@ -28,6 +28,7 @@ function blockMsg(t) {
     if (t === 'food') return '';
     const i = BR.tasks.indexOf(t);
     for (let j = 0; j < i; j++) { const p = BR.tasks[j]; if (p !== 'food' && !d[p]) return 'Сначала: ' + TASK_NAME[p].toLowerCase(); }
+    if (t === 'drip' && !d.drip) { const chk = dripCheck(); if (chk !== 'ok') return MENUAPI.POUR_MSG[chk]; }
     return '';
   }
   const raf = BR.rc.pitcherShot;
@@ -147,7 +148,7 @@ function hintZone() {
   if (B.shot.st === 'run') return 'shot';
   if (B.ready) return 'bell';
   if (B.pumps > 0 && !B.done.syrup) return null;
-  const t = B.tasks.find(x => !B.done[x] && !blockMsg(x)); if (!t) return null;
+  const t = B.tasks.find(x => !B.done[x] && (x === 'drip' || !blockMsg(x))); if (!t) return null;
   return t === 'syrup' ? 'syrup' : (MENUAPI.TASK_ZONE[t] || t);
 }
 const DRAGS = { s: null, eat: false };
@@ -260,7 +261,7 @@ function openInset(mode) {
   if (mode === 'water' || mode === 'milk' || mode === 'ice') {
     BR.fillKind = mode; BR.fill = mode === 'water' ? BR.cup.water : mode === 'ice' ? BR.cup.ice : BR.pit.ml;
   }
-  if (MENUAPI.PANEL_TASKS.has(mode)) xOpen(mode);
+  if (isXInset(mode)) xOpen(mode);
   BR.inset = mode; BR.hold = false; UI.close.hidden = false; coachKey = '';
   if (mode === 'pour') { BR.mx = 220; BR.my = 150; }
   if (mode === 'steam') { BR.my = 140; BR.steamT = 0; }
@@ -301,6 +302,7 @@ function zoneClick(z) {
   const d = BR.done;
   if (z === 'stop') { if (BR.shot.st === 'run') stopShot(); return; }
   if (z === 'bell') { barBell(); return; }
+  if (z === 'drip') { dripClick(); return; }
   if (z === 'syr1' || z === 'syr2' || z === 'syr3') z = 'syrup';
   const tz = MENUAPI.TASK_ZONE;
   if (z === 'pour' && MENUAPI.isMenuKey(BR.drink)) { const lt = BR.tasks.find(x => !d[x] && x !== 'pour' && tz[x] === 'pour'); if (lt && !blockMsg(lt)) z = lt; }
@@ -315,6 +317,24 @@ function zoneClick(z) {
   if (sectionsPlayable()) { const zn = MENUAPI.TASK_ZONE[t] || t, sec = MENUAPI.stationSection(zn, zonesInSide), st = MENUAPI.stationOfZone(zn); if (st && sec !== CAM.sec) { const txt = MENUAPI.stationToast(st.id, CAM.sec); if (txt) { barMsg(txt, false, st.id); sndTap(); return; } } }
   if (t === 'tamp') { BR.pf = 'mat'; }
   openInset(t);
+}
+/* ---------- Капельная кофеварка (31-8Б) ----------
+   Колба D.carafe (src/game/stations/drip.ts): заварку делает игрок окном «carafe» (порция → кофе → вода → «Заварить»), она идёт в фоне (tickDay).
+   Шаг заказа «drip» — налив из колбы окном «drip» (обычный налив, объём чашки вычитается из колбы при «Готово»). */
+const isXInset = t => MENUAPI.PANEL_TASKS.has(t) || t === 'carafe';
+const BATCH_LBL = { '0.6': '0,6 л', '0.9': '0,9 л', '1.2': '1,2 л' };
+const dripNeed = () => (BR && BR.rc && BR.rc.drip) || 0;
+const dripPending = () => !!BR && BR.tasks.includes('drip') && !BR.done.drip;
+function dripCheck() { return MENUAPI.pourCheck(D.carafe, dripNeed()); }
+function ritState() { return D.rit || (D.rit = { phase: 'size', size: null, coffee: null, water: null }); }
+/* клик по кофеварке в любой момент открытого заказа: налив, если шаг ждёт и кофе хватает, иначе окно заварки */
+function dripClick() {
+  if (dripPending()) {
+    const chk = dripCheck();
+    if (chk === 'ok') { openInset('drip'); return; }
+    barMsg(MENUAPI.POUR_MSG[chk], true); play('ui_error-soft-thud', .4);
+  }
+  openInset('carafe');
 }
 /* заварка колбы закончилась (31-8Б): тост и звук */
 function drip_ready() { toast('Фильтр-кофе готов: колба полна'); play('ui_success-warm-chime', .5); }
@@ -358,11 +378,13 @@ window.addEventListener('pointerup', () => { if (BR && BR.inset === 'food') BR.h
 
 /* Панели станций нового ядра: налив, таймер, заварка (src/ui/stationPanel, src/game/stations) */
 const xEl = $('#xPanel'); let xKey = '';
-const X_TITLE = { juice: 'Налить сок или пюре', tonic: 'Налить тоник', powder: 'Добавить порошок', boba: 'Добавить шарики', topping: 'Украсить', whisk: 'Взбить матчу венчиком', brew: 'Заварить чай', blend: 'Взбить в блендере', shake: 'Взболтать в шейкере', foam: 'Взбить пенку', layer: 'Налить слоями' };
-const X_HOLD = { juice: 'Лить (держите)', tonic: 'Лить (держите)', powder: 'Сыпать (держите)', boba: 'Сыпать (держите)', topping: 'Посыпать (держите)', whisk: 'Взбивать (держите)', blend: 'Блендер (держите)', shake: 'Встряхивать (держите)', foam: 'Взбивать (держите)', layer: 'Лить медленно (держите)' };
-const X_FILL = new Set(['juice', 'tonic', 'powder', 'boba', 'topping']);
+const X_TITLE = { juice: 'Налить сок или пюре', tonic: 'Налить тоник', powder: 'Добавить порошок', boba: 'Добавить шарики', topping: 'Украсить', whisk: 'Взбить матчу венчиком', brew: 'Заварить чай', blend: 'Взбить в блендере', shake: 'Взболтать в шейкере', foam: 'Взбить пенку', layer: 'Налить слоями', drip: 'Налить фильтр-кофе', carafe: 'Заварить фильтр-кофе' };
+const X_HOLD = { juice: 'Лить (держите)', tonic: 'Лить (держите)', powder: 'Сыпать (держите)', boba: 'Сыпать (держите)', topping: 'Посыпать (держите)', whisk: 'Взбивать (держите)', blend: 'Блендер (держите)', shake: 'Встряхивать (держите)', foam: 'Взбивать (держите)', layer: 'Лить медленно (держите)', drip: 'Лить (держите)' };
+const X_FILL = new Set(['juice', 'tonic', 'powder', 'boba', 'topping', 'drip']);
 function xOpen(t) {
-  const B = BR; if (B.xs[t]) return;
+  const B = BR;
+  if (t === 'carafe') { B.xs.carafe = true; B.xv.carafe = { task: 'carafe', hint: 'Выберите порцию, засыпьте кофе, налейте воду и нажмите «Заварить». Колба наполнится сама.' }; return; }
+  if (B.xs[t]) return;
   const d = B.drink, size = B.c.order.size, pal = MENUAPI.paletteOf(d), tg = MENUAPI.taskTarget(d, t, size, !!B.c.order.cold);
   let v;
   if (t === 'brew') {
@@ -370,7 +392,7 @@ function xOpen(t) {
     v = { kind: 'brew', max: o.minutes * 1.9, zone: [o.minutes - .3, o.minutes + .3], col: pal.tea, col2: pal.foam, holdLabel: '', hint: 'Выберите температуру воды, залейте чай и вынимайте вовремя.' };
   } else if (X_FILL.has(t)) {
     const fc = MENUAPI.fillCfgFor(d, t); B.xs[t] = MENUAPI.fillStation.init({ kind: t, target: tg, cfg: fc || undefined }); const tol = fc && fc.tol !== undefined ? fc.tol : MENUAPI.fillTol(t, tg);
-    v = { kind: 'fill', max: tg * 1.7, zone: [tg - tol, tg + tol], col: { juice: pal.juice, tonic: pal.tonic, powder: pal.powder, boba: pal.tea, topping: pal.topping }[t], col2: pal.foam, holdLabel: X_HOLD[t], hint: 'Держите кнопку (или Пробел) и остановитесь у линии. Лишнее можно вылить.' };
+    v = { kind: 'fill', max: tg * 1.7, zone: [tg - tol, tg + tol], col: { juice: pal.juice, tonic: pal.tonic, powder: pal.powder, boba: pal.tea, topping: pal.topping, drip: '#5A3A28' }[t], col2: pal.foam, holdLabel: X_HOLD[t], hint: 'Держите кнопку (или Пробел) и остановитесь у линии. Лишнее можно вылить.' };
   } else {
     B.xs[t] = MENUAPI.timedStation.init({ kind: t, target: tg }); const tol = MENUAPI.TIMED[t].tol;
     const col = { whisk: pal.matcha, blend: pal.blend, shake: B.tasks.includes('powder') ? pal.powder : pal.blend, foam: pal.foam, layer: B.tasks.includes('tonic') ? pal.tonic : pal.juice }[t];
@@ -379,6 +401,7 @@ function xOpen(t) {
   B.xv[t] = Object.assign({ task: t, drink: d, size: String(size), cold: !!B.c.order.cold, title: t === 'layer' ? MENUAPI.layerTitle(d) : X_TITLE[t] }, v);
 }
 function xRender(B) {
+  if (B.inset === 'carafe') { ritRender(B); return; }
   const t = B.inset, st = B.xs[t], v = B.xv[t]; if (!st || !v) return;
   if (t === 'brew') v.brew = { set: st.set, started: st.started, target: null };
   const key = t + '|' + (t === 'brew' ? st.set + '|' + st.started : '');
@@ -387,24 +410,74 @@ function xRender(B) {
   if (t === 'brew') { value = st.t; readout = readoutBrew(st.t, G.hints ? { temp: st.temp, minutes: st.minutes } : null); }
   else if (X_FILL.has(t)) { value = st.ml; readout = readoutFill(st.ml, (st.cfg && st.cfg.unit) || MENUAPI.FILL[t].unit, st.target); }
   else { value = st.t; readout = readoutTime(st.t, st.target); }
-  panelUpdate(xEl, v, { value, readout, holding: !!B.hold, brewStarted: t === 'brew' && st.started });
+  panelUpdate(xEl, v, { value, readout, holding: !!B.hold, brewStarted: t === 'brew' && st.started, level: t === 'drip' ? Math.max(0, D.carafe.ml - Math.min(st.ml, dripNeed())) / MENUAPI.CARAFE_ML : undefined }); /* налив из колбы: уровень в колбе на картинке падает вместе с наливом */
+}
+/* окно заварки: вид по фазе (порция, кофе, вода, ожидание); разметка меняется, только когда меняется фаза или доступность порций */
+function ritRender(B) {
+  const R = ritState(), C = D.carafe, brewing = !!C.brew, phase = brewing ? 'brewing' : R.phase;
+  const ok = MENUAPI.BATCH_SIZES.map(s => MENUAPI.brewCheck(C, s) === 'ok');
+  const key = ['carafe', phase, R.size, ok.join('')].join('|');
+  const sizes = MENUAPI.BATCH_SIZES.map((s, i) => ({ size: s, label: BATCH_LBL[s], disabled: !ok[i] }));
+  const base = { task: 'carafe', kind: 'carafe', size: '0.3', cold: false, col: '#7A4A38', col2: '#FFF8EC', zone: [0, 0], max: 1 };
+  let v, value = 0, readout = '';
+  if (phase === 'size') {
+    v = Object.assign({}, base, { title: 'Заварить фильтр-кофе', hint: 'Выберите порцию: чем больше, тем дольше ждать.', holdLabel: '', carafe: { phase, sizes, doneLabel: '', holdLabel: '' } });
+    readout = C.ml > 0 ? 'В колбе ' + C.ml + ' мл. Свободно ' + (MENUAPI.CARAFE_ML - C.ml) + ' мл' : 'Колба пуста';
+    if (!ok.some(Boolean)) readout = 'В колбе нет места: сначала налейте кофе гостям';
+  } else if (phase === 'brewing') {
+    const b = MENUAPI.BATCHES[C.brew.size];
+    v = Object.assign({}, base, { title: 'Фильтр-кофе заваривается', hint: 'Колба наполняется сама. Окно можно закрыть и заняться другими заказами.', max: b.seconds, zone: [b.seconds, b.seconds], holdLabel: '', carafe: { phase, sizes, doneLabel: '', holdLabel: '' } });
+    value = C.brew.t; readout = 'Осталось ' + Math.ceil(MENUAPI.brewLeft(C)) + ' с';
+  } else {
+    const st = R[phase], coffee = phase === 'coffee', tol = MENUAPI.fillTol(st.kind, st.target);
+    v = Object.assign({}, base, { title: coffee ? 'Засыпать кофе' : 'Налить воду', hint: 'Держите кнопку, пока не дойдёте до линии. Лишнее можно вылить.', max: MENUAPI.fillCap(st.kind, st.target), zone: [st.target - tol, st.target + tol], holdLabel: coffee ? 'Засыпать (держите)' : 'Лить воду (держите)', carafe: { phase, sizes, doneLabel: coffee ? 'Дальше' : 'Заварить', holdLabel: coffee ? 'Засыпать (держите)' : 'Лить воду (держите)' } });
+    value = st.ml; readout = readoutFill(st.ml, MENUAPI.FILL[st.kind].unit, st.target);
+  }
+  if (key !== xKey) { xKey = key; xEl.innerHTML = panelHTML(v); }
+  panelUpdate(xEl, v, { value, readout, holding: !!B.hold, level: MENUAPI.levelMl(C) / MENUAPI.CARAFE_ML });
+}
+function ritClick(e) {
+  const R = ritState(), C = D.carafe;
+  const sz = e.target.closest('[data-xsize]');
+  if (sz) {
+    const size = sz.dataset.xsize; if (MENUAPI.brewCheck(C, size) !== 'ok') { barMsg(C.brew ? 'Колба уже заваривается' : 'В колбе нет места для такой порции', true); return; }
+    R.size = size; R.phase = 'coffee'; R.coffee = MENUAPI.fillStation.init({ kind: 'powder', target: MENUAPI.BATCHES[size].coffeeG }); R.water = null; sndTap(); xKey = ''; return;
+  }
+  if (C.brew || (R.phase !== 'coffee' && R.phase !== 'water')) return;
+  if (e.target.closest('[data-xback]')) { R.phase = 'size'; R.size = null; R.coffee = R.water = null; sndTap(); xKey = ''; return; }
+  const st = R[R.phase];
+  if (e.target.closest('[data-xdump]')) { st.ml = 0; play('fridge', .5); return; }
+  if (e.target.closest('[data-xdone]')) {
+    const step = MENUAPI.fillStation.finish(st);
+    if (!step.result) { if (step.message) barMsg(step.message.text, step.message.bad); return; }
+    const m = step.result.message; if (m) barMsg(m.text, m.bad);
+    if (R.phase === 'coffee') { R.phase = 'water'; R.water = MENUAPI.fillStation.init({ kind: 'water', target: MENUAPI.BATCHES[R.size].waterMl }); sndTap(); xKey = ''; return; }
+    if (MENUAPI.startBrew(C, R.size)) { R.phase = 'size'; R.size = null; R.coffee = R.water = null; play('ui_pop-bubble', .7); barMsg('Заварка пошла: колба наполнится сама', false); xKey = ''; }
+    else barMsg('Колба занята или нет места', true);
+  }
 }
 function xUpdate(B, dt) {
+  if (B.inset === 'carafe') { const R = ritState(), st = R[R.phase]; if (!D.carafe.brew && (R.phase === 'coffee' || R.phase === 'water') && st) MENUAPI.fillStation.update(st, dt, !!B.hold); return !!B.hold && !D.carafe.brew; }
   const b = B.xs.brew; if (b && b.started && !B.done.brew) MENUAPI.brewStation.update(b, dt);
   const t = B.inset, st = t && B.xs[t]; if (!st || B.done[t] || t === 'brew') return false;
   if (X_FILL.has(t)) MENUAPI.fillStation.update(st, dt, !!B.hold); else if (MENUAPI.PANEL_TASKS.has(t)) MENUAPI.timedStation.update(st, dt, !!B.hold);
   return !!B.hold;
 }
 xEl.addEventListener('click', e => {
-  if (!BR || paused) return; const t = BR.inset, st = t && BR.xs[t]; if (!st) return;
-  if (e.target.closest('[data-xdone]')) { runStep(t === 'brew' ? MENUAPI.brewStation.finish(st) : X_FILL.has(t) ? MENUAPI.fillStation.finish(st) : MENUAPI.timedStation.finish(st), t); return; }
+  if (!BR || paused) return; if (BR.inset === 'carafe') { ritClick(e); return; } const t = BR.inset, st = t && BR.xs[t]; if (!st) return;
+  if (e.target.closest('[data-xdone]')) {
+    if (t === 'drip') { const chk = dripCheck(); if (chk !== 'ok') { barMsg(MENUAPI.POUR_MSG[chk], true); return; } } /* пока наливали, кофе могла разобрать помощник */
+    const done = runStep(t === 'brew' ? MENUAPI.brewStation.finish(st) : X_FILL.has(t) ? MENUAPI.fillStation.finish(st) : MENUAPI.timedStation.finish(st), t);
+    if (done && t === 'drip') MENUAPI.pour(D.carafe, dripNeed()); /* объём чашки уходит из колбы */
+    return;
+  }
   if (e.target.closest('[data-xdump]')) { st.ml = 0; play('fridge', .5); return; }
   const tp = e.target.closest('[data-xtemp]'); if (tp) { sndTap(); runStep(MENUAPI.brewStation.setTemp(st, +tp.dataset.xtemp), t); return; }
   if (e.target.closest('[data-xstart]')) { runStep(MENUAPI.brewStation.start(st), t); }
 });
 xEl.addEventListener('pointerdown', e => { if (BR && !paused && e.target.closest('[data-xhold]')) { BR.hold = true; sndTap(); } });
-['pointerup', 'pointercancel', 'pointerleave'].forEach(t => xEl.addEventListener(t, () => { if (BR && MENUAPI.PANEL_TASKS.has(BR.inset)) BR.hold = false; }));
-window.addEventListener('pointerup', () => { if (BR && MENUAPI.PANEL_TASKS.has(BR.inset)) BR.hold = false; });
+['pointerup', 'pointercancel', 'pointerleave'].forEach(t => xEl.addEventListener(t, () => { if (BR && isXInset(BR.inset)) BR.hold = false; }));
+window.addEventListener('pointerup', () => { if (BR && isXInset(BR.inset)) BR.hold = false; });
 
 /* ---------- мышь / клавиши ---------- */
 const bPt = e => { const r = bi.getBoundingClientRect(); return { x: (e.clientX - r.left) * IW / r.width, y: (e.clientY - r.top) * IH / r.height }; };
@@ -440,7 +513,7 @@ $('#bBack').addEventListener('click', () => { if (!paused) barShow(false); });
 function barKey(c) {
   if (!BR) return false;
   if (!stage.classList.contains('inbar')) { if (c === 'Space') { barShow(true); return true; } return false; }
-  if (c === 'Space') { BR.hold = true; if (BR.inset === 'shot') shotBtn(); else if (!BR.inset) { const nt = BR.tasks.find(t => !BR.done[t] && !blockMsg(t)); if (BR.ready) barBell(); else if (nt) zoneClick(nt === 'syrup' ? SYR[BR.c.syrup].z : nt); } else if (BR.inset === 'pour') pourDown({ x: BR.mx, y: BR.my }); return true; }
+  if (c === 'Space') { BR.hold = true; if (BR.inset === 'shot') shotBtn(); else if (!BR.inset) { const nt = BR.tasks.find(t => !BR.done[t] && !blockMsg(t)); if (BR.ready) barBell(); else if (nt) zoneClick(nt === 'syrup' ? SYR[BR.c.syrup].z : nt); else if (dripPending()) dripClick(); } else if (BR.inset === 'pour') pourDown({ x: BR.mx, y: BR.my }); return true; }
   if (c === 'Escape') { if (BR.inset) { closeInset(); return true; } return false; }
   if (c === 'Tab') { barShow(false); return true; }
   return false;

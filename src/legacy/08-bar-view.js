@@ -10,6 +10,7 @@ function xLayers(B, px) {
     else if (t === 'whisk') list.push({ col: pal.matcha, h: st.t > 0 || B.done.whisk ? (rc.matcha ? rc.matcha.waterMl : 50) * px * (.5 + .5 * Math.min(1, st.t / st.target)) : 0 });
     else if (t === 'powder') list.push({ col: pal.powder, h: st.ml * px });
     else if (t === 'boba') bobaH = st.ml * px; /* шарики всегда на дне стакана, даже если их кладут после шейкера */
+    else if (t === 'drip') list.push({ col: '#5A3A28', h: st.ml * px });
     else if (t === 'foam') top.push({ col: pal.foam, h: Math.min(1, st.t / st.target) * (rc.topFoam || 40) * px });
   });
   const h = list.reduce((a, x) => a + x.h, 0);
@@ -87,7 +88,7 @@ function ringTarget() {
   if (B.shot.st === 'run') return ringHere('stop') ? [740, 257] : null;
   if (B.ready) return ringHere('bell') ? ZONE_POS.bell : null;
   if (B.pumps > 0 && !B.done.syrup) return null;
-  const t = B.tasks.find(x => !B.done[x] && !blockMsg(x));
+  const t = B.tasks.find(x => !B.done[x] && (x === 'drip' || !blockMsg(x)));
   if (!t) return null;
   const z = t === 'syrup' ? SYR[B.c.syrup].z : (MENUAPI.TASK_ZONE[t] || t);
   return ringHere(z) ? ZONE_POS[z] : null;
@@ -174,7 +175,7 @@ function coachText() {
   if (B.inset === 'tamp') return B.tampPhase === 'level' ? 'Проведите мышью по кофе (зажав кнопку), чтобы выровнять. Ровная «таблетка» даёт ровный шот: вода не найдёт лёгких путей.' : 'Зажмите «Прессовать» и отпустите, когда стрелка в зелёной зоне.';
   if (B.inset === 'shot') return !s.locked ? 'Вставьте портафильтр в группу.' : s.st === 'idle' ? 'Запустите шот' + nth + (B.rc.pitcherShot ? ' (он льётся в питчер)' : '') + '. Остановите, когда уровень дойдёт до линии, и посмотрите на время.' : 'Следите за линией. Остановить можно здесь, кнопкой на машине или Пробелом.';
   if (B.inset === 'food') return B.food && B.food.picked ? 'Разогрейте блюдо: держите кнопку и отпустите, когда шкала в зелёной зоне. Потом «Готово».' : 'Найдите на витрине блюдо, которое просил гость: «' + (B.c.order.food ? B.c.order.food.name : '') + '».';
-  if (MENUAPI.PANEL_TASKS.has(B.inset)) return B.xv[B.inset] ? B.xv[B.inset].hint : '';
+  if (isXInset(B.inset)) return B.xv[B.inset] ? B.xv[B.inset].hint : '';
   if (B.inset === 'water') return 'Держите кнопку, пока вода не дойдёт до линии на чашке.';
   if (B.inset === 'ice') return 'Держите кнопку: лёд сыплется в чашку. Остановитесь у линии на стакане.';
   if (B.inset === 'milk') return (B.rc.pitcherShot ? 'Налейте холодные сливки до красной линии.' : 'Налейте молоко до красной линии.') + ' Лишнее можно вылить.';
@@ -183,6 +184,8 @@ function coachText() {
   if (B.shot.st === 'run') return 'Шот идёт. Нажмите на кофемашину или Пробел, когда уровень дойдёт до линии.';
   if (B.ready) return 'Всё готово. Нажмите на звонок, чтобы подать напиток.';
   if (B.inset === 'syrup') return 'Выберите бутылку: каждое нажатие это одна порция. Нужно: ' + (B.c.syrup ? SYR[B.c.syrup].name.toLowerCase() + ' ×' + B.c.pumps : '') + '. Потом «Готово».';
+  /* фильтр-кофе: колба не готова — коуч ведёт к кофеварке, а не молчит (шаг drip заблокирован, но кофеварка нажимается) */
+  if (dripPending()) { const chk = dripCheck(); if (chk === 'brewing') return 'Колба ещё наполняется: подождите или займитесь другим заказом.'; if (chk !== 'ok') return MENUAPI.POUR_MSG[chk] + '. Нажмите на капельную кофеварку.'; }
   const t = B.tasks.find(x => !B.done[x] && !blockMsg(x));
   /* станция шага в другой секции (Б1-4): у новых станций обычного текста без окна нет, поэтому коуч говорит то же, что тост (по таблице раздела 11) */
   if (t && sectionsPlayable()) { const zn = t === 'syrup' ? 'syrup' : (MENUAPI.TASK_ZONE[t] || t), st = MENUAPI.stationOfZone(zn); if (st && MENUAPI.stationSection(zn, zonesInSide) !== CAM.sec) { const x = MENUAPI.stationToast(st.id, CAM.sec); if (x) return x; } }
@@ -254,7 +257,7 @@ function drawInset() {
   const B = BR, m = B && B.inset;
   if (!m) { pxOn = false; return; }
   if (m === 'food') { pxOn = false; bp.style.display = 'none'; renderFood(B); return; }
-  if (MENUAPI.PANEL_TASKS.has(m)) { pxOn = false; bp.style.display = 'none'; xRender(B); return; }
+  if (isXInset(m)) { pxOn = false; bp.style.display = 'none'; xRender(B); return; }
   const title = { grind: 'Кофемолка', tamp: 'Темпер', shot: 'Группа кофемашины', water: B && B.drink === 'icedamericano' ? 'Холодная вода' : 'Горячая вода', ice: 'Льдогенератор', milk: B && (/^iced/.test(B.drink) || B.rc.cupMilk) ? 'Молоко в стакан' : B && B.rc.pitcherShot ? 'Сливки в питчер' : 'Молоко в питчер', syrup: 'Сиропы', steam: 'Паровая трубка', pour: 'Заливка и рисунок' }[m];
   pxOn = PX.ready && !!PX_MODES[m];
   if (pxOn) { const hits = PX.draw(pxScene(B, m, title)); if (hits) { HIT = hits; bi.style.opacity = 0; bp.style.display = 'block'; return; } pxOn = false; }

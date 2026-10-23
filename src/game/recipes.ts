@@ -158,6 +158,8 @@ export interface LegacyRecipe {
   total?: number;
   /** лёд, г */
   ice?: number;
+  /** фильтр-кофе: объём чашки из колбы, мл */
+  drip?: number;
   cupMilk?: boolean;
   /** сколько шотов и объём чашки/напитка, мл */
   shots?: number;
@@ -196,6 +198,7 @@ export function legacyRecipe(key: string, size?: Size, cold = false): LegacyReci
     out.total = r.shots * 30 + r.water;
   }
   if (r.ice !== undefined) out.ice = r.ice;
+  if (d.id === 'filter_coffee') out.drip = r.drinkMl;
   if (r.coldX) out.coldX = r.coldX;
   if (r.tea) out.tea = r.tea;
   if (r.matcha) out.matcha = r.matcha;

@@ -5,7 +5,7 @@
 import { BREW_TEMPS } from '../game/stations/brew';
 import { panelArt, streamD } from './panelArt';
 
-export type PanelKind = 'fill' | 'timed' | 'brew';
+export type PanelKind = 'fill' | 'timed' | 'brew' | 'carafe';
 export interface PanelView {
   task: string;
   /** напиток заказа: выбирает банку порошков и т. п. */
@@ -24,6 +24,8 @@ export interface PanelView {
   zone: [number, number];
   holdLabel: string;
   brew?: { set: number | null; started: boolean; target: { temp: number; minutes: number } | null };
+  /** окно заварки колбы (31-8Б): фаза и порции */
+  carafe?: { phase: 'size' | 'coffee' | 'water' | 'brewing'; sizes: { size: string; label: string; disabled: boolean }[]; doneLabel: string; holdLabel: string };
 }
 
 /** Что рисуется заново каждый кадр. */
@@ -32,6 +34,8 @@ export interface PanelLive {
   readout: string;
   holding: boolean;
   brewStarted?: boolean;
+  /** уровень кофе в колбе 0..1 (окна «drip» и «carafe») */
+  level?: number;
 }
 
 /** Иллюстрация к шагу: предметы бара (31-2), см. panelArt.ts. Налив растёт через #xpLiq (data-top / data-full ставит panelUpdate). */
@@ -55,6 +59,20 @@ export function panelHTML(v: PanelView): string {
 <div class="xpBar"><i class="zone" style="left:${lo}%;width:${Math.max(2, hi - lo)}%"></i><i class="fill" id="xpFill"></i></div>
 <div class="xpRead" id="xpRead"></div>
 <div class="xpBtns"><button type="button" class="xpGo" data-xstart${b?.started ? ' disabled' : ''}>Залить водой</button><button type="button" class="xpDone" data-xdone>Вынуть</button></div>`;
+  } else if (v.kind === 'carafe' && v.carafe) {
+    const c = v.carafe;
+    if (c.phase === 'size') {
+      const sizes = c.sizes.map((s) => `<button type="button" class="xpTemp" data-xsize="${s.size}"${s.disabled ? ' disabled' : ''}>${s.label}</button>`).join('');
+      controls = `<div class="xpTemps">${sizes}</div>
+<div class="xpRead" id="xpRead"></div>`;
+    } else if (c.phase === 'brewing') {
+      controls = `<div class="xpBar"><i class="fill" id="xpFill"></i></div>
+<div class="xpRead" id="xpRead"></div>`;
+    } else {
+      controls = `<div class="xpBar"><i class="zone" style="left:${lo}%;width:${Math.max(2, hi - lo)}%"></i><i class="fill" id="xpFill"></i></div>
+<div class="xpRead" id="xpRead"></div>
+<div class="xpBtns four"><button type="button" class="xpHold" data-xhold>${c.holdLabel}</button><button type="button" class="xpDump" data-xdump>Вылить</button><button type="button" class="xpDone" data-xdone>${c.doneLabel}</button><button type="button" class="xpDump" data-xback>Назад</button></div>`;
+    }
   } else {
     controls = `<div class="xpBar"><i class="zone" style="left:${lo}%;width:${Math.max(2, hi - lo)}%"></i><i class="fill" id="xpFill"></i></div>
 <div class="xpRead" id="xpRead"></div>
@@ -73,6 +91,14 @@ export function panelUpdate(root: HTMLElement, v: PanelView, l: PanelLive): void
   if (rd && rd.textContent !== l.readout) rd.textContent = l.readout;
   const xp = root.querySelector<HTMLElement>('.xp');
   if (xp) { xp.classList.toggle('hold', l.holding); xp.classList.toggle('run', !!l.brewStarted); }
+  const car = root.querySelector<SVGGraphicsElement>('#xpCar');
+  if (car && l.level !== undefined) {
+    const top = Number(car.getAttribute('data-top'));
+    const full = Number(car.getAttribute('data-full'));
+    const h = Math.min(1, Math.max(0, l.level)) * full;
+    car.setAttribute('y', (top - h).toFixed(1));
+    car.setAttribute('height', h.toFixed(1));
+  }
   const liq = root.querySelector<SVGGraphicsElement>('#xpLiq');
   if (liq) {
     /* верх (дно сосуда) и полная высота налива задаёт иллюстрация: у каждого предмета бара свои */

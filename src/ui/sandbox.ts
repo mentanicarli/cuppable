@@ -67,7 +67,7 @@ export function devPanelHTML(o: DevPanelOpts): string {
 <div id="devPanel" hidden>
 <div class="dvh"><b>Песочница</b><span id="dvInfo"></span></div>
 <div class="dvs"><b>Время</b><div class="dvr" id="dvSpeed">${[1, 2, 4, 8].map((n) => `<button type="button" data-dv="speed" data-v="${n}">×${n}</button>`).join('')}<button type="button" data-dv="speed" data-v="0">Стоп</button><button type="button" data-dv="step">Шаг 1 с</button></div>
-<div class="dvr"><button type="button" data-dv="endday">Закончить день</button></div></div>
+<div class="dvr"><button type="button" data-dv="endday">Закончить день</button><button type="button" data-dv="carafe">Колба полная</button></div></div>
 <div class="dvs"><b>Деньги и рейтинг</b><div class="dvr"><button type="button" data-dv="money" data-v="100">+100</button><button type="button" data-dv="money" data-v="1000">+1000</button><button type="button" data-dv="rate" data-v="-0.1">−0,1</button><button type="button" data-dv="rate" data-v="0.1">+0,1</button><button type="button" data-dv="rank">Следующий ранг</button></div>
 <div class="dvr"><label><input type="checkbox" data-dv="inf"> Неограниченные деньги</label><label><input type="checkbox" data-dv="free"> Бесплатные ингредиенты</label></div></div>
 <div class="dvs"><b>Гости</b><div class="dvr"><button type="button" data-dv="call">Позвать гостя сейчас</button><label><input type="checkbox" data-dv="nopat"> Без терпения</label></div>
