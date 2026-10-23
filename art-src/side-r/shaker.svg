@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="983 385 179 135" data-part="shaker" data-scale="1.1">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="693 385 179 135" data-part="shaker" data-scale="1.1">
 <!--
   Шейкер (30-2б), секция R. Проектная рамка 1014, 403.5, 148 × 102.5: большой и малый (перевёрнутый) стальные стаканы (слои: стенка, контур, блик), джиггер-песочные часы, стрейнер с ручкой. ×1,10 через transform обёртки.
 -->
 <g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
-<g data-wrap="shaker" transform="translate(988.4 506) scale(1.1) translate(-1012 -506)">
+<g data-wrap="shaker" transform="translate(698.4 506) scale(1.1) translate(-1012 -506)">
 <ellipse cx="1087" cy="508" rx="76" ry="4" fill="{{SHADOW}}" fill-opacity=".22" stroke="none"/>
 <g data-item="shaker" data-box="1014 403.5 148 102.5">
 <g data-glass="tinBig" data-inner="1015.40 409.40 39.20 95.20">

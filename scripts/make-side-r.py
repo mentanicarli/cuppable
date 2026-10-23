@@ -56,7 +56,7 @@ def final(box, x0, x1, ay=506):
     return (x1 + S * (x - x0), ay + S * (y - ay), S * w, S * h)
 
 
-def write(name, comment, x0, x1, box, body):
+def write(name, comment, x0, x1, box, body, out=None):
     fb = final(box, x0, x1)
     vx, vy = fb[0] - 8, fb[1] - 8
     vw, vh = fb[2] + 16, max(520, fb[1] + fb[3] + 8) - vy
@@ -65,7 +65,7 @@ def write(name, comment, x0, x1, box, body):
     wrap = f'<g data-wrap="{name}" transform="{T(x0, x1)}">\n{sh}\n{item(name, box, body)}\n</g>\n'
     svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb}" data-part="{name}" data-scale="{S}">\n<!--\n  {comment}\n-->\n'
            f'<g stroke="{col("INK")}" stroke-linejoin="round" stroke-linecap="round">\n{wrap}</g>\n</svg>\n')
-    open(f'{OUT}/{name}.svg', 'w', encoding='utf-8', newline='').write(svg)
+    open(f'{out or OUT}/{name}.svg', 'w', encoding='utf-8', newline='').write(svg)
 
 
 def bottle(x, y, w, h, liq, cap):
@@ -252,7 +252,7 @@ jar_cols = ['PINK', 'MUSTARD', 'SAGE', 'DUSTY', 'TERRA', 'SAGE_LT', 'BAKE']
 jar_straws = [straw(round(x - 1.3, 2), 502 - L, 2.6, L, c, a, True, 'D') for x, a, L, c in zip(jar_xs, jar_angles, jar_len, jar_cols)]
 bo.append(vessel('strawJar', 436, 506, 956, 998, 956, 998, 'GLASS', None, (), jar_straws, 'M961 442V498',
                  rim=ell(977, 436, 21, 3.5, 'GLASS_DP', 'D').replace('fill="{{GLASS_DP}}"', 'fill="none"')))
-write('boba', 'Станция бабл ти (30-2б), секция R. Проектная рамка 716, 384, 282 × 122: кастрюля (7 шариков кучкой, передний край скрывает нижние половины, черпак на ободе), стакан с молочным чаем (13 шариков неровным слоем, толстая трубочка), запайщик, стакан с 7 запасными тонкими трубочками (правый край 998). Порядок слоёв сосудов: стенка, жидкость, шарики, трубочки, контур, блик. ×1,10 через transform обёртки.', 716, 658, (716, 384, 282, 122), bo)
+write('boba', 'Станция бабл ти (30-2б), секция L (31-2: переехала из R). Проектная рамка 716, 384, 282 × 122: кастрюля (7 шариков кучкой, передний край скрывает нижние половины, черпак на ободе), стакан с молочным чаем (13 шариков неровным слоем, толстая трубочка), запайщик, стакан с 7 запасными тонкими трубочками (правый край 998). Порядок слоёв сосудов: стенка, жидкость, шарики, трубочки, контур, блик. ×1,10 через transform обёртки.', 716, 598, (716, 384, 282, 122), bo, 'art-src/side-l')
 
 # ---------------- shaker: 1012, 408, 150 x 100
 sh = [shadow(1087, 76),
@@ -260,7 +260,7 @@ sh = [shadow(1087, 76),
       vessel('tinSmall', 430, 506, 1068, 1100, 1062, 1106, 'STEEL', None, (), (), 'M1072 436L1068 498', rim=ell(1084, 430, 16, 3.6, 'STEEL_HI', 'M'), extra_outline=(path('M1098 438L1101 498', 'none', 'D', 'STEEL_SH'), path('M1064 498H1104', 'none', 'D', 'STEEL_SH'))),
       path('M1112 456H1132L1126 480L1130 506H1114L1118 480Z', 'STEEL', 'M'), ell(1122, 456, 10, 2.6, 'STEEL_HI', 'D'), path('M1116 480H1128', 'none', 'D', 'STEEL_SH'),
       ell(1139, 497, 10, 5, 'STEEL_HI', 'M'), path('M1131 497H1147', 'none', 'D', 'STEEL_SH'), rect(1148, 495, 14, 5, 'STEEL', 'D', 2.5)]
-write('shaker', 'Шейкер (30-2б), секция R. Проектная рамка 1014, 403.5, 148 × 102.5: большой и малый (перевёрнутый) стальные стаканы (слои: стенка, контур, блик), джиггер-песочные часы, стрейнер с ручкой. ×1,10 через transform обёртки.', 1012, 988.4, (1014, 403.5, 148, 102.5), sh)
+write('shaker', 'Шейкер (30-2б), секция R. Проектная рамка 1014, 403.5, 148 × 102.5: большой и малый (перевёрнутый) стальные стаканы (слои: стенка, контур, блик), джиггер-песочные часы, стрейнер с ручкой. ×1,10 через transform обёртки.', 1012, 698.4, (1014, 403.5, 148, 102.5), sh)
 
 # ---------------- decor R: полка со стаканами 706, 176, 296 x 80 и ведёрко 1180.5, 424, 81 x 82
 g = [rect(706, 246, 296, 10, 'WOOD', 'M', 3), path('M712 249H996', 'none', 'D', 'WOOD_HI')]
@@ -318,9 +318,28 @@ def bucket_item():
     return item('iceBucket', (1183, 425, 79, 81), bucket_a())
 
 
+# ---------------- 31-2: раковина с краном (декор, правый край): врезка в столешницу + кран на задней линии y 506. Проектная рамка 1000, 394, 173 x 162
+def sink_item():
+    k = [shadow(1086, 20, 508, 3),
+         rect(1000, 510, 173, 46, 'STEEL_HI', 'M', 11),  # светлый обод, врезан в плоскость столешницы
+         rect(1008, 516, 157, 33, 'DARK', 'D', 7),  # тёмная чаша
+         flat('M1011 523Q1011 519 1015 519H1158Q1162 519 1162 523V527H1011Z', 'STEEL_SH'),  # дальняя стенка чаши
+         ell(1086, 539, 9, 3, 'STEEL_SH', 'D'), ell(1086, 539, 3.5, 1.2, 'DARK', 'D'),  # слив
+         hl('M1010 513H1150', .7), hl('M1004 520V544', .6, 'D'),  # блик на ободе
+         path('M1006 552H1167', 'none', 'D', 'STEEL_SH'),  # передняя кромка
+         ell(1086, 507, 15, 4, 'STEEL_HI', 'M'),  # основание крана
+         path('M1079 500V422Q1079 394 1108 394H1126Q1149 394 1149 414V442H1135V416Q1135 405 1126 405H1108Q1093 405 1093 422V500Z', 'STEEL', 'M'),  # колонна и гусак
+         hl('M1083 424V496', .6),
+         rect(1133, 442, 18, 8, 'STEEL_SH', 'D', 2),  # носик
+         path('M1079 474L1060 462L1064 456L1083 468Z', 'STEEL_SH', 'D'), circ(1061, 459, 4, 'STEEL_HI', 'D'),  # рычажок сбоку
+         f'<path data-drop="1" d="M1142 453Q1139.4 458 1142 461.6Q1144.6 458 1142 453Z" fill="{col("GLASS")}" stroke="{col("GLASS_DP")}" stroke-width="{sw("D")}"/>']
+    return item('sink', (1000, 394, 173, 162), k)
+
+
 body = (f'<g data-wrap="glassShelf" transform="{T(706, 706, 176)}">\n' + item('glassShelf', (706, 176, 296, 80), g) + '\n</g>\n'
-        + f'<g data-wrap="iceBucket" transform="{T(1182, 1168, 506)}">\n' + shadow(1223, 36) + '\n' + bucket_item() + '\n</g>\n')
-svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 520" data-part="decor" data-scale="{S}">\n<!--\n  Декор правой секции (30-2б): полка со стаканами (проектная рамка 706, 176, 296 × 80; верх y 176; шесть стаканов по общему порядку слоёв) и стальное ведёрко со льдом (без полотенца) (30-4, проектная 1183, 425, 79 × 81). Окна нет. ×1,10 через transform обёрток data-wrap; рисуется в одной текстуре с фоном.\n-->\n'
+        + f'<g data-wrap="iceBucket" transform="{T(1182, 920, 506)}">\n' + shadow(1223, 36) + '\n' + bucket_item() + '\n</g>\n'
+        + f'<g data-wrap="sink" transform="{T(1000, 1066, 506)}">\n' + sink_item() + '\n</g>\n')
+svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 570" data-part="decor" data-scale="{S}">\n<!--\n  Декор правой секции (30-2б): полка со стаканами (проектная рамка 706, 176, 296 × 80; верх y 176; шесть стаканов по общему порядку слоёв) и стальное ведёрко со льдом (без полотенца) (30-4, проектная 1183, 425, 79 × 81). Окна нет. ×1,10 через transform обёрток data-wrap; рисуется в одной текстуре с фоном.\n-->\n'
        f'<g stroke="{col("INK")}" stroke-linejoin="round" stroke-linecap="round">\n{body}</g>\n</svg>\n')
 open(f'{OUT}/decor.svg', 'w', encoding='utf-8', newline='').write(svg)
 print('ok')

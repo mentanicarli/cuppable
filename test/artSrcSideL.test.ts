@@ -16,36 +16,39 @@ const S = 1.1;
 const WANT: Record<string, Record<string, Box>> = {
   tea: { kettle: { x: 118, y: 390, w: 74, h: 116 }, glassTeapot: { x: 200, y: 442, w: 70, h: 64 }, tinA: { x: 276, y: 450, w: 30, h: 56 }, tinB: { x: 308, y: 450, w: 30, h: 56 } },
   matcha: { tray: { x: 428, y: 496, w: 266, h: 16 }, kyusu: { x: 436, y: 438, w: 64, h: 60 }, bowl: { x: 512, y: 454, w: 70, h: 44 }, whisk: { x: 596, y: 446, w: 30, h: 52 }, jar: { x: 640, y: 440, w: 44, h: 58 } },
-  powders: { stand: { x: 716, y: 484, w: 376, h: 26 }, jarCocoa: { x: 734, y: 392, w: 84, h: 92 }, jarChicory: { x: 826, y: 392, w: 84, h: 92 }, jarProtein: { x: 918, y: 392, w: 84, h: 92 } },
-  decor: { teaShelf: { x: 130, y: 232, w: 300, h: 74 }, plant: { x: 24, y: 400, w: 70, h: 106 } }
+  boba: { boba: { x: 716, y: 388, w: 284, h: 122 } },
+  powders: { stand: { x: 716, y: 484, w: 304, h: 26 }, jarCocoa: { x: 734, y: 392, w: 84, h: 92 }, jarChicory: { x: 826, y: 392, w: 84, h: 92 }, jarProtein: { x: 918, y: 392, w: 84, h: 92 } },
+  decor: { teaShelf: { x: 130, y: 232, w: 300, h: 74 } }
 };
 /** Раскладка ×1,10: куда переехал левый край проектного ряда (translate(a b) scale(1,1) translate(c d)). */
 const LAYOUT: Record<string, { a: number; b: number; c: number; d: number }> = {
-  tea: { a: 121, b: 506, c: -117, d: -506 },
-  matcha: { a: 440, b: 506, c: -428, d: -506 },
-  powders: { a: 780, b: 506, c: -716, d: -506 },
-  teaShelf: { a: 140, b: 232, c: -130, d: -232 },
-  plant: { a: 20, b: 506, c: -24, d: -506 }
+  tea: { a: 18, b: 506, c: -117, d: -506 },
+  matcha: { a: 285, b: 506, c: -428, d: -506 },
+  boba: { a: 598, b: 506, c: -716, d: -506 },
+  powders: { a: 928, b: 506, c: -716, d: -506 },
+  teaShelf: { a: 140, b: 232, c: -130, d: -232 }
 };
 const items = (part: string): ReturnType<typeof parseItems> => parseItems(svgOf(part));
 const finals = (part: string): Box[] => items(part).map((i) => i.final);
 
 describe('30-1/30-2: левая секция, состав частей', () => {
-  test('ровно четыре части: tea, matcha, powders, decor (остатков старых нет)', () => {
-    expect(Object.keys(parts).sort()).toEqual(['decor', 'matcha', 'powders', 'tea']);
+  test('ровно пять частей: tea, matcha, boba, powders, decor (31-2: boba переехала из правой секции)', () => {
+    expect(Object.keys(parts).sort()).toEqual(['boba', 'decor', 'matcha', 'powders', 'tea']);
     for (const k of Object.keys(parts)) expect((parts[k] as { texts: unknown[] }).texts).toEqual([]);
   });
   test('число предметов-групп по частям; окна нет', () => {
     expect(items('tea')).toHaveLength(4);
     expect(items('matcha')).toHaveLength(5);
-    expect(items('powders')).toHaveLength(5);
-    expect(items('decor').map((i) => i.id).sort()).toEqual(['plant', 'teaShelf']);
+    expect(items('powders')).toHaveLength(4); /* стойка и три банки: мерный стаканчик убран в 31-2 */
+    expect(items('boba').map((i) => i.id)).toEqual(['boba']);
+    expect(items('decor').map((i) => i.id)).toEqual(['teaShelf']); /* растение убрано в 31-2 */
     expect(svgOf('decor')).not.toContain('roundWindow');
     expect(svgOf('decor')).not.toContain('circle');
   });
   test('иконки: у чая и банок на полке нет (там этикетки), у матчи 1, у порошков 3; слов нет', () => {
     expect(count(svgOf('tea'), 'data-icon=')).toBe(0);
     expect(count(svgOf('decor'), 'data-icon=')).toBe(0);
+    expect(count(svgOf('boba'), 'data-icon=')).toBe(0);
     expect(count(svgOf('matcha'), 'data-icon=')).toBe(1);
     expect(count(svgOf('powders'), 'data-icon=')).toBe(3);
     for (const k of Object.keys(parts)) expect(svgOf(k)).not.toContain('<text');
@@ -85,16 +88,17 @@ describe('30-1/30-2: проектные размеры и раскладка ×1
     }
   });
   test('предметы станций стоят на заднем ряду: низ итоговой рамки 506…514', () => {
-    for (const part of ['tea', 'matcha', 'powders']) {
+    for (const part of ['tea', 'matcha', 'boba', 'powders']) {
       const u = union(finals(part));
       expect(u.y + u.h, part).toBeGreaterThanOrEqual(505);
       expect(u.y + u.h, part).toBeLessThanOrEqual(514);
     }
   });
-  test('порядок слева направо: растение, чай, матча, порошки; промежутки между рамками станций ≥ 12 px', () => {
-    const plant = (items('decor').find((i) => i.id === 'plant') as { final: Box }).final;
-    const us = ['tea', 'matcha', 'powders'].map((p) => union(finals(p)));
-    expect(plant.x + plant.w).toBeLessThan((us[0] as Box).x);
+  test('порядок слева направо: чай, матча, бабл ти, порошки; промежутки между рамками ≥ 12 px; всё в x 10–1270', () => {
+    const us = ['tea', 'matcha', 'boba', 'powders'].map((p) => union(finals(p)));
+    expect((us[0] as Box).x).toBeGreaterThanOrEqual(10);
+    const last = us[us.length - 1] as Box;
+    expect(last.x + last.w).toBeLessThanOrEqual(1270);
     for (let i = 0; i < us.length - 1; i++) expect((us[i + 1] as Box).x - ((us[i] as Box).x + (us[i] as Box).w)).toBeGreaterThanOrEqual(12);
   });
   test('box части содержит итоговые рамки всех её предметов', () => {
@@ -111,7 +115,7 @@ describe('30-1/30-2: проектные размеры и раскладка ×1
 describe('30-1/30-2: предметы в зонах и вне занятых полос', () => {
   const zone = (id: string): Box => SIDE_ZONES.find((z) => z.id === id) as Box;
   test('предметы станции укладываются в её зону ±8 px', () => {
-    for (const part of ['tea', 'matcha', 'powders']) {
+    for (const part of ['tea', 'matcha', 'boba', 'powders']) {
       const z = zone(part);
       for (const it of items(part)) {
         const b = it.final;

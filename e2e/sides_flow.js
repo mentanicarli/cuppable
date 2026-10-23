@@ -121,7 +121,7 @@ const PANEL = new Set(['juice', 'tonic', 'powder', 'boba', 'topping', 'whisk', '
   /* стрелка в L */
   await p.click('[data-secnav="-1"]:not([hidden])'); await at('L', -1280, 'клик по стрелке: «Чайный бар»');
   await p.waitForTimeout(500); ok(!(await toasts()).some(x => /Чайный бар/.test(x)), 'камера приехала в Чайный бар: тоста про него нет');
-  const rp = await p.evaluate(() => __dbg.ringTarget()); ok(rp && Math.abs(rp[0] + 1037.5) < 1 && Math.abs(rp[1] - 437) < 1, 'кольцо подсказки у чая: ' + JSON.stringify(rp));
+  const rp = await p.evaluate(() => __dbg.ringTarget()); ok(rp && Math.abs(rp[0] + 1140.5) < 1 && Math.abs(rp[1] - 437) < 1, 'кольцо подсказки у чая: ' + JSON.stringify(rp));
   await shot('L_ring_tea');
   /* выходы из L: клавиша D, стрелка */
   await p.keyboard.press('KeyD'); await at('C', 0, 'D из L: центр');
@@ -163,7 +163,7 @@ const PANEL = new Set(['juice', 'tonic', 'powder', 'boba', 'topping', 'whisk', '
   await serve();
   console.log('served чай ok');
 
-  /* ---------- 3. Холодный бар: бабл ти ---------- */
+  /* ---------- 3. Чайный бар: бабл ти (31-2: станция переехала из Холодного бара) ---------- */
   await p.evaluate(() => { const G = __dbg.G; G.eq_ice = true; G.eq_boba = true; G.eq_juice = false; __dbg.applyUpgrades(); });
   await p.waitForTimeout(400); await at('C', 0, 'покупка бабл ти камеру не двигает');
   if (await p.evaluate(() => !!__dbg.D.cup)) await p.evaluate(() => { const d = __dbg; d.D.customers.slice().forEach(d.exit); d.D.cup = null; });
@@ -177,12 +177,12 @@ const PANEL = new Set(['juice', 'tonic', 'powder', 'boba', 'topping', 'whisk', '
   console.log('шаги заказа:', JSON.stringify(await p.evaluate(() => __dbg.BR.exp)));
   await p.evaluate(() => { const B = __dbg.BR; for (const t of B.exp) if (t !== 'boba') { B.done[t] = true; B.res[t] = 1; } }); /* остальное — центр, его проверяют другие сценарии */
   await p.keyboard.press('Space'); await p.waitForTimeout(500);
-  ok((await toasts()).some(x => /Станция «Станция бабл ти» в секции «Холодный бар»\. Нажмите стрелку с этим названием\./.test(x)), 'тост про Холодный бар');
-  await p.click('[data-secnav="1"]:not([hidden])'); await at('R', 1280, 'стрелка: Холодный бар');
-  const rr = await p.evaluate(() => __dbg.ringTarget()); ok(rr && Math.abs(rr[0] - (1280 + 658 + 155)) < 1 && Math.abs(rr[1] - (362 + 74)) < 1, 'кольцо подсказки у бабл ти: ' + JSON.stringify(rr));
-  await shot('R_ring_boba');
+  ok((await toasts()).some(x => /Станция «Станция бабл ти» в секции «Чайный бар»\. Нажмите стрелку с этим названием\./.test(x)), 'тост про Чайный бар');
+  await p.click('[data-secnav="-1"]:not([hidden])'); await at('L', -1280, 'стрелка: Чайный бар');
+  const rr = await p.evaluate(() => __dbg.ringTarget()); ok(rr && Math.abs(rr[0] - (-1280 + 598 + 155)) < 1 && Math.abs(rr[1] - (362 + 74)) < 1, 'кольцо подсказки у бабл ти: ' + JSON.stringify(rr));
+  await shot('L_ring_boba');
   await play();
-  await p.keyboard.press('KeyA'); await at('C', 0, 'A из R: центр');
+  await p.keyboard.press('KeyD'); await at('C', 0, 'D из L: центр');
   await serve();
   console.log('served бабл ти ok');
 

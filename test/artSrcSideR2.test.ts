@@ -1,11 +1,13 @@
 import { describe, expect, test } from 'vitest';
 import PARTS_R from '../src/assets/art/bar-parts-right.json';
+import PARTS_L from '../src/assets/art/bar-parts-left.json';
 import PAL from '../art-src/palette.json';
 import { LAYER_RANK, parseBalls, parseGlasses, parseItems, strawTops, type Box } from './helpers/sideArt';
 
 /* Блок 30-2б: сосуды правой секции (стаканы, кувшин, жестяные стаканы), шарики бабл ти, стакан с трубочками, ведёрко со льдом, миксер пенок.
    Правило слоёв сосуда: 1 стенка, 2 жидкость, (шарики), 3 трубочка, 4 контур, 5 блик. Жидкость вписана во внутренний контур. */
-const parts = PARTS_R as unknown as Record<string, { svg: string }>;
+/* 31-2: станция бабл ти переехала в левую секцию, сосуды проверяем по обеим частям */
+const parts = { ...(PARTS_L as unknown as Record<string, { svg: string }>), ...(PARTS_R as unknown as Record<string, { svg: string }>) } as Record<string, { svg: string }>;
 const svgOf = (id: string): string => (parts[id] as { svg: string }).svg;
 const S = 1.1;
 const finalBox = (part: string, id: string): Box => (parseItems(svgOf(part)).find((i) => i.id === id) as { final: Box }).final;
@@ -100,13 +102,13 @@ describe('30-2б: шарики бабл ти', () => {
 describe('30-2б: стакан с запасными трубочками', () => {
   const jar = parseGlasses(svgOf('boba')).find((g) => g.id === 'strawJar') as ReturnType<typeof parseGlasses>[number];
   const st = strawTops(jar.body);
-  test('6–7 трубочек, ширина каждой ≤ 4 px, высота разная, правый край рамки boba (итог 968)', () => {
+  test('6–7 трубочек, ширина каждой ≤ 4 px, высота разная, правый край рамки boba (31-2: итог 908,2)', () => {
     expect(st.length).toBeGreaterThanOrEqual(6);
     expect(st.length).toBeLessThanOrEqual(7);
     for (const s of st) expect(s.w).toBeLessThanOrEqual(4);
     expect(new Set(st.map((s) => s.top.toFixed(1))).size).toBeGreaterThanOrEqual(4);
     const f = finalBox('boba', 'boba');
-    expect(Math.abs(f.x + f.w - 968.2)).toBeLessThan(0.6);
+    expect(Math.abs(f.x + f.w - 908.2)).toBeLessThan(0.6);
   });
 });
 
@@ -162,16 +164,17 @@ describe('30-4: ведёрко со льдом', () => {
       });
     });
   }
-  test('правый край итоговой рамки ≤ 1259, левый ≥ 1166, зазор до шейкера ≥ 12; низ 506', () => {
+  test('31-2: правый край итоговой рамки ≤ 1259, левый ≥ 900, зазор до шейкера ≥ 12 и до раковины ≥ 12; низ 506', () => {
     const f = finalBox('decor', 'iceBucket');
     expect(f.x + f.w).toBeLessThanOrEqual(1259);
-    expect(f.x).toBeGreaterThanOrEqual(1166);
+    expect(f.x).toBeGreaterThanOrEqual(900);
     expect(f.x - (finalBox('shaker', 'shaker').x + finalBox('shaker', 'shaker').w)).toBeGreaterThanOrEqual(12);
+    expect(finalBox('decor', 'sink').x - (f.x + f.w)).toBeGreaterThanOrEqual(12);
     expect(f.y + f.h).toBeCloseTo(506, 0);
     expect(f.y).toBeGreaterThanOrEqual(330);
   });
   test('слои — задний обод → кубики → корпус с передним краем → щипцы; корпус светлее и холоднее, 3 капли 3–4 px, без полотенца', () => {
-    const svg = svgOf('decor');
+    const svg = (svgOf('decor').split('data-wrap="sink"')[0] as string); /* без раковины (31-2): у неё своя капля */
     const iRim = svg.indexOf('data-bucket="A"'), iIce = svg.indexOf('data-ice="1"'), iFront = svg.indexOf('data-front="1"'), iTongs = svg.indexOf('data-tongs=');
     expect(iRim).toBeLessThan(iIce);
     expect(iIce).toBeLessThan(iFront);

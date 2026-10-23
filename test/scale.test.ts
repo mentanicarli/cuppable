@@ -207,12 +207,12 @@ describe('шкала: станции боковых секций (×1,10)', () =
   const groups = [
     { src: 'L', part: 'tea', cm: [49, 26], px: [243.1, 127.6] },
     { src: 'L', part: 'matcha', cm: [55, 14], px: [292.6, 81.4] },
-    { src: 'L', part: 'powders', cm: [81, 22], px: [413.6, 129.8] },
+    { src: 'L', part: 'powders', cm: [66, 22], px: [334.4, 129.8] },
+    { src: 'L', part: 'boba', cm: [61, 26], px: [310.2, 134.2] },
     { src: 'R', part: 'juice', cm: [33, 46], px: [167.2, 235.4] },
     { src: 'R', part: 'whipper', cm: [29, 38], px: [148.5, 195.8] },
     { src: 'R', part: 'foamer', cm: [22, 35], px: [116.6, 180.4] },
     { src: 'R', part: 'blender', cm: [27, 46], px: [146.3, 239.8] },
-    { src: 'R', part: 'boba', cm: [61, 26], px: [310.2, 134.2] },
     { src: 'R', part: 'shaker', cm: [32, 21], px: [162.8, 112.8] }
   ] as const;
   const partsOf = (src: string): Record<string, { svg: string }> => (src === 'L' ? PARTS_L : PARTS_R) as unknown as Record<string, { svg: string }>;
@@ -227,6 +227,17 @@ describe('шкала: станции боковых секций (×1,10)', () =
       }
     });
   }
+  test('раковина (31-2): мойка 32–43 см по ширине, кран 22–28 см по высоте (бар 4,64 px/см)', () => {
+    const svg = (partsOf('R').decor?.svg ?? '').split('data-wrap="sink"')[1] ?? '';
+    const rim = /<rect x="\d+" y="\d+" width="(\d+)" height="\d+" rx="11"/.exec(svg);
+    const neck = /<path d="M1079 500V422Q1079 (\d+) /.exec(svg);
+    expect(rim && neck).toBeTruthy();
+    const rimW = 1.1 * Number(rim?.[1]), tapH = 1.1 * (506 - Number(neck?.[1]));
+    expect(rimW / S_BAR).toBeGreaterThanOrEqual(32);
+    expect(rimW / S_BAR).toBeLessThanOrEqual(43);
+    expect(tapH / S_BAR).toBeGreaterThanOrEqual(22);
+    expect(tapH / S_BAR).toBeLessThanOrEqual(28);
+  });
   test('ведёрко со льдом (30-4): 86,9 × 89,1 px (проект 79 × 81 ×1,10) в допуске от реальных 19 × 19 см', () => {
     const f = (parseItems(partsOf('R').decor?.svg ?? '').find((i) => i.id === 'iceBucket') as { final: { w: number; h: number } }).final;
     expect(Math.abs(f.w - 86.9)).toBeLessThanOrEqual(0.5);

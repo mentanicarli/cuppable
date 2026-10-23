@@ -220,7 +220,7 @@ let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' 
     const order3 = async (id) => { await p.evaluate(() => __dbg.resetBar()); await p.evaluate((id) => { const M = window.__MENUAPI, c = __dbg.D.customers[0], dk = M.drinkById[id]; c.drink = id; c.order.key = id; c.order.id = id; c.order.name = dk.name; c.order.size = '0.3'; c.order.cold = false; c.order.food = null; c.syrup = null; c.pat = c.max = 1e9; __dbg.barOpen(c); }, id); await p.waitForTimeout(900); await PW.dismissCard(p); await p.waitForTimeout(500); };
     const active = () => p.evaluate(() => [...document.querySelectorAll('#bZones [data-z]')].filter(r => r.style.pointerEvents !== 'none').map(r => r.dataset.z));
     const sameSet = (a, b) => a.length === b.length && b.every(x => a.includes(x));
-    const SIDE_L = ['tea', 'matcha', 'powders'], SIDE_R = ['juice', 'whipper', 'foamer', 'blender', 'boba', 'shaker'];
+    const SIDE_L = ['tea', 'matcha', 'boba', 'powders'], SIDE_R = ['juice', 'whipper', 'foamer', 'blender', 'shaker'];
     await p.evaluate(() => { const G = __dbg.G; G.tutOff = true; G.hints = true; ['tea', 'matcha', 'powders', 'juice', 'whipper', 'foamer', 'blender', 'boba', 'shaker'].forEach(k => { G['eq_' + k] = true; }); __dbg.applyUpgrades(); });
     await order3('tea_sencha');
     /* какие зоны активны в каждой секции */
@@ -228,7 +228,7 @@ let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' 
     await p.evaluate(() => __dbg.camGo('L', true)); await p.waitForTimeout(300); a = await active(); ok(sameSet(a, SIDE_L), `${vp.width}: в L активны ровно зоны L: ${a}`);
     await p.evaluate(() => __dbg.camGo('R', true)); await p.waitForTimeout(300); a = await active(); ok(sameSet(a, SIDE_R), `${vp.width}: в R активны ровно зоны R: ${a}`);
     await p.evaluate(() => __dbg.camGo('C', false)); await p.waitForTimeout(100); a = await active(); ok(a.length === 0, `${vp.width}: во время перехода зон нет`); await p.waitForTimeout(500);
-    await p.evaluate(() => { __dbg.G.eq_tea = false; __dbg.applyUpgrades(); __dbg.camGo('L', true); }); await p.waitForTimeout(300); a = await active(); ok(sameSet(a, ['matcha', 'powders']), `${vp.width}: не купленная станция (чай) зоны не имеет: ${a}`); await p.evaluate(() => { __dbg.G.eq_tea = true; __dbg.applyUpgrades(); __dbg.camGo('C', true); });
+    await p.evaluate(() => { __dbg.G.eq_tea = false; __dbg.applyUpgrades(); __dbg.camGo('L', true); }); await p.waitForTimeout(300); a = await active(); ok(sameSet(a, ['matcha', 'boba', 'powders']), `${vp.width}: не купленная станция (чай) зоны не имеет: ${a}`); await p.evaluate(() => { __dbg.G.eq_tea = true; __dbg.applyUpgrades(); __dbg.camGo('C', true); });
     /* коуч говорит то же, что тост, когда станция шага в другой секции */
     await p.waitForTimeout(600); const ct = await p.evaluate(() => { const c = document.querySelector('#bCoach'); return c && !c.hidden ? c.textContent : ''; });
     ok(/Станция «Чайная станция» в секции «Чайный бар»/.test(ct), `${vp.width}: коуч для станции другой секции: ${ct.slice(0, 90)}`);
@@ -254,7 +254,7 @@ let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' 
       for (const [t, n] of [[0, 'b14_3_ring_move_000'], [0.15, 'b14_4_ring_move_150'], [0.3, 'b14_5_ring_move_300']]) { await p.evaluate((t) => { const x = window.__MENUAPI.cameraAt(0, -1280, t); __dbg.CAM.moving = false; __dbg.CAM.x = x; __dbg.camPush(); }, t); await p.waitForTimeout(300); await sh3(n); }
     }
     await p.evaluate(() => { __dbg.camGo('L', true); }); await p.waitForTimeout(500);
-    const rp = await p.evaluate(() => __dbg.ringTarget()); ok(rp && Math.abs(rp[0] - (-1037.5)) < 1 && Math.abs(rp[1] - 437) < 1, `${vp.width}: в L кольцо на станции чая в мировых координатах ${JSON.stringify(rp)}`);
+    const rp = await p.evaluate(() => __dbg.ringTarget()); ok(rp && Math.abs(rp[0] - (-1140.5)) < 1 && Math.abs(rp[1] - 437) < 1, `${vp.width}: в L кольцо на станции чая в мировых координатах ${JSON.stringify(rp)}`);
     await sh3('b14_1_left_ring');
     /* клик по зоне станции в своей секции: окно, камера стоит; Esc, камера снова свободна */
     const zc = await p.evaluate(() => { const r = document.querySelector('#bZones [data-sec="L"] [data-z="tea"]').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; });

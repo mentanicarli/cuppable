@@ -24,8 +24,8 @@ describe('подсказки новых станций', () => {
     expect(purchaseToast('нет такого')).toBeNull();
     expect(exampleDrink('shaker')).not.toBeNull();
   });
-  test('30-3: покупка каждой из девяти боковых станций называет свою секцию, центральные — нет', () => {
-    const sides: Record<string, 'L' | 'R'> = { tea: 'L', matcha: 'L', powders: 'L', juice: 'R', whipper: 'R', foamer: 'R', blender: 'R', boba: 'R', shaker: 'R' };
+  test('30-3: покупка каждой из девяти боковых (31-2: бабл ти в «Чайном баре») станций называет свою секцию, центральные — нет', () => {
+    const sides: Record<string, 'L' | 'R'> = { tea: 'L', matcha: 'L', powders: 'L', boba: 'L', juice: 'R', whipper: 'R', foamer: 'R', blender: 'R', shaker: 'R' };
     for (const [eq, sec] of Object.entries(sides)) {
       const t = purchaseToast(eq) ?? '';
       expect(t, eq).toContain(`секции «${SECTION_NAMES[sec]}»: нажмите стрелку с этим названием.`);

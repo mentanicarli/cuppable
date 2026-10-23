@@ -48,7 +48,7 @@ export const STATIONS: readonly Station[] = [
   { id: 'whipper', name: 'Сифон для сливочной пены', section: 'R', zones: ['whipper'] },
   { id: 'foamer', name: 'Миксер для пенок', section: 'R', zones: ['foamer'] },
   { id: 'blender', name: 'Блендер', section: 'R', zones: ['blender'] },
-  { id: 'boba', name: 'Станция бабл ти', section: 'R', zones: ['boba'] },
+  { id: 'boba', name: 'Станция бабл ти', section: 'L', zones: ['boba'] },
   { id: 'shaker', name: 'Шейкер', section: 'R', zones: ['shaker'] }
 ];
 
@@ -67,8 +67,8 @@ export function sectionOfStation(id: string): SectionId | undefined {
 
 /** Покупки (`G.eq_<id>`), которые открывают боковую секцию: первая же из списка. Центр открыт всегда. */
 export const SECTION_EQ: Readonly<Record<'L' | 'R', readonly string[]>> = {
-  L: ['tea', 'matcha', 'powders'],
-  R: ['juice', 'whipper', 'foamer', 'blender', 'boba', 'shaker']
+  L: ['tea', 'matcha', 'boba', 'powders'],
+  R: ['juice', 'whipper', 'foamer', 'blender', 'shaker']
 };
 
 export type SectionsOpen = Readonly<Record<SectionId, boolean>>;
@@ -164,15 +164,15 @@ export const zonesInSideSections = (dev: boolean): boolean => sectionsPlayable(d
 /** Зона станции боковой секции в секция-локальных координатах (docs/design/sections.md, раздел 13, «Промпт 4»). */
 export interface SideZone { id: string; section: 'L' | 'R'; x: number; y: number; w: number; h: number }
 export const SIDE_ZONES: readonly SideZone[] = [
-  { id: 'tea', section: 'L', x: 117, y: 364, w: 251, h: 146 },
-  { id: 'matcha', section: 'L', x: 436, y: 417, w: 301, h: 95 },
-  { id: 'powders', section: 'L', x: 776, y: 366, w: 422, h: 146 },
+  { id: 'tea', section: 'L', x: 14, y: 364, w: 251, h: 146 },
+  { id: 'matcha', section: 'L', x: 281, y: 417, w: 301, h: 95 },
+  { id: 'boba', section: 'L', x: 598, y: 362, w: 310, h: 148 },
+  { id: 'powders', section: 'L', x: 924, y: 366, w: 342, h: 146 },
   { id: 'juice', section: 'R', x: 14, y: 261, w: 167, h: 249 },
   { id: 'whipper', section: 'R', x: 200, y: 300, w: 148, h: 210 },
   { id: 'foamer', section: 'R', x: 367, y: 320, w: 116, h: 190 },
   { id: 'blender', section: 'R', x: 497, y: 256, w: 146, h: 254 },
-  { id: 'boba', section: 'R', x: 658, y: 362, w: 310, h: 148 },
-  { id: 'shaker', section: 'R', x: 991, y: 383, w: 162, h: 127 }
+  { id: 'shaker', section: 'R', x: 701, y: 383, w: 162, h: 127 }
 ];
 
 /** Что интерфейс занимает в боковой секции (экранные координаты = секция-локальные, камера стоит на секции); предметы и зоны сюда не заходят (docs/art/sides/plan.md, разд. 2). `always: false` — только по клику (развёрнутый билет): декору выше y 232 нельзя. */

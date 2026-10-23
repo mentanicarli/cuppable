@@ -21,13 +21,13 @@ describe('секции: карта станций', () => {
     expect(SECTION_NAMES).toEqual({ L: 'Чайный бар', C: 'Кофейный бар', R: 'Холодный бар' });
   });
 
-  test('19 станций: 10 в центре, 3 слева, 6 справа', () => {
+  test('19 станций: 10 в центре, 4 слева, 5 справа (31-2: бабл ти в «Чайном баре»)', () => {
     expect(STATIONS).toHaveLength(19);
     expect(new Set(STATIONS.map((s) => s.id)).size).toBe(19);
     const by = (id: string): string[] => STATIONS.filter((s) => s.section === id).map((s) => s.id);
     expect(by('C')).toEqual(['grind', 'tamp', 'shot', 'water', 'steam', 'milk', 'pour', 'syrup', 'ice', 'cream']);
-    expect(by('L')).toEqual(['matcha', 'tea', 'powders']);
-    expect(by('R')).toEqual(['juice', 'whipper', 'foamer', 'blender', 'boba', 'shaker']);
+    expect(by('L')).toEqual(['matcha', 'tea', 'powders', 'boba']);
+    expect(by('R')).toEqual(['juice', 'whipper', 'foamer', 'blender', 'shaker']);
   });
 
   test('каждая зона ZONE_POS и каждое значение TASK_ZONE принадлежит секции', () => {
@@ -59,7 +59,7 @@ describe('секции: карта станций', () => {
   test('станция без потерь: у каждой станции есть зона из ZONE_POS или TASK_ZONE', () => {
     const known = new Set([...zonePosKeys(), ...SIDE_ZONES.map((z) => z.id), ...Object.values(TASK_ZONE)]);
     for (const s of STATIONS) expect(s.zones.some((z) => known.has(z)), s.id).toBe(true);
-    expect(sectionOfStation('boba')).toBe('R');
+    expect(sectionOfStation('boba')).toBe('L');
     expect(sectionOfStation('нет')).toBeUndefined();
   });
 
@@ -86,7 +86,9 @@ describe('секции: открытие по покупкам', () => {
   test('первая покупка из списка открывает секцию', () => {
     for (const k of SECTION_EQ.L) expect(sectionsOpen({ ['eq_' + k]: true })).toEqual({ L: true, C: true, R: false });
     for (const k of SECTION_EQ.R) expect(sectionsOpen({ ['eq_' + k]: true })).toEqual({ L: false, C: true, R: true });
-    expect(sectionsOpen({ eq_tea: true, eq_boba: true })).toEqual({ L: true, C: true, R: true });
+    expect(sectionsOpen({ eq_tea: true, eq_juice: true })).toEqual({ L: true, C: true, R: true });
+    /* 31-2: старое сохранение с eq_boba без eq_tea открывает левую секцию */
+    expect(sectionsOpen({ eq_boba: true })).toEqual({ L: true, C: true, R: false });
   });
 
   test('ложное значение не открывает', () => {
@@ -208,7 +210,8 @@ describe('30-4: тост «станция в другой секции» гас�
     expect(toastStillRelevant('tea', 'C')).toBe(true);
     expect(toastStillRelevant('tea', 'R')).toBe(true);
     expect(toastStillRelevant('tea', 'L')).toBe(false);
-    expect(toastStillRelevant('boba', 'R')).toBe(false);
+    expect(toastStillRelevant('boba', 'L')).toBe(false);
+    expect(toastStillRelevant('boba', 'R')).toBe(true);
     expect(toastStillRelevant('shot', 'L')).toBe(true);
     expect(toastStillRelevant('shot', 'C')).toBe(false);
     expect(toastStillRelevant('нет такой', 'C')).toBe(false);
@@ -246,8 +249,8 @@ describe('секции: подсказки и тосты (Б1-3)', () => {
       for (const f of fixed) expect(hit(z, f), `${z.id} × ${f.n}`).toBe(false);
       for (const o of SIDE_ZONES) if (o !== z && o.section === z.section) expect(hit(z, o), `${z.id} × ${o.id}`).toBe(false);
     }
-    expect(sideZoneCenter(SIDE_ZONES[0] as (typeof SIDE_ZONES)[number])).toEqual([-1280 + 117 + 125.5, 364 + 73]);
-    expect(sideZoneCenter(SIDE_ZONES[8] as (typeof SIDE_ZONES)[number])).toEqual([1280 + 991 + 81, 383 + 63.5]);
+    expect(sideZoneCenter(SIDE_ZONES[0] as (typeof SIDE_ZONES)[number])).toEqual([-1280 + 14 + 125.5, 364 + 73]);
+    expect(sideZoneCenter(SIDE_ZONES[8] as (typeof SIDE_ZONES)[number])).toEqual([1280 + 701 + 81, 383 + 63.5]);
   });
 
   test('30-4: зазор между зонами одной секции ≥ 12 px; рамка предмета каждой из девяти станций внутри своей зоны (±1 px), зона не выше 24 px над предметом', () => {

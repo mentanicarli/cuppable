@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 520" data-part="decor" data-scale="1.1">
 <!--
-  Декор левой секции (блок 30-1), рисуется в одной текстуре с фоном: полка с пятью жестяными банками чая и этикетками (проектные 130, 232, 300 × 74), растение (проектные 24, 400, 70 × 106). Окна нет (решение владельца 30-2). Предметы проектных размеров ×1,10 через transform обёрток data-wrap (якорь: база y 506; полка — верх y 232). Выше y 232 левее x 494 ничего нет (развёрнутый билет).
+  Декор левой секции (блок 30-1), рисуется в одной текстуре с фоном: полка с пятью жестяными банками чая и этикетками (проектные 130, 232, 300 × 74), растение убрано в 31-2 (место нужно станции бабл ти). Окна нет (решение владельца 30-2). Предметы проектных размеров ×1,10 через transform обёрток data-wrap (якорь: база y 506; полка — верх y 232). Выше y 232 левее x 494 ничего нет (развёрнутый билет).
 -->
 <g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
 <g data-wrap="teaShelf" transform="translate(140 232) scale(1.1) translate(-130 -232)">
@@ -22,20 +22,6 @@
 <rect x="376" y="246" width="48" height="50" rx="5" fill="{{MUSTARD}}" stroke-width="{{M}}"/>
 <rect x="375" y="237" width="50" height="11" rx="5" fill="{{BAKE}}" stroke-width="{{M}}"/>
 <g data-label="tea"><rect x="387.0" y="273" width="26" height="15" rx="2.5" fill="{{PAPER}}" stroke-width="{{D}}"/><path d="M389.5 278.7H410.5M389.5 283.8H402.5" fill="none" stroke-width="{{D}}"/></g>
-</g>
-</g>
-<g data-wrap="plant" transform="translate(20 506) scale(1.1) translate(-24 -506)">
-<g data-item="plant" data-box="24 400 70 106">
-<ellipse cx="59" cy="507" rx="30" ry="4" fill="{{SHADOW}}" fill-opacity=".22" stroke="none"/>
-<path d="M59 468Q48 440 52 408Q58 430 63 468Z" fill="{{SAGE}}" stroke-width="{{M}}"/>
-<path d="M48 470Q32 450 30 418Q44 436 56 470Z" fill="{{SAGE_LT}}" stroke-width="{{M}}"/>
-<path d="M70 470Q84 446 86 414Q72 436 62 470Z" fill="{{SAGE}}" stroke-width="{{M}}"/>
-<path d="M40 472Q26 462 24 440Q36 450 48 472Z" fill="{{SAGE_LT}}" stroke-width="{{M}}"/>
-<path d="M78 472Q92 462 94 438Q82 450 70 472Z" fill="{{SAGE_LT}}" stroke-width="{{M}}"/>
-<path d="M59 470Q66 440 59 402Q52 440 59 470Z" fill="{{SAGE}}" stroke-width="{{M}}"/>
-<path d="M36 466H82L77 506H41Z" fill="{{TERRA}}" stroke-width="{{M}}"/>
-<rect x="33" y="460" width="52" height="10" rx="4" fill="{{RUG}}" stroke-width="{{M}}"/>
-<path d="M44 476L47 500" fill="none" stroke="{{HILITE}}" stroke-opacity=".5" stroke-width="{{M}}"/>
 </g>
 </g>
 </g>
