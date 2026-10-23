@@ -20,7 +20,7 @@ if (!process.env.ONLY && !process.env.ART_PC_CHILD) {
   process.exit(bad ? 1 : 0);
 }
 (async () => {
-  const src = fs.readFileSync(path.resolve(process.argv[2]), 'utf8').replace('newGame(); updateHud(); showTitle();', 'newGame(); updateHud(); showTitle(); window.__dbg = { get G() { return G; }, get D() { return D; }, get BR() { return BR; }, spawn, barOpen, zoneClick, applyUpgrades, resetBar() { try { barShow(false); } catch (e) { /* нет бара */ } BR = null; } };');
+  const src = fs.readFileSync(path.resolve(process.argv[2]), 'utf8').replace('newGame(); updateHud(); showTitle();', 'newGame(); updateHud(); showTitle(); window.__dbg = { get G() { return G; }, get D() { return D; }, get BR() { return BR; }, spawn, barOpen, zoneClick, camGo, applyUpgrades, resetBar() { try { barShow(false); } catch (e) { /* нет бара */ } BR = null; } };');
   if (!src.includes('window.__dbg')) { console.error('нужна отладочная сборка'); process.exit(2); }
   const tmp = path.resolve(process.argv[2]).replace('.html', '.dbg.html'); fs.writeFileSync(tmp, src);
   const b = await chromium.launch({ args: (process.env.CHROMIUM_ARGS || '').split(' ').filter(Boolean), ...(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}) });
@@ -51,7 +51,9 @@ if (!process.env.ONLY && !process.env.ART_PC_CHILD) {
       await p.evaluate(({ id }) => { const M = window.__MENUAPI, c = __dbg.D.customers[0], dk = M.drinkById[id]; c.drink = id; c.order.key = id; c.order.id = id; c.order.name = dk.name; c.order.size = '0.6'; c.order.cold = /bumble|tonic|shake|boba|frappe|aero|protein/.test(id); c.order.food = null; c.syrup = null; c.pumps = 0; c.strong = false; c.pat = c.max = 1e9; __dbg.barOpen(c); }, { id }); /* без сиропа: иначе шаг «Сироп» блокирует открытие станции */
       await p.waitForTimeout(450); await PW.dismissCard(p);
       await p.evaluate(task => { const B = __dbg.BR; for (const t of B.tasks) { if (t === task) break; B.done[t] = true; B.res[t] = 1; } }, task); /* предыдущие шаги выполнены */
-      await p.evaluate(t => __dbg.zoneClick(t), task); await p.waitForTimeout(450);
+      const sec = ['whisk', 'brew', 'powder', 'boba'].includes(task) ? 'L' : ['topping', 'layer'].includes(task) ? 'C' : 'R'; /* 30-3: станции в боковых секциях, камера должна стоять в секции */
+      await p.evaluate(sec => __dbg.camGo(sec, true), sec); await p.waitForTimeout(250);
+      await p.evaluate(t => __dbg.zoneClick(t), task); await p.waitForTimeout(450); await PW.dismissCard(p);
     };
     const press = async (sel, holdMs) => {
       const r = await p.evaluate(sel => { const e = document.querySelector(sel); if (!e || e.disabled) return null; const r = e.getBoundingClientRect(); const pr = document.querySelector('#xPanel').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height * .8, bottom: r.bottom, pb: pr.bottom }; }, sel);

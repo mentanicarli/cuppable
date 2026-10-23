@@ -374,7 +374,7 @@ function xOpen(t) {
     const col = { whisk: pal.matcha, blend: pal.blend, shake: B.tasks.includes('powder') ? pal.powder : pal.blend, foam: '#C99B6E', whip: pal.foam, layer: B.tasks.includes('tonic') ? pal.tonic : pal.juice }[t];
     v = { kind: 'timed', max: tg * 1.7, zone: [tg - tol, tg + tol], col, col2: pal.foam, holdLabel: X_HOLD[t], hint: 'Держите кнопку (или Пробел), пока шкала не дойдёт до зелёной зоны. Потом «Готово».' };
   }
-  B.xv[t] = Object.assign({ task: t, title: X_TITLE[t] }, v);
+  B.xv[t] = Object.assign({ task: t, drink: d, title: X_TITLE[t] }, v);
 }
 function xRender(B) {
   const t = B.inset, st = B.xs[t], v = B.xv[t]; if (!st || !v) return;
