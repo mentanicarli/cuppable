@@ -19,8 +19,6 @@ export const UNIT_COST = {
   tapioca: 0.5,
   iceCream: 0.35,
   topFoam: 0.4,
-  /** сливочная пена аэрокано (сливки 33%) */
-  whip: 0.5,
   sauce: 0.5,
   /** стакан, крышка, салфетка: 5 + 0,03 · мл */
   cupBase: 5,
@@ -99,8 +97,7 @@ export function recipeCost(r: Recipe): number {
   if (r.tea) c += r.tea.g * UNIT_COST.tea;
   if (r.matcha) c += r.matcha.g * UNIT_COST.matcha;
   if (r.boba !== undefined) c += r.boba * UNIT_COST.tapioca;
-  if (r.id === 'aerocano') c += (r.topFoam ?? 0) * UNIT_COST.whip;
-  else if (r.topFoam) c += r.topFoam * UNIT_COST.topFoam;
+  if (r.topFoam) c += r.topFoam * UNIT_COST.topFoam;
   if (r.id === 'milkshake_vanilla' || r.id === 'milkshake_banana') c += 0.3 * r.drinkMl * UNIT_COST.iceCream;
   if (r.parts.some((p) => p.task === 'topping' && p.label.startsWith('Карамельный'))) c += 8 * UNIT_COST.sauce;
   c += UNIT_COST.cupBase + UNIT_COST.cupPerMl * r.cupMl;

@@ -5,7 +5,7 @@ const PW = require('./pw');
 const out = path.resolve(process.argv[3] || 'out/panels'); fs.mkdirSync(out, { recursive: true });
 const tag = process.argv[4] || 'now', only = (process.argv[5] || '').split(',').filter(Boolean);
 /* станция окна → напиток, в котором она есть */
-const PANELS = { whisk: 'matcha_latte', brew: 'tea_sencha', juice: 'orange_bumble', tonic: 'espresso_tonic', powder: 'cocoa', boba: 'boba_guava', topping: 'frappe_caramel', blend: 'milkshake_vanilla', shake: 'boba_guava', foam: 'latte_coconut', whip: 'aerocano', layer: 'matcha_bumble' };
+const PANELS = { whisk: 'matcha_latte', brew: 'tea_sencha', juice: 'orange_bumble', tonic: 'espresso_tonic', powder: 'cocoa', boba: 'boba_guava', topping: 'cappuccino_pumpkin', blend: 'milkshake_vanilla', shake: 'boba_guava', foam: 'latte_coconut', whip: 'latte_coconut', layer: 'matcha_bumble' };
 (async () => {
   const src = fs.readFileSync(path.resolve(process.argv[2]), 'utf8').replace('newGame(); updateHud(); showTitle();', 'newGame(); updateHud(); showTitle(); window.__dbg = { get G() { return G; }, get D() { return D; }, get BR() { return BR; }, spawn, barOpen, zoneClick, applyUpgrades, WORLD, camGo, resetBar() { try { barShow(false); } catch (e) { /* нет бара */ } BR = null; } };');
   const tmp = path.resolve(process.argv[2]).replace('.html', '.dbg.html'); fs.writeFileSync(tmp, src);
@@ -21,7 +21,7 @@ const PANELS = { whisk: 'matcha_latte', brew: 'tea_sencha', juice: 'orange_bumbl
     if (!process.env.PAIRS && only.length && !only.includes(task)) continue;
     await p.evaluate(() => { if (__dbg.D) __dbg.D.t = Math.min(__dbg.D.t, 60); });
     await p.evaluate(() => __dbg.resetBar()); await p.waitForTimeout(150);
-    await p.evaluate(({ id }) => { const M = window.__MENUAPI, c = __dbg.D.customers[0], dk = M.drinkById[id]; c.drink = id; c.order.key = id; c.order.id = id; c.order.name = dk.name; c.order.size = '0.4'; c.order.cold = /bumble|tonic|shake|boba|frappe|aero|protein/.test(id); c.order.food = null; c.syrup = null; c.pumps = 0; c.strong = false; c.pat = c.max = 1e9; __dbg.barOpen(c); }, { id });
+    await p.evaluate(({ id }) => { const M = window.__MENUAPI, c = __dbg.D.customers[0], dk = M.drinkById[id]; c.drink = id; c.order.key = id; c.order.id = id; c.order.name = dk.name; c.order.size = '0.4'; c.order.cold = /bumble|tonic|shake|boba|protein/.test(id); c.order.food = null; c.syrup = null; c.pumps = 0; c.strong = false; c.pat = c.max = 1e9; __dbg.barOpen(c); }, { id });
     await p.waitForTimeout(450); await PW.dismissCard(p);
     const has = await p.evaluate(task => __dbg.BR.tasks.includes(task), task);
     if (!has) { console.log('нет шага', task, 'в', id, await p.evaluate(() => JSON.stringify(__dbg.BR.tasks))); continue; }

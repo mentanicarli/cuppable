@@ -8,11 +8,11 @@ import { drinkIconSvg, drinkParts, geomOf } from '../src/render/world/drinkModel
 import { cupScale } from '../src/game/volumes';
 
 const GLASS_LATTES = ['latte', 'latte_sakura', 'latte_banana', 'latte_lemon', 'latte_coconut', 'matcha_latte', 'matcha_coconut', 'chicory_latte'];
-const ALL_GROUPS: ModelGroup[] = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6'];
+const ALL_GROUPS: ModelGroup[] = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'C1', 'C2', 'C3', 'C5', 'C6'];
 
 describe('посуда по правилу владельца', () => {
-  test('в меню 37 напитков и у каждого есть хотя бы один вариант с описанием', () => {
-    expect(DRINKS.length).toBe(37);
+  test('в меню 35 напитков и у каждого есть хотя бы один вариант с описанием', () => {
+    expect(DRINKS.length).toBe(35);
     for (const d of DRINKS) {
       const n = variantsOf(d).reduce((a, cold) => a + sizesOf(d.id, cold).length, 0);
       expect(n, d.id).toBeGreaterThan(0);
@@ -42,11 +42,11 @@ describe('посуда по правилу владельца', () => {
 
 describe('описания всех напитков', () => {
   const specs = allSpecs();
-  test('56 видов (24 горячих и 32 холодных), на каждый вид хотя бы один размер', () => {
+  test('54 вида (24 горячих и 30 холодных), на каждый вид хотя бы один размер', () => {
     const looks = new Set(specs.map((s) => `${s.id}|${s.cold}`));
-    expect(looks.size).toBe(56);
+    expect(looks.size).toBe(54);
     expect([...looks].filter((k) => k.endsWith('false')).length).toBe(24);
-    expect([...looks].filter((k) => k.endsWith('true')).length).toBe(32);
+    expect([...looks].filter((k) => k.endsWith('true')).length).toBe(30);
   });
   test('сумма долей слоёв равна 1 (допуск 0,001), доли положительные', () => {
     for (const s of specs) {
@@ -96,7 +96,6 @@ describe('описания всех напитков', () => {
     expect(pilotRef('milkshake_vanilla', '0.4', true)).toEqual({ id: 'milkshake_vanilla', size: '0.4', cold: true }); /* Н2-3 */
     expect(pilotRef('tea_sencha', '0.4', true)).toEqual({ id: 'tea_sencha', size: '0.4', cold: true }); /* Н2-2 */
     expect(pilotRef('tea_sencha', '0.2', true)).toBeNull();
-    expect(pilotRef('aerocano', '0.3', true)).toEqual({ id: 'aerocano', size: '0.3', cold: true });
     expect(pilotRef('boba_guava', '0.4', true)).toEqual({ id: 'boba_guava', size: '0.4', cold: true });
     expect(pilotRef('tea_sencha', '0.4', false)).toEqual({ id: 'tea_sencha', size: '0.4', cold: false });
   });
@@ -169,7 +168,6 @@ describe('описания всех напитков', () => {
     expect(specOf('hot_bumble', '0.3', false).group).toBe('H2');
     expect(specOf('americano', '0.3', true).group).toBe('C1');
     expect(specOf('cappuccino_pumpkin', '0.3', true).detail).toBe('spice_specks');
-    expect(specOf('aerocano', '0.3', true).detail).toBe('caramel_stripes');
     expect(iceCount(specOf('milkshake_vanilla', '0.4', true).ice)).toBe(0);
   });
   test('таро: сиреневая пена #B9A3D4 у четырёх латте с таро', () => {

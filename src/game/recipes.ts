@@ -225,13 +225,11 @@ const PAL: Readonly<Record<string, Partial<Palette>>> = {
   protein_water: { powder: '#EADFCB' },
   milkshake_vanilla: { blend: '#F3E6C8' },
   milkshake_banana: { blend: '#F2DA8A', juice: '#F2DA8A' },
-  frappe_caramel: { blend: '#C9A27A' },
   latte_coconut: { foam: '#B9A3D4' },
   matcha_coconut: { foam: '#B9A3D4' },
   latte_sakura: { foam: '#B9A3D4' },
   latte_lemon: { foam: '#B9A3D4' },
-  latte_banana: { foam: '#E9D29A' },
-  aerocano: { foam: '#FBF4E8' }
+  latte_banana: { foam: '#E9D29A' }
 };
 export const paletteOf = (key: string): Palette => ({ ...DEFAULT_PAL, ...(PAL[key] ?? {}) });
 

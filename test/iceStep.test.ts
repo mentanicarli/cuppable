@@ -57,8 +57,6 @@ describe('шаг «лёд» и цель льда', () => {
     expect(buildTasks('icedlatte', { cold: true, syrup: false })).toContain('ice');
     expect(buildTasks('orange_bumble', { cold: true, syrup: false })).toContain('ice');
     expect(buildTasks('boba_guava', { cold: true, syrup: true })).toContain('ice');
-    expect(buildTasks('aerocano', { cold: true, syrup: false })).toContain('ice');
-    expect(buildTasks('frappe_caramel', { cold: true, syrup: false })).toContain('ice');
     expect(buildTasks('milkshake_vanilla', { cold: true, syrup: false })).toContain('ice');
   });
 });

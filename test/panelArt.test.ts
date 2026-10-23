@@ -15,10 +15,10 @@ const TOKENS = [PAL.stroke.L, PAL.stroke.M, PAL.stroke.D];
 /** Заливки предмета, которые окно заменяет цветом напитка (налив вместо встроенного чая, порошок банки). */
 const REPLACED: Record<string, string[]> = { brew: ['TERRA', 'BAKE'], powder: ['CHOC'] };
 const col = (task: string): string => (task === 'powder' ? PAL.colors.CHOC : PAL.colors.MUSTARD);
-const art = (task: string, drink?: string): string => panelArt({ task, col: col(task), col2: PAL.colors.PAPER, drink: task === 'layer' ? 'orange_bumble' : task === 'topping' || task === 'whip' ? 'aerocano' : drink });
+const art = (task: string, drink?: string): string => panelArt({ task, col: col(task), col2: PAL.colors.PAPER, drink: task === 'layer' ? 'orange_bumble' : task === 'topping' ? 'cappuccino_pumpkin' : task === 'whip' ? 'latte_coconut' : drink });
 /** цвета слоёв — данные напитка (спецификация), не палитра */
 const espressoSpec = specOf('espresso', sizesOf('espresso', false)[0] as never, false);
-const specColors = new Set([...layerView('orange_bumble', 1).map((l) => l.color), ...specOf('aerocano', sizesOf('aerocano', true)[0] as never, true).liquid.map((l) => l.color), ...espressoSpec.liquid.map((l) => l.color), espressoSpec.top.color].map((c) => c.toLowerCase()));
+const specColors = new Set([...layerView('orange_bumble', 1).map((l) => l.color), ...specOf('latte_coconut', sizesOf('latte_coconut', false)[0] as never, false).liquid.map((l) => l.color), ...espressoSpec.liquid.map((l) => l.color), espressoSpec.top.color].map((c) => c.toLowerCase()));
 /* демитас модели напитка: его цвета (кофе, крема, керамика) — данные модели, а не палитры */
 for (const m of drinkPx(espressoSpec, { level: 'full', s: 1.1, noSaucer: true }).all.inner.matchAll(/#[0-9a-fA-F]{6}/g)) specColors.add(m[0].toLowerCase());
 
@@ -151,8 +151,8 @@ describe('окно «Налить слоями»: источник, ложка, 
 describe('аудит окон (31-3): приёмник и источник по предыдущим шагам рецепта', () => {
   const win = (task: string, drink: string, cold = true): string => panelArt({ task, col: PAL.colors.MUSTARD, col2: PAL.colors.PAPER, drink, size: '0.3', cold });
   const cubes = (s: string): number => s.split('rx="4" fill="' + PAL.colors.GLASS).length - 1;
-  test('лёд, насыпанный шагом «Лёд», лежит в приёмнике: сок, тоник, шарики, топпинг, сливки', () => {
-    for (const [t, d] of [['juice', 'orange_bumble'], ['tonic', 'espresso_tonic'], ['boba', 'boba_guava'], ['topping', 'frappe_caramel'], ['whip', 'aerocano']] as const) expect(cubes(win(t, d)), `${t} ${d}`).toBeGreaterThanOrEqual(5);
+  test('лёд, насыпанный шагом «Лёд», лежит в приёмнике: сок, тоник, шарики, сливки', () => {
+    for (const [t, d] of [['juice', 'orange_bumble'], ['tonic', 'espresso_tonic'], ['boba', 'boba_guava'], ['whip', 'latte_coconut']] as const) expect(cubes(win(t, d)), `${t} ${d}`).toBeGreaterThanOrEqual(5);
     expect(cubes(win('juice', 'hot_bumble', false)), 'горячий бамбл без льда').toBe(0);
   });
   test('блендер и шейкер: кувшин уже полон (data-start), лёд тает по прогрессу (data-fade); без льда кубиков нет', () => {
@@ -173,9 +173,9 @@ describe('аудит окон (31-3): приёмник и источник по 
     expect(s).not.toContain(`d="${'M140 28H260L250 172H150Z'}"`);
   });
   test('сливки и топпинг лежат на напитке в стакане: растущие эллипсы, а не жидкость с дна', () => {
-    expect(win('whip', 'aerocano')).toContain('id="xpCream"');
-    expect(win('topping', 'frappe_caramel')).toContain('id="xpTop"');
-    expect(win('topping', 'frappe_caramel')).not.toContain('id="xpLiq"');
+    expect(win('whip', 'latte_coconut')).toContain('id="xpCream"');
+    expect(win('topping', 'cappuccino_pumpkin')).toContain('id="xpTop"');
+    expect(win('topping', 'cappuccino_pumpkin')).not.toContain('id="xpLiq"');
   });
 });
 
@@ -213,8 +213,7 @@ describe('решения владельца по аудиту окон (31-4)', 
     expect(s).not.toContain('data-item="jarCocoa"');
     expect(s).toContain(PAL.colors.MUSTARD); /* цвет специи */
     expect(s).toContain(PAL.colors.STEEL_HI); /* крышка */
-    expect(win('topping', 'frappe_caramel')).not.toContain('data-spice="1"');
-    expect(win('topping', 'aerocano')).not.toContain('data-spice="1"');
+    expect(win('juice', 'orange_bumble')).not.toContain('data-spice="1"');
   });
   test('солонка рисуется только в окне: у предметов бара её нет', () => {
     expect(JSON.stringify(Object.keys(CENTER))).not.toMatch(/spice/i);

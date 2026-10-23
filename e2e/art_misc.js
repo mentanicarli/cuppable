@@ -114,7 +114,7 @@ if (parts.length > 1 && !process.env.ART_MISC_CHILD) {
       return { totalCovered: +cnt(grid).toFixed(3), perKind: Object.fromEntries(Object.entries(byKind).map(([k, g]) => [k, +cnt(g).toFixed(3)])), blocks: blocks.length, zones: zones.filter(z => z.covered > 0.05) };
     });
     const res = {};
-    for (const [id, sz, cold, tag] of [['latte', '0.3', false, 'latte_03'], ['latte', '0.6', false, 'latte_06'], ['frappe_caramel', '0.4', true, 'frappe_04_long_ticket'], ['tea_sencha', '0.4', false, 'tea_04']]) {
+    for (const [id, sz, cold, tag] of [['latte', '0.3', false, 'latte_03'], ['latte', '0.6', false, 'latte_06'], ['latte_coconut', '0.4', false, 'coconut_04_long_ticket'], ['tea_sencha', '0.4', false, 'tea_04']]) {
       await p.evaluate(() => __dbg.resetBar()); await p.waitForTimeout(250);
       await p.evaluate(({ id, size, cold }) => { const c = __dbg.D.customers[0], M = window.__MENUAPI, dk = M.drinkById[id] || M.drinkById[M.drinkOfKey(id).id]; c.drink = id; c.order.key = id; c.order.id = dk.id || id; c.order.name = dk.name; c.order.size = size; c.order.cold = cold; c.order.food = null; c.pat = c.max = 1e9; __dbg.G.hints = true; __dbg.barOpen(c); }, { id, size: sz, cold });
       await p.waitForTimeout(900); await PW.dismissCard(p); await p.waitForTimeout(500);

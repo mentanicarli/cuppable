@@ -50,9 +50,6 @@ describe('магазин: что показывается', () => {
     expect(shown(9, ['eq_fridge_deli'])).toContain('eq_microwave');
   });
   test('станция, у всех напитков которой есть ещё одна нужная станция, ждёт её', () => {
-    // аэрокано нужны и лёд, и сифон: сифон появляется после льдогенератора
-    expect(shown(5, ['milk'])).not.toContain('eq_whipper');
-    expect(shown(5, ['milk', 'eq_ice'])).toContain('eq_whipper');
     expect(shown(6, ['milk'])).toContain('eq_foamer');
     expect(shown(6)).not.toContain('eq_foamer');
   });

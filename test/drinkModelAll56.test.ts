@@ -21,9 +21,9 @@ class Fake {
 }
 
 describe('Н2-4: все виды × размеры × уровни', () => {
-  test('видов 56, у каждого есть ссылка на модель (ни одного напитка по-старому)', () => {
+  test('видов 54, у каждого есть ссылка на модель (ни одного напитка по-старому)', () => {
     const kinds = new Set(specs.map((s) => `${s.id}|${s.cold}`));
-    expect(kinds.size).toBe(56);
+    expect(kinds.size).toBe(54);
     expect(new Set(specs.map((s) => s.id)).size).toBe(DRINKS.length);
     for (const s of specs) expect(pilotRef(s.id, s.size, s.cold), `${s.id} ${s.size} ${s.cold}`).toEqual({ id: s.id, size: s.size, cold: s.cold });
   });
@@ -124,7 +124,7 @@ describe('Н2-4: все виды × размеры × уровни', () => {
 
 describe('пар над чашкой (31-1): только у горячего варианта', () => {
   test('hasSteam: горячий true, холодный и со льдом false, независимо от размера (56 видов)', () => {
-    expect(specs.length).toBeGreaterThanOrEqual(56);
+    expect(specs.length).toBeGreaterThanOrEqual(54);
     for (const s of specs) {
       expect(hasSteam(s), `${s.id} ${s.size} ${s.cold ? 'холодный' : 'горячий'}`).toBe(!s.cold);
       if (s.ice.rows * s.ice.cols > 0) expect(hasSteam(s), `${s.id}: лёд`).toBe(false);

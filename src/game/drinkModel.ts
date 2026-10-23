@@ -13,9 +13,9 @@ export type Material = 'glass' | 'ceramic' | 'demitas';
 /** Граница слоёв: прямая, ступенчатая (полоса среднего тона без градиента) или волнистая с языками. */
 export type Edge = 'sharp' | 'step' | 'wavy';
 /** Особая деталь рисунка (одна на напиток). «Функциональность» бабл ти малина-лимон сюда не входит: она в `tags`. */
-export type Detail = 'swirl' | 'tonic_bubbles' | 'caramel_stripes' | 'spice_specks' | 'taro_cap' | 'cloudy' | 'caramel_sauce' | 'matte' | 'whip_cap';
+export type Detail = 'swirl' | 'tonic_bubbles' | 'spice_specks' | 'taro_cap' | 'cloudy' | 'matte' | 'whip_cap';
 /** Группы моделей: H — горячие, C — холодные (docs/art/drinks/table.md). */
-export type ModelGroup = 'H1' | 'H2' | 'H3' | 'H4' | 'H5' | 'H6' | 'H7' | 'H8' | 'C1' | 'C2' | 'C3' | 'C4' | 'C5' | 'C6';
+export type ModelGroup = 'H1' | 'H2' | 'H3' | 'H4' | 'H5' | 'H6' | 'H7' | 'H8' | 'C1' | 'C2' | 'C3' | 'C5' | 'C6';
 /** Уровни детализации: полный (бар, книга), компактный (билет, пузырь, крупная чашка в зале), tiny (чашка в руке, на столе и в полёте: силуэт, цвет жидкости и верха). */
 export type Lod = 'full' | 'compact' | 'tiny';
 /** Сетка льда: кубики одного размера плотно от дна до верха стакана. */
@@ -228,7 +228,6 @@ const ESP = '#4A2E20';
 const ESP_CUP = '#5A3A2A';
 const MIXC = '#C99B6E';
 const FOAM = '#F1DFC2';
-const FOAM_W = '#FBF4E8';
 const MILK = '#F3E7D0';
 const CREAM = '#E9D2B2';
 const CREAM_GOLD = '#E9D29A';
@@ -253,7 +252,7 @@ export function mixColor(a: string, b: string, t: number): string {
 /* ---------- группы ---------- */
 
 const TEA_IDS: ReadonlySet<string> = new Set(['tea_sencha', 'tea_assam', 'tea_hibiscus', 'tea_buckwheat', 'tea_currant']);
-const BLENDED: ReadonlySet<string> = new Set(['milkshake_vanilla', 'milkshake_banana', 'frappe_caramel', 'protein_milk', 'protein_water']);
+const BLENDED: ReadonlySet<string> = new Set(['milkshake_vanilla', 'milkshake_banana', 'protein_milk', 'protein_water']);
 /** Группа модели напитка (docs/art/drinks/table.md). */
 export function groupOf(d: Drink, cold: boolean): ModelGroup {
   const id = d.id;
@@ -269,12 +268,11 @@ export function groupOf(d: Drink, cold: boolean): ModelGroup {
   }
   if (id === 'americano' || TEA_IDS.has(id)) return 'C1';
   if (d.family === 'bumble' || d.family === 'tonic') return 'C3';
-  if (d.family === 'aero') return 'C4';
   if (BLENDED.has(id)) return 'C5';
   if (d.family === 'boba') return 'C6';
   return 'C2';
 }
-const ICE_GROUPS: ReadonlySet<ModelGroup> = new Set(['C1', 'C2', 'C3', 'C4', 'C6']);
+const ICE_GROUPS: ReadonlySet<ModelGroup> = new Set(['C1', 'C2', 'C3', 'C6']);
 /** Лёд v3 (правило владельца): заполняет стакан равномерно от дна до верха. Число рядов по масштабу чашки (`cupScale`): до 0,4 л три ряда, с 0,6 л четыре; столбцов всегда три. */
 export const ICE_FOUR_ROWS_FROM_K = 1.35;
 export const ICE_COLS = 3;
@@ -415,14 +413,10 @@ function build(d: Drink, r: Recipe, group: ModelGroup): Body {
       const topVol = matcha ? (r.matcha?.waterMl ?? 0) : shotMl;
       return { liquid: toLayers([tonic ? { color: bottomColor, vol: bottomVol, tone: 'clear' } : { color: bottomColor, vol: bottomVol }, { color: topColor, vol: topVol, edge: 'wavy' }]), top: { color: topColor }, detail: tonic ? 'tonic_bubbles' : 'swirl' };
     }
-    case 'C4': {
-      const F = r.topFoam ?? 0;
-      return { liquid: toLayers([{ color: COF, vol: shotMl + (r.water ?? 0) }, { color: FOAM_W, vol: F }]), top: { color: FOAM_W }, detail: 'caramel_stripes' };
-    }
     case 'C5': {
       const proteins = d.family === 'protein';
       const color = proteins ? pal.powder : pal.blend;
-      const detail: Detail | null = d.id === 'frappe_caramel' ? 'caramel_sauce' : d.id === 'protein_water' ? 'cloudy' : d.id === 'protein_milk' ? 'matte' : null;
+      const detail: Detail | null = d.id === 'protein_water' ? 'cloudy' : d.id === 'protein_milk' ? 'matte' : null;
       /* протеин на воде светлее и холоднее (полупрозрачный), на молоке матовый кремовый; ванильный милкшейк со взбитой шапкой над краем (деталь whip_cap) */
       if (d.id === 'protein_water') {
         const water = mixColor(color, '#CFE3E8', 0.8);
@@ -433,7 +427,7 @@ function build(d: Drink, r: Recipe, group: ModelGroup): Body {
       }
       /* протеин на молоке: матовый серо-бежевый, чтобы отличаться от ванильного милкшейка */
       const own = d.id === 'protein_milk' ? '#D6CAB6' : color;
-      return { liquid: toLayers([{ color: own, vol: r.drinkMl }]), top: { color: d.id === 'frappe_caramel' ? pal.topping : own }, detail };
+      return { liquid: toLayers([{ color: own, vol: r.drinkMl }]), top: { color: own }, detail };
     }
     case 'C6': {
       const liquidColor = mixColor(pal.tea, pal.topping, 0.6);
@@ -536,8 +530,8 @@ export const HOT_MODEL_IDS: ReadonlySet<string> = new Set([
   'vanilla_raf', 'cocoa', 'raf', 'raf_halva', 'tea_sencha', 'tea_assam', 'tea_hibiscus', 'tea_buckwheat', 'tea_currant',
   'latte', 'latte_sakura', 'latte_banana', 'latte_lemon', 'latte_coconut', 'matcha_latte', 'chicory_latte', 'matcha_coconut'
 ]);
-/** Холодные группы Н2-2 и Н2-3: прозрачные (C1), молочно-кофейные (C2), два слоя (C3), аэрокано (C4), густые (C5) и бабл ти (C6). Их холодные варианты рисуются моделью. */
-export const COLD_MODEL_GROUPS: ReadonlySet<ModelGroup> = new Set<ModelGroup>(['C1', 'C2', 'C3', 'C4', 'C5', 'C6']);
+/** Холодные группы Н2-2 и Н2-3: прозрачные (C1), молочно-кофейные (C2), два слоя (C3), густые (C5) и бабл ти (C6). Их холодные варианты рисуются моделью. */
+export const COLD_MODEL_GROUPS: ReadonlySet<ModelGroup> = new Set<ModelGroup>(['C1', 'C2', 'C3', 'C5', 'C6']);
 /** Рисуется ли холодный вариант напитка моделью (группы C1–C3). */
 export const isColdModel = (d: Drink): boolean => (d.temp === 'hot' ? false : COLD_MODEL_GROUPS.has(groupOf(d, true)));
 /** Подпись под моделью в книге и окне «Новый напиток», когда одной картинки мало (решение владельца: горячий бамбл выглядит как американано, отличие только подписью). */

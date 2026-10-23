@@ -11,7 +11,7 @@ export type Quality = 0 | 1 | 2;
 
 export type Family =
   | 'espresso' | 'milk' | 'foamlatte' | 'raf' | 'matcha' | 'tea' | 'tonic' | 'boba'
-  | 'bumble' | 'aero' | 'powder' | 'protein' | 'shake';
+  | 'bumble' | 'powder' | 'protein' | 'shake';
 
 export type StationId =
   | 'grind' | 'tamp' | 'shot' | 'water' | 'milk' | 'steam' | 'pour' | 'syrup' | 'ice' | 'cream' | 'foam'

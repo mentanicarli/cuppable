@@ -8,7 +8,7 @@ const PW = require('./pw');
 const out = path.resolve(process.argv[3] || 'out/art-audit/sys'); fs.mkdirSync(out, { recursive: true });
 const N = +(process.env.N || 30);
 const SIZES = (process.env.SIZES || '1280x720,1024x600,1920x1080').split(',').map(s => s.split('x').map(Number));
-const PANELS = [['tea_sencha', 'brew'], ['matcha_latte', 'whisk'], ['cocoa', 'powder'], ['espresso_tonic', 'tonic'], ['orange_bumble', 'juice'], ['milkshake_vanilla', 'blend'], ['boba_guava', 'brew'], ['latte_coconut', 'foam'], ['aerocano', 'whip'], ['protein_milk', 'powder'], ['frappe_caramel', 'blend']];
+const PANELS = [['tea_sencha', 'brew'], ['matcha_latte', 'whisk'], ['cocoa', 'powder'], ['espresso_tonic', 'tonic'], ['orange_bumble', 'juice'], ['milkshake_vanilla', 'blend'], ['boba_guava', 'brew'], ['latte_coconut', 'foam'], ['protein_milk', 'powder']];
 const rnd = (a, b) => a + Math.random() * (b - a);
 /* Долгий прогон в одной странице иногда падает целиком («Target crashed» после ошибки звукового устройства, см. CLAUDE.md): память и состояние копятся. Поэтому без ONLY каждая панель идёт в своём процессе со свежим браузером, один повтор при падении процесса; ожидания (100 % попаданий, обрезки 0) не менялись. */
 if (!process.env.ONLY && !process.env.ART_PC_CHILD) {
@@ -48,7 +48,7 @@ if (!process.env.ONLY && !process.env.ART_PC_CHILD) {
       /* прогон идёт десятки минут: не даём игровому дню закончиться (иначе бар закрывается и BR становится null) */
       await p.evaluate(() => { if (__dbg.D) __dbg.D.t = Math.min(__dbg.D.t, 60); });
       await p.evaluate(() => __dbg.resetBar()); await p.waitForTimeout(150);
-      await p.evaluate(({ id }) => { const M = window.__MENUAPI, c = __dbg.D.customers[0], dk = M.drinkById[id]; c.drink = id; c.order.key = id; c.order.id = id; c.order.name = dk.name; c.order.size = '0.6'; c.order.cold = /bumble|tonic|shake|boba|frappe|aero|protein/.test(id); c.order.food = null; c.syrup = null; c.pumps = 0; c.strong = false; c.pat = c.max = 1e9; __dbg.barOpen(c); }, { id }); /* без сиропа: иначе шаг «Сироп» блокирует открытие станции */
+      await p.evaluate(({ id }) => { const M = window.__MENUAPI, c = __dbg.D.customers[0], dk = M.drinkById[id]; c.drink = id; c.order.key = id; c.order.id = id; c.order.name = dk.name; c.order.size = '0.6'; c.order.cold = /bumble|tonic|shake|boba|protein/.test(id); c.order.food = null; c.syrup = null; c.pumps = 0; c.strong = false; c.pat = c.max = 1e9; __dbg.barOpen(c); }, { id }); /* без сиропа: иначе шаг «Сироп» блокирует открытие станции */
       await p.waitForTimeout(450); await PW.dismissCard(p);
       await p.evaluate(task => { const B = __dbg.BR; for (const t of B.tasks) { if (t === task) break; B.done[t] = true; B.res[t] = 1; } }, task); /* предыдущие шаги выполнены */
       const sec = ['whisk', 'brew', 'powder', 'boba'].includes(task) ? 'L' : ['topping', 'layer'].includes(task) ? 'C' : 'R'; /* 30-3: станции в боковых секциях, камера должна стоять в секции */

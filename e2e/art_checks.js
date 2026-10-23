@@ -118,11 +118,11 @@ function overlaps(items) {
     }
     const plan = [['latte', '0.3', false, 'bar_latte_03'], ['latte', '0.6', false, 'bar_latte_06']];
     if (on('overlap')) for (const [id, sz, cold, nm] of plan) { await open(id, sz, cold); await p.waitForTimeout(400); await measure(nm, nm); }
-    const fams = [['tea_sencha', 'tea'], ['matcha_latte', 'matcha'], ['cocoa', 'powder'], ['espresso_tonic', 'tonic'], ['orange_bumble', 'juice'], ['milkshake_vanilla', 'shake'], ['boba_guava', 'boba'], ['latte_coconut', 'foam'], ['aerocano', 'aero'], ['protein_milk', 'protein'], ['frappe_caramel', 'blend']];
+    const fams = [['tea_sencha', 'tea'], ['matcha_latte', 'matcha'], ['cocoa', 'powder'], ['espresso_tonic', 'tonic'], ['orange_bumble', 'juice'], ['milkshake_vanilla', 'shake'], ['boba_guava', 'boba'], ['latte_coconut', 'foam'], ['protein_milk', 'protein']];
     for (const [id, tag] of fams) {
       for (const sz of ['0.4', '0.6']) {
         try {
-          const cold = /bumble|tonic|shake|boba|frappe|aero|protein/.test(id);
+          const cold = /bumble|tonic|shake|boba|protein/.test(id);
           const exp = await open(id, sz, cold);
           const t = (exp || '').split(',').find(x => !/^(grind|tamp|shot|milk|steam|pour|water|ice|syrup)$/.test(x));
           if (!t) continue;

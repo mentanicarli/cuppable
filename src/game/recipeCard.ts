@@ -95,7 +95,7 @@ function stepDetail(task: string, d: Drink, r: Recipe, i: number, tasks: readonl
       const b = brewOf(d.id);
       return r.tea ? `${b.temp}°C, ${b.minutes} мин, ${ru(r.tea.g)} г чая на ${r.tea.waterMl} мл воды` : '';
     }
-    case 'blend': return d.family === 'shake' && d.id !== 'frappe_caramel' ? `взбить вместе с мороженым (${Math.round(0.3 * r.drinkMl)} г)` : 'взбить, пока не станет гладко';
+    case 'blend': return d.family === 'shake' ? `взбить вместе с мороженым (${Math.round(0.3 * r.drinkMl)} г)` : 'взбить, пока не станет гладко';
     case 'shake': return d.family === 'boba' ? 'чай, сироп и лёд вместе, шарики не кладём' : 'встряхнуть';
     case 'foam': return `${r.topFoam ?? ''} мл${d.id === 'latte_banana' ? ' протеиновой пенки' : ' холодной пенки'} сверху`.trim();
     case 'whip': return `${r.topFoam} мл сливочной пены (сливки 33% из сифона) сверху`;

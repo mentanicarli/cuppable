@@ -14,8 +14,8 @@ const allTexts = (): { id: string; t: string }[] => {
 };
 
 describe('тексты К1 в игре', () => {
-  test('у всех 37 напитков меню есть текст, лишних нет', () => {
-    expect(DRINKS).toHaveLength(37);
+  test('у всех 35 напитков меню есть текст, лишних нет', () => {
+    expect(DRINKS).toHaveLength(35);
     for (const d of DRINKS) expect(DRINK_TEXTS[d.id], d.id).toBeTruthy();
     expect(Object.keys(DRINK_TEXTS).sort()).toEqual(DRINKS.map((d) => d.id).sort());
   });

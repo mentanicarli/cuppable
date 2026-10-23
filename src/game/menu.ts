@@ -85,7 +85,7 @@ export const FORCED_SYRUP: Readonly<Record<string, string>> = {
   latte_coconut: 'Кокос', matcha_coconut: 'Кокос', cappuccino_pumpkin: 'Тыква',
   latte_sakura: 'Сакура-вишня', latte_banana: 'Банан', latte_lemon: 'Лимонная меренга',
   boba_guava: 'Гуава-персик', boba_raspberry: 'Малина-лимон',
-  milkshake_vanilla: 'Ваниль', frappe_caramel: 'Карамель'
+  milkshake_vanilla: 'Ваниль'
 };
 
 /** Старые молочные напитки (ручная механика пара). */

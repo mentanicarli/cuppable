@@ -19,10 +19,10 @@ describe('шоты по размеру', () => {
     expect(sizesOf('flat_white')).toEqual(['0.2']);
   });
   test('напитки с шотами по размеру берут их из таблицы', () => {
-    for (const id of ['americano', 'cappuccino', 'latte', 'raf', 'espresso_tonic', 'aerocano', 'latte_sakura']) for (const s of sizesOf(id)) expect(shotsOf(d(id), s), `${id} ${s}`).toBe(SHOTS_BY_SIZE[s]);
+    for (const id of ['americano', 'cappuccino', 'latte', 'raf', 'espresso_tonic', 'latte_sakura']) for (const s of sizesOf(id)) expect(shotsOf(d(id), s), `${id} ${s}`).toBe(SHOTS_BY_SIZE[s]);
   });
-  test('бамблы и фраппе — два шота на любом размере, матча и цикорий без шотов', () => {
-    for (const id of ['orange_bumble', 'pomegranate_bumble', 'hot_bumble', 'frappe_caramel']) for (const s of sizesOf(id)) expect(shotsOf(d(id), s)).toBe(2);
+  test('бамблы — два шота на любом размере, матча и цикорий без шотов', () => {
+    for (const id of ['orange_bumble', 'pomegranate_bumble', 'hot_bumble']) for (const s of sizesOf(id)) expect(shotsOf(d(id), s)).toBe(2);
     for (const id of ['matcha_latte', 'cocoa', 'chicory_latte', 'tea_sencha', 'protein_milk']) expect(shotsOf(d(id), sizesOf(id)[0] as Size)).toBe(0);
   });
 });

@@ -14,7 +14,7 @@ const ru1 = (n: number): string => String(Math.round(n * 10) / 10).replace('.', 
 const TEMP: Record<Temp, string> = { hot: 'горячий', cold: 'холодный', both: 'горячий или холодный' };
 const FAM: Record<Family, string> = {
   espresso: 'Эспрессо', milk: 'Молочные', raf: 'Раф', powder: 'Порошковые', matcha: 'Матча', tea: 'Чай',
-  bumble: 'Бамблы', tonic: 'Тоники', aero: 'Аэрокано', foamlatte: 'Латте с пенкой', shake: 'Шейки и фраппе',
+  bumble: 'Бамблы', tonic: 'Тоники', foamlatte: 'Латте с пенкой', shake: 'Шейки',
   boba: 'Бабл ти', protein: 'Протеин'
 };
 export type BookTab = 'drinks' | 'food' | 'extra';

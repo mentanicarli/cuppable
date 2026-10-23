@@ -20,7 +20,7 @@ for (const id of ids) for (const cold of [false, true]) {
   if (!list.length) continue;
   html += `<div class="r"><div class="n">${id}${cold ? ' · хол.' : ' · гор.'}<small>${list[0].group} · ${list[0].vessel.material}</small></div><div class="g">${list.map(full).join('')}</div><div class="sep"></div><div class="g">${list.map(compact).join('')}</div><div class="sep"></div><div class="g">${list.map((s) => tinyAt(s, 'guest')).join('')}</div></div>`;
 }
-const places = [['espresso', '0.2', false], ['cappuccino', '0.3', false], ['latte_sakura', '0.4', false], ['tea_hibiscus', '0.4', false], ['cappuccino', '0.4', true], ['orange_bumble', '0.4', true], ['aerocano', '0.4', true], ['boba_raspberry', '0.4', true]];
+const places = [['espresso', '0.2', false], ['cappuccino', '0.3', false], ['latte_sakura', '0.4', false], ['tea_hibiscus', '0.4', false], ['cappuccino', '0.4', true], ['orange_bumble', '0.4', true], ['boba_raspberry', '0.4', true]];
 let ph = css + '<h2>Восемь напитков в шести местах (Н2-4): бар ×2,5 | книга ×1,15 | окно «Новый напиток» ×1,4 | билет 49×42 (×3) | пузырь 38×41 (×3) | рука баристы / рука и стол гостя / полёт (×3)</h2>';
 for (const [id, size, cold] of places) {
   const sp = M.specOf(id, size, cold);

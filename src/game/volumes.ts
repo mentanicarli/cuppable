@@ -70,8 +70,6 @@ export const TEA_G_200: Readonly<Record<string, number>> = {
 };
 /** Холодная пенка таро / крем-брюле на латте с пенкой, мл. */
 export const TOP_FOAM: Readonly<Record<Size, number>> = { '0.2': 40, '0.3': 40, '0.4': 40, '0.6': 50 };
-/** Сливочная пена аэрокано, мл. */
-export const AERO_FOAM: Readonly<Record<Size, number>> = { '0.2': 40, '0.3': 40, '0.4': 55, '0.6': 80 };
 /** Банановое пюре в милкшейке, г. */
 export const BANANA_G: Readonly<Record<Size, number>> = { '0.2': 60, '0.3': 60, '0.4': 60, '0.6': 90 };
 /** Тапиока в бабл ти, г. */
@@ -145,7 +143,7 @@ export function recipePumps(d: Drink, size: Size): number {
 /** Напитки с сиропом в рецепте (совпадает с FORCED_SYRUP в menu.ts, сверяет тест). */
 export const FORCED_SYRUP_IDS: ReadonlySet<string> = new Set([
   'vanilla_raf', 'raf_halva', 'latte_coconut', 'matcha_coconut', 'cappuccino_pumpkin', 'latte_sakura', 'latte_banana', 'latte_lemon',
-  'boba_guava', 'boba_raspberry', 'milkshake_vanilla', 'frappe_caramel'
+  'boba_guava', 'boba_raspberry', 'milkshake_vanilla'
 ]);
 
 const shotPart = (n: number): Part => ({ task: 'shot', label: n > 1 ? `Эспрессо, ${n} шота` : 'Эспрессо', amount: n * SHOT_ML, unit: 'мл', vol: n * SHOT_ML, note: `${n * round(SHOT_G)} г кофе` });
@@ -308,17 +306,6 @@ export function recipeNumbers(d: Drink, size: Size, coldIn = false): Recipe {
       }
       return out;
     }
-    case 'aerocano': {
-      const F = AERO_FOAM[size];
-      out.topFoam = F;
-      icePart(V - L - F);
-      parts.push(shotPart(S));
-      out.water = L - shotMl;
-      parts.push({ task: 'water', label: 'Холодная вода', amount: out.water, unit: 'мл', vol: out.water });
-      parts.push({ task: 'foam', label: 'Сливочная пена (сливки 33% из сифона)', amount: F, unit: 'мл', vol: F, note: 'сверху' });
-      parts.push({ task: 'topping', label: 'Карамельный соус', amount: SAUCE_G, unit: 'г', vol: 0 });
-      return out;
-    }
     case 'tea_sencha':
     case 'tea_assam':
     case 'tea_hibiscus':
@@ -353,19 +340,6 @@ export function recipeNumbers(d: Drink, size: Size, coldIn = false): Recipe {
         parts.push({ task: 'juice', label: 'Банановое пюре', amount: out.juice, unit: 'г', vol: out.juice });
       } else syrupPart('ваниль');
       parts.push({ task: 'blend', label: 'Мороженое (входит в шаг «Блендер»)', amount: cream, unit: 'г', vol: cream });
-      return out;
-    }
-    case 'frappe_caramel': {
-      parts.push(shotPart(S));
-      const milk = round(0.35 * V);
-      out.milk = milk;
-      out.cupMilk = true;
-      const iceG = round(V - shotMl - milk - syrupMl);
-      out.ice = iceG;
-      parts.unshift({ task: 'ice', label: 'Лёд', amount: iceG, unit: 'г', vol: iceG, note: 'добирает объём до края' });
-      parts.push({ task: 'milk', label: 'Молоко', amount: milk, unit: 'мл', vol: milk });
-      syrupPart('карамель');
-      parts.push({ task: 'topping', label: 'Карамельный соус', amount: SAUCE_G, unit: 'г', vol: 0 });
       return out;
     }
     case 'boba_guava':

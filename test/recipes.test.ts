@@ -22,7 +22,6 @@ describe('сборка шагов', () => {
     expect(buildTasks('tea_sencha', { cold: true, syrup: false })).toEqual(['brew', 'ice']);
     expect(buildTasks('matcha_latte', { cold: false, syrup: false })).toEqual(['whisk', 'milk', 'steam', 'pour']);
     expect(buildTasks('orange_bumble', { cold: false, syrup: false })).toEqual(['ice', 'juice', 'grind', 'tamp', 'shot', 'grind', 'tamp', 'shot', 'layer']);
-    expect(buildTasks('aerocano', { cold: false, syrup: false })).toEqual(['ice', 'grind', 'tamp', 'shot', 'water', 'whip', 'topping']);
     expect(buildTasks('latte_sakura', { cold: false, syrup: true })).toEqual(['syrup', 'grind', 'tamp', 'shot', 'milk', 'steam', 'pour', 'foam']);
     expect(buildTasks('hot_bumble', { cold: false, syrup: false })).toEqual(['juice', 'grind', 'tamp', 'shot', 'grind', 'tamp', 'shot']);
   });
