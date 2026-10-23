@@ -21,6 +21,7 @@ describe('подсказки новых станций', () => {
   test('тост при покупке называет станцию и напиток', () => {
     expect(purchaseToast('matcha')).toMatch(/^Новое: .+\. Попробуйте на заказе: .+/);
     expect(purchaseToast('case_snacks')).toContain('с едой');
+    expect(purchaseToast('drip')).toMatch(/^Новое: .+. Попробуйте на заказе: .*Фильтр-кофе/);
     expect(purchaseToast('нет такого')).toBeNull();
     expect(exampleDrink('shaker')).not.toBeNull();
   });
