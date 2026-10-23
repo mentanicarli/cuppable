@@ -120,7 +120,7 @@ function drawTicket() {
   const cur = next || cs.find(x => x.cur && !x.done), nDone = cs.filter(x => x.done).length;
   const now = cur ? `<button type="button" data-t="${cur.t}" class="tkStep ${cur === next ? 'next' : 'lock'}">Шаг ${nDone + 1} из ${cs.length}: ${cur.label}</button>` : '<span class="tkStep ready">Готово: позвоните в звонок</span>';
   /* иконка-модель в слоте 49 × 42 px (компактный уровень, Н2-4: все 56 видов; modelRefOf даёт ссылку всегда) */
-  const mRef = MENUAPI.modelRefOf(o.id, o.size, !!o.cold), mSvg = WORLD.drinkIcon(mRef, 49, 42), mIcon = mSvg ? `<span class="tkIcon model" aria-hidden="true">${mSvg}</span>` : '';
+  const mRef = MENUAPI.modelRefOf(o.id, o.size, !!o.cold), mSvg = WORLD.drinkIcon(mRef, 44, 38), mIcon = mSvg ? `<span class="tkIcon model" aria-hidden="true">${mSvg}</span>` : '';
   UI.tk.innerHTML = `<div class="tkWho"><span>${WHO[c.type] || 'Гость'} · №${c.id}</span><div class="tkBar"><u style="width:${(f * 100).toFixed(0)}%;background:${bar}"></u></div></div>
 <div class="tkMain">${mIcon}<b class="tkName${NAME[B.drink].length > 24 ? ' long' : ''}">${NAME[B.drink]}</b>${tags}</div>
 <div class="tkNow">${now}<button type="button" class="tkMore" data-tkmore="1" aria-expanded="${tkOpen}" title="Все шаги и реплика гостя">${tkOpen ? '▴' : '▾'}</button></div>

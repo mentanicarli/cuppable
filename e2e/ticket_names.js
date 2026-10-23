@@ -23,7 +23,7 @@ const out = process.argv[3] || 'out/tn';
     const d = window.__dbg, B = d.BR, c = B.c, o = c.order, res = [];
     const syrKey = Object.keys(d.SYR).sort((a, b2) => (d.SYR[b2].name.length - d.SYR[a].name.length))[0];
     const sr = document.querySelector('#stage').getBoundingClientRect(), k = sr.width / 1280;
-    let worst = { w: 0, n: '' }, maxB = 0, tall = '';
+    let worst = { w: 0, n: '' }, maxB = 0, tall = '', minTop = 99;
     for (const key of Object.keys(d.NAME)) {
       const cold = /^iced/.test(key), id = d.MENUAPI.drinkById[key] ? key : o.id;
       B.drink = key; o.id = id; o.size = '0.6'; o.cold = cold; B.shots = 2; c.strong = true; c.syrup = syrKey; c.pumps = 5; o.food = { heat: true, price: 100 };
@@ -37,6 +37,9 @@ const out = process.argv[3] || 'out/tn';
       document.querySelector('#bFloat').innerHTML = ''; d.barMsg('Заказ принят: ' + d.NAME[key]); d.barMsg('Станция «Чашка» в секции «Кофейный бар». Нажмите стрелку с этим названием.', true);
       const rects = [r, ...[...tk.querySelectorAll('.tkDrop')].map(e => e.getBoundingClientRect())];
       for (const m of document.querySelectorAll('#bFloat .bmsg')) { const q = m.getBoundingClientRect(); if (rects.some(a => a.left < q.right && q.left < a.right && a.top < q.bottom && q.top < a.bottom)) bad.push('тост пересекает билет'); }
+      const ic = tk.querySelector('.tkIcon'), ir = ic ? ic.getBoundingClientRect() : null, sv = ic ? ic.querySelector('svg').getBoundingClientRect() : null;
+      if (!ir) bad.push('нет иконки'); else if ((ir.top - r.top) / k < 2 || (r.bottom - ir.bottom) / k < 1 || (sv.top - r.top) / k < 2) bad.push('иконка у края билета: сверху ' + ((ir.top - r.top) / k).toFixed(1) + ', снизу ' + ((r.bottom - ir.bottom) / k).toFixed(1));
+      minTop = Math.min(minTop, ir ? (ir.top - r.top) / k : 99);
       if (nm.textContent !== d.NAME[key]) bad.push('текст названия изменён');
       if (nm.scrollWidth > nm.clientWidth + 0.5 || cs.textOverflow === 'ellipsis' || cs.overflow === 'hidden') bad.push('название обрезается');
       if (main.scrollWidth > main.clientWidth + 0.5) bad.push('tkMain переполнен');
@@ -49,12 +52,17 @@ const out = process.argv[3] || 'out/tn';
       if (nr.width / k > worst.w) worst = { w: +(nr.width / k).toFixed(1), n: d.NAME[key] };
       if (bad.length) res.push(key + ': ' + bad.join(', '));
     }
-    worst.b = +maxB.toFixed(0); worst.tall = tall; return { res, worst, n: Object.keys(d.NAME).length };
+    worst.b = +maxB.toFixed(0); worst.tall = tall; worst.minTop = +minTop.toFixed(1);
+    /* билет без плашек, одна строка: высота не выросла (было 53) */
+    c.strong = false; c.syrup = null; o.food = null; o.size = '0.2'; B.shots = 1; B.drink = 'latte'; o.id = 'latte'; B.exp = ['grind', 'tamp', 'shot', 'milk', 'steam', 'pour']; B.tasks = B.exp; d.resetTk(); d.drawTicket();
+    worst.h1 = +(document.querySelector('#bTk').getBoundingClientRect().height / k).toFixed(1);
+    const icE = document.querySelector('#bTk .tkIcon'); icE.style.display = 'none'; worst.h0 = +(document.querySelector('#bTk').getBoundingClientRect().height / k).toFixed(1); icE.style.display = ''; return { res, worst, n: Object.keys(d.NAME).length };
   });
   for (const [w, h] of [[1280, 720], [1024, 600]]) {
     await p.setViewportSize({ width: w + 32, height: h + 32 }); await p.waitForTimeout(500);
     const r = await check(); ok(`билет ${w}x${h}: проблем ${r.res.length}: ${r.res.slice(0, 3).join('; ')}`, r.res.length === 0);
-    console.log(`билет ${w}x${h}: проверено ${r.n} названий, самое широкое «${r.worst.n}» ${r.worst.w} px (логических), нижний край билета до y ${r.worst.b}`);
+    console.log(`билет ${w}x${h}: проверено ${r.n} названий, самое широкое «${r.worst.n}» ${r.worst.w} px (логических), нижний край билета до y ${r.worst.b}, иконка от верха билета не ближе ${r.worst.minTop} px, высота однострочного билета ${r.worst.h1} (без иконки ${r.worst.h0})`);
+    ok(`высота однострочного билета ${w}x${h} не выросла из-за иконки`, r.worst.h1 <= r.worst.h0 + 0.5);
     await p.evaluate(key => { const d = window.__dbg, B = d.BR; B.drink = key; d.resetTk(); d.drawTicket(); document.querySelector('#bFloat').innerHTML = ''; d.barMsg('Заказ принят: ' + d.NAME[key]); document.querySelectorAll('.bmsg').forEach(e => { e.style.animation = 'none'; }); }, r.worst.tall);
     await p.screenshot({ path: `${out}_ticket_worst_${w}.png` });
     /* раскрытый билет (▾): тосты ещё ниже */
