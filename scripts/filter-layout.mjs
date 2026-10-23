@@ -55,18 +55,53 @@ const B = (() => {
   const { laid, gap } = evenGaps(base, 14, 1266);
   return { title: 'Б. Левая секция «Чайный бар»: пять предметов в масштабе ×1,0', arrow: { x: 1092, y: 516, w: 178, h: 30 }, gap, items: place(laid), extra: [{ id: 'teaShelf', name: 'полка с банками чая (стена)', x: 140, y: 232, w: 330, h: 81, decor: true }] };
 })();
-/* В. Центр: занятые места (части bar-parts.json); кофеварка на месте питчера пересекает питчер и звонок */
-const C = {
-  title: 'В. Центр: ряд занят, кофеварка на месте питчера пересекает питчер и звонок',
+/* Центр бара (31-8А2): предметы по частям bar-parts.json, зоны по index.html (#bZones). when: условие показа (milk — G.milk, cream — eq_cream, rank2 — ранг ≥ 2). */
+const CENTER_BASE = [
+  { id: 'grinder', name: 'кофемолка', x: 60, y: 120, w: 200, h: 370 }, { id: 'mat', name: 'мат темпера', x: 262, y: 492, w: 136, h: 44 },
+  { id: 'tamper', name: 'темпер', x: 306, y: 440, w: 48, h: 72 }, { id: 'machine', name: 'кофемашина', x: 436, y: 130, w: 410, h: 392 },
+  { id: 'pitcher', name: 'питчер', x: 880, y: 420, w: 130, h: 110, when: 'milkOrCream' }, { id: 'bell', name: 'звонок', x: 1002, y: 474, w: 60, h: 60 },
+  { id: 'milk', name: 'холодильник молока', x: 1058, y: 236, w: 206, h: 278, when: 'milk' },
+  { id: 'cork', name: 'пробковая доска (стена)', x: 230, y: 78, w: 208, h: 144, decor: true },
+  { id: 'syrups', name: 'полка сиропов (стена)', x: 854, y: 170, w: 228, h: 162, decor: true, when: 'rank2' }
+];
+const CENTER_ZONES = [
+  { id: 'z:grind', name: 'зона помола', x: 90, y: 170, w: 140, h: 300 }, { id: 'z:tamp', name: 'зона темпера', x: 260, y: 440, w: 140, h: 90 },
+  { id: 'z:water', name: 'зона воды', x: 466, y: 296, w: 70, h: 80 }, { id: 'z:steam', name: 'зона пара', x: 776, y: 296, w: 100, h: 170 },
+  { id: 'z:bell', name: 'зона звонка', x: 984, y: 470, w: 96, h: 70 }, { id: 'z:milk', name: 'зона молока', x: 1066, y: 244, w: 190, h: 262, when: 'milk' },
+  { id: 'z:syr', name: 'зоны сиропов', x: 878, y: 170, w: 180, h: 130, when: 'rank2' }
+];
+/* Ц1 (рекомендуется): на стенной полке над мат-темпером, масштаб ×1,0 (112 × 158 px); сдвигаемых предметов нет */
+const C1 = {
+  title: 'Ц1. Центр: полка на стене над матом темпера, ничего не сдвигается',
   arrow: null, gap: null,
-  items: [
-    { id: 'grinder', name: 'кофемолка', x: 60, y: 120, w: 200, h: 370 }, { id: 'mat', name: 'мат темпера', x: 262, y: 492, w: 136, h: 44 },
-    { id: 'machine', name: 'кофемашина', x: 436, y: 130, w: 410, h: 392 }, { id: 'pitcher', name: 'питчер', x: 880, y: 420, w: 130, h: 110 },
-    { id: 'bell', name: 'звонок', x: 1002, y: 474, w: 60, h: 60 }, { id: 'milk', name: 'холодильник молока', x: 1058, y: 236, w: 206, h: 278 },
-    { id: 'drip', name: 'КОФЕВАРКА', x: 880, y: +(BASE - BREW.h).toFixed(1), w: +BREW.w.toFixed(1), h: +BREW.h.toFixed(1), isNew: true }
-  ],
-  extra: [{ id: 'syrups', name: 'полка сиропов (стена)', x: 854, y: 170, w: 228, h: 162, decor: true }]
+  items: [...CENTER_BASE, { id: 'drip', name: 'КОФЕВАРКА', x: 276, y: 252, w: 112, h: 158, isNew: true }, { id: 'shelf', name: 'полка с кронштейнами', x: 272, y: 410, w: 120, h: 18, decor: true, isNew: true, own: true }],
+  zones: [...CENTER_ZONES, { id: 'z:drip', name: 'зона кофеварки', x: 276, y: 242, w: 112, h: 186, isNew: true }],
+  extra: []
 };
+/* Ц2: на столешнице справа от кофемашины вместо питчера; питчер ×0,7 уходит на передний край столешницы, зоны пара и звонка уже */
+const C2 = {
+  title: 'Ц2. Центр: справа от кофемашины, питчер (×0,7) переезжает вперёд, зоны пара и звонка уже',
+  arrow: null, gap: null,
+  items: [...CENTER_BASE.map((b) => (b.id === 'pitcher' ? { ...b, x: 880, y: 530, w: 91, h: 77 } : b)), { id: 'drip', name: 'КОФЕВАРКА', x: 868, y: 348, w: 112, h: 158, isNew: true }],
+  zones: [...CENTER_ZONES.map((z) => (z.id === 'z:steam' ? { ...z, w: 76 } : z.id === 'z:bell' ? { ...z, x: 992, w: 88 } : z)), { id: 'z:drip', name: 'зона кофеварки', x: 868, y: 338, w: 112, h: 176, isNew: true }],
+  extra: []
+};
+const COMBOS = [['без молока и сливок, ранг 1', {}], ['ранг 2, сиропы', { rank2: true }], ['молоко (холодильник и питчер)', { milk: true, milkOrCream: true, rank2: true }], ['только сливки (питчер)', { milkOrCream: true, rank2: true }]];
+const dist = (a, b) => Math.max(a.x - (b.x + b.w), b.x - (a.x + a.w), a.y - (b.y + b.h), b.y - (a.y + a.h));
+function comboReport(v) {
+  const rows = [];
+  for (const [label, st] of COMBOS) {
+    const vis = (b) => !b.when || st[b.when];
+    const drip = v.items.find((b) => b.id === 'drip'), dz = v.zones.find((b) => b.id === 'z:drip');
+    const bad = [];
+    for (const own of v.items.filter((b) => b.id === 'drip' || b.own)) for (const b of v.items) if (b.id !== 'drip' && !b.own && vis(b) && dist(own, b) < 12) bad.push(`«${own.name}» и «${b.name}» ${dist(own, b).toFixed(0)} px`);
+    for (const z of v.zones) if (z.id !== 'z:drip' && vis(z) && dist(dz, z) < 12) bad.push(`зона «${z.name}» ${dist(dz, z).toFixed(0)} px`);
+    for (const z of v.zones) if (z.id !== 'z:drip' && vis(z)) for (const b of v.items) if (b.id === 'drip' && dist(b, z) < 12) bad.push(`предмет×зона «${z.name}» ${dist(b, z).toFixed(0)} px`);
+    for (const u of UI) if (dist(dz, u) < (u.soft ? 12 : 0) || (u.soft && dist(dz, u) < 12)) bad.push(`полоса «${u.name}» ${dist(dz, u).toFixed(0)} px`);
+    rows.push({ label, ok: !bad.length, bad });
+  }
+  return rows;
+}
 
 function report(v) {
   const lines = [];
@@ -87,6 +122,7 @@ function svgOf(v) {
     `<line x1="0" x2="1280" y1="${BASE}" y2="${BASE}" stroke="${INK}" stroke-dasharray="3 5" opacity=".5"/>`];
   for (const u of UI) r.push(`<rect x="${u.x}" y="${u.y}" width="${u.w}" height="${u.h}" fill="#7FA3A8" fill-opacity="${u.soft ? 0.12 : 0.28}" stroke="#4F7F86"${u.soft ? ' stroke-dasharray="4 4"' : ''}/><text x="${u.x + 6}" y="${u.y + 16}" font-size="12" fill="#2F5F66">${u.name}</text>`);
   if (v.arrow) r.push(`<rect x="${v.arrow.x}" y="${v.arrow.y}" width="${v.arrow.w}" height="${v.arrow.h}" rx="15" fill="#FBE3D8" stroke="#C4694A"/><text x="${v.arrow.x + 8}" y="${v.arrow.y + 20}" font-size="12" fill="#9A4A30">стрелка к центру</text>`);
+  for (const z of v.zones || []) r.push(`<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" rx="8" fill="${z.isNew ? '#F0BC55' : 'none'}" fill-opacity=".18" stroke="${z.isNew ? '#C4694A' : '#2F5F66'}" stroke-width="${z.isNew ? 2.5 : 1.2}" stroke-dasharray="6 4"/>`);
   for (const b of [...(v.extra || []), ...v.items]) {
     const fill = b.isNew ? '#F0BC55' : b.decor ? '#B9CAA9' : '#E6DAC0';
     r.push(`<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="8" fill="${fill}" fill-opacity=".85" stroke="${INK}" stroke-width="${b.isNew ? 3.5 : 2}"/>`);
@@ -97,11 +133,12 @@ function svgOf(v) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" font-family="Nunito, Arial, sans-serif">${r.join('')}</svg>`;
 }
 
-const variants = [['A_right', A], ['B_left', B], ['C_center', C]];
+const variants = [['A_right', A], ['B_left', B], ['C1_shelf', C1], ['C2_right', C2]];
 const b = await chromium.launch({ ...(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}) });
 const page = await b.newPage({ viewport: { width: 1280, height: 720 } });
 for (const [name, v] of variants) {
   const rep = report(v);
+  if (v.zones) for (const r of comboReport(v)) console.log(`   [${r.label}] ${r.ok ? 'зазоры ≥ 12 px, пересечений нет' : 'НАРУШЕНИЯ: ' + r.bad.join('; ')}`);
   console.log(`${name}: промежуток между рамками ${v.gap ?? '-'} px (наименьший ${rep.minGap ?? '-'});`, rep.lines.length ? rep.lines.join('; ') : 'пересечений нет');
   v.items.forEach((x) => console.log(`   ${x.id}: x ${x.x}, y ${x.y}, ${Math.round(x.w * 10) / 10} × ${Math.round(x.h * 10) / 10}`));
   const svg = svgOf(v);
