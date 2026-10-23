@@ -4,7 +4,7 @@ function spawn() {
   const type = (SBX.on && SBX.type) || wpick(G.day === 1 ? [['regular', .6], ['student', .4]] : [['regular', .45], ['student', .3], ['hurry', .25]]);
   /* вчерашние покупки: в первых 5 гостях каждая должна встретиться хотя бы в одном заказе */
   const left = D.focus.filter(f => !D.focusDone.has(f)), focus = left.length && D.idc < 5 && 5 - D.idc <= left.length ? left[0] : undefined;
-  const order = MENUAPI.rollOrder({ rank: G.rank, day: G.day, milk: !!G.milk, eq: Object.fromEntries(MENUAPI.EQ_IMPL.map(e => [e, !!G['eq_' + e]])), focus, override: SBX.on && SBX.next ? SBX.next : undefined }, type);
+  const order = MENUAPI.rollOrder({ rank: G.rank, day: G.day, milk: !!G.milk, first: G.day === 1 && G.served === 0 && D.idc === 0, eq: Object.fromEntries(MENUAPI.EQ_IMPL.map(e => [e, !!G['eq_' + e]])), focus, override: SBX.on && SBX.next ? SBX.next : undefined }, type);
   if (SBX.on) SBX.next = null;
   D.focus.forEach(f => { if (MENUAPI.orderUsesItem(f, order)) D.focusDone.add(f); });
   const drink = order.key;

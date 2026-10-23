@@ -114,3 +114,18 @@ test('холодный американо: только с льдогенера�
   assert.ok(!none.some((k) => k.startsWith('iced')));
   assert.ok(new Set(cold.map((o) => o.key)).size >= 2);
 });
+
+test('31-7: первый гость первого дня — всегда одиночный эспрессо, остальной поток случайных чисел не меняется', () => {
+  const ids = new Set<string>();
+  for (let s = 1; s <= 300; s++) {
+    const a = seeded(s * 7919), b = seeded(s * 7919);
+    const o = rollOrder({ rank: 1, day: 1, milk: false, first: true }, 'regular', a);
+    rollOrder({ rank: 1, day: 1, milk: false }, 'regular', b);
+    assert.equal(o.id, 'espresso'); assert.equal(o.shots, 1); assert.equal(o.size, '0.2');
+    assert.equal(a(), b()); /* следующее число то же: правило не сдвигает поток */
+    ids.add(rollOrder({ rank: 1, day: 1, milk: false }, 'regular', seeded(s * 7919)).id);
+  }
+  assert.ok(ids.has('espresso_double')); /* без правила двойной эспрессо выпадает (вес 0,2 из 0,8) */
+  /* песочница подменяет заказ и в первый заказ */
+  assert.equal(rollOrder({ rank: 1, day: 1, milk: false, first: true, override: { drink: 'americano' } }, 'regular', seeded(3)).id, 'americano');
+});

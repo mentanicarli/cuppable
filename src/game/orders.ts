@@ -70,6 +70,8 @@ export interface OrderState {
   eq?: Readonly<Record<string, boolean | undefined>>;
   /** Вчерашняя покупка (id позиции магазина): этот заказ должен её использовать. Без неё заказы считаются как обычно. */
   focus?: string;
+  /** Первый гость первого дня новой игры: всегда одиночный эспрессо (31-7). Случайные числа бросаются как обычно, поток остальных заказов не меняется. */
+  first?: boolean;
   /** Только песочница: подмена частей заказа. */
   override?: OrderOverride;
 }
@@ -91,7 +93,8 @@ export function rollOrder(state: OrderState, type: CustomerType, rng: Rng = Math
   const ov = state.override;
   const picked = wpick(rng, from.map((x) => [x, baseW(x)] as const));
   const forcedDrink = ov?.drink ? drinkById[ov.drink] : undefined;
-  const d = forcedDrink && forcedDrink.id in ENGINE ? forcedDrink : picked;
+  const firstDrink = state.first ? drinkById['espresso'] : undefined;
+  const d = forcedDrink && forcedDrink.id in ENGINE ? forcedDrink : firstDrink ?? picked;
   let key = ENGINE[d.id] as string;
   // Холодная версия: нужен льдогенератор, у напитка есть холодные объёмы и механика льда.
   const coldSize = d.coldSizes[0];

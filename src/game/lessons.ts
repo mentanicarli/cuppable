@@ -118,9 +118,11 @@ export function newDrinkCard(drinkId: string, seen: readonly string[], foam?: nu
 /** Что показать перед приготовлением нового заказа: сначала «Зачем это нужно», потом карточка напитка (не два окна сразу). */
 export type IntroItem = { kind: 'why'; key: string } | { kind: 'card'; card: DrinkCard };
 export function orderIntro(drinkId: string, seen: readonly string[], o: { shots?: number; foam?: number; size?: string; cold?: boolean } = {}): IntroItem[] {
-  const out: IntroItem[] = whyOfOrder(drinkId, o.shots ?? 1, seen).map((key) => ({ kind: 'why', key }));
+  /* 31-7: сначала карточка «Новый напиток», потом «Зачем это нужно» по одному */
+  const out: IntroItem[] = [];
   const card = newDrinkCard(drinkId, seen, o.foam, o.size, o.cold);
   if (card) out.push({ kind: 'card', card });
+  out.push(...whyOfOrder(drinkId, o.shots ?? 1, seen).map((key): IntroItem => ({ kind: 'why', key })));
   return out;
 }
 

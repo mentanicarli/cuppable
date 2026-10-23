@@ -110,11 +110,11 @@ describe('«Зачем» перед карточкой', () => {
     expect(whyOfInset('pour', { drinkId: 'latte' })).toBe('why:pour');
     expect(whyOfInset('layer', { drinkId: 'orange_bumble' })).toBeNull();
   });
-  test('заказ: сначала все «Зачем», потом карточка; повторно ни того ни другого', () => {
+  test('заказ: сначала карточка «Новый напиток», потом все «Зачем»; повторно ни того ни другого', () => {
     const seen = freshSeen();
     const items = orderIntro('raf', seen, { shots: 2, size: '0.4' });
-    expect(items.map((i) => i.kind)).toEqual(['why', 'why', 'card']);
-    expect(items.map((i) => (i.kind === 'why' ? i.key : 'card'))).toEqual(['why:cream', 'why:shots', 'card']);
+    expect(items.map((i) => i.kind)).toEqual(['card', 'why', 'why']);
+    expect(items.map((i) => (i.kind === 'why' ? i.key : 'card'))).toEqual(['card', 'why:cream', 'why:shots']);
     const after = [...seen, 'why:cream', 'why:shots', drinkSeenKey('raf')];
     expect(orderIntro('raf', after, { shots: 2, size: '0.4' })).toEqual([]);
     expect(orderIntro('espresso', seen).map((i) => i.kind)).toEqual(['card']);
