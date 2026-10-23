@@ -5,7 +5,6 @@ import { FOAM_KINDS, SEEN_MARK, STEP_KEYS, drinkSeenKey, freshSeen, lessonKeysOf
 import { WHY_KEYS, WHY_MARK, whySeenOf } from './why';
 import { SHOP_BASE, SHOP_DEFS, isPurchasable } from './playerModel';
 import { TUTORIALS } from './tutorial';
-import type { PaceId } from './types';
 
 /**
  * Песочница разработчика (ссылка с #dev): чистая часть. Ничего про DOM и localStorage.
@@ -26,7 +25,6 @@ export const SHOP_BASE_IDS: readonly string[] = SHOP_BASE.map((i) => i.id);
 export const allShopIds = (): string[] => SHOP_DEFS.map((i) => i.id);
 
 export const SANDBOX_MAX_DAY = 60;
-const PACES: readonly PaceId[] = ['cozy', 'normal', 'hard'];
 
 export type ProfileId = 'medium' | 'confident';
 export const PROFILE_IDS: readonly ProfileId[] = ['medium', 'confident'];
@@ -99,14 +97,13 @@ export interface SandboxConfig {
   day: number;
   profile: ProfileId;
   mode: ItemsMode;
-  pace: PaceId;
   /** true — обучение как у игрока на этом ранге, false — всё уже пройдено */
   showTutorial: boolean;
   /** null — блок «Своё» свёрнут, всё выводится из дня */
   custom: SandboxOverride | null;
 }
 
-export const defaultSandboxConfig = (): SandboxConfig => ({ day: 1, profile: 'medium', mode: 'all', pace: 'normal', showTutorial: false, custom: null });
+export const defaultSandboxConfig = (): SandboxConfig => ({ day: 1, profile: 'medium', mode: 'all', showTutorial: false, custom: null });
 
 function normalizeOverride(o: unknown): SandboxOverride | null {
   if (!o || typeof o !== 'object' || Array.isArray(o)) return null;
@@ -132,7 +129,6 @@ export function normalizeSandboxConfig(c: Partial<SandboxConfig>): SandboxConfig
     day: Math.round(clampN(c.day, 1, SANDBOX_MAX_DAY, d.day)),
     profile: PROFILE_IDS.find((p) => p === c.profile) ?? d.profile,
     mode: c.mode === 'typical' || c.mode === 'all' ? c.mode : d.mode,
-    pace: PACES.find((p) => p === c.pace) ?? d.pace,
     showTutorial: typeof c.showTutorial === 'boolean' ? c.showTutorial : d.showTutorial,
     custom: normalizeOverride(c.custom)
   };
@@ -179,7 +175,7 @@ export function resolveSandbox(config: Partial<SandboxConfig>): Resolved {
   const servedMax = Math.max(servedCap(c.day), info.minServed);
   const rating = Math.round(clampN(cus.rating, info.minRating, 5, row.rating) * 10) / 10;
   const served = Math.round(clampN(cus.served, info.minServed, servedMax, row.served));
-  const money = cus.money ?? Math.max(row.money, 2 * rentFor(c.pace, rank));
+  const money = cus.money ?? Math.max(row.money, 2 * rentFor(rank));
   const items = cus.items ? sanitizeItems(c.day, rank, cus.items) : c.mode === 'all' ? allAvailableItems(c.day, rank) : typicalItems(c.profile, c.day, rank);
   const owned = Object.fromEntries(items.map((i) => [i, true]));
   const avail = c.day < 2 ? [] : SHOP_DEFS.filter((d) => !owned[d.id] && isPurchasable(d, c.day, rank, owned)).map((d) => d.id);
@@ -221,7 +217,6 @@ export type SandboxState = {
   money: number;
   day: number;
   rating: number;
-  pace: PaceId;
   grindSet: number;
   idealGrind: number;
   tutOff: boolean;
@@ -238,7 +233,7 @@ export function makeSandboxState(config: Partial<SandboxConfig>): SandboxState {
   const r = resolveSandbox(config);
   const c = r.config;
   const st: SandboxState = {
-    rank: r.rank, served: r.served, money: r.money, day: c.day, rating: r.rating, pace: c.pace,
+    rank: r.rank, served: r.served, money: r.money, day: c.day, rating: r.rating,
     grindSet: 3, idealGrind: 3, tutOff: false, fresh: [],
     tutorialSeen: c.showTutorial ? (c.day > 1 || r.rank > 1 ? seenFor(c.day, r.rank, r.items) : freshSeen()) : fullSeen(),
     milk: false, machine: false, cozy: false, beans: false, syrups: false, stencil: false, grinderPro: false, tamper: false, thermo: false, wifi: false, cards: false, helper: false

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { arrivalInterval, arrivalRange, clockMinutes, drinkCost, idealGrind, isRush, levelOf, patienceMax, PACE, ratingAfterLoss, restore, parseSave, score, settle, settleDay } from '../src/game/api';
+import { arrivalInterval, arrivalRange, clockMinutes, drinkCost, idealGrind, isRush, levelOf, patienceMax, ratingAfterLoss, restore, parseSave, score, settle, settleDay } from '../src/game/api';
 
 /** Эталоны — прямые копии формул старого ядра; при переносе поведение не меняется. */
 const seeded = (s: number) => () => (s = (s * 1664525 + 1013904223) % 4294967296) / 4294967296;
@@ -20,15 +20,15 @@ describe('экономика', () => {
   test('потеря гостя и терпение', () => {
     expect(ratingAfterLoss(1.1)).toBe(1);
     expect(ratingAfterLoss(3)).toBeCloseTo(2.85);
-    // без заказа, дня и случайности: только запас A, темп, зал и помощник
-    expect(patienceMax('student', { pace: 'hard', cozy: true, helper: true })).toBeCloseTo(70 * 0.75 * 1.15 * 1.2);
-    expect(patienceMax('hurry', { pace: 'cozy' })).toBe(35 * 1.5);
+    // без заказа, дня и случайности: только запас A, зал и помощник
+    expect(patienceMax('student', { cozy: true, helper: true })).toBeCloseTo(70 * 1.15 * 1.2);
+    expect(patienceMax('hurry', {})).toBe(35);
   });
-  test('конец дня: аренда, уютный режим не уходит в минус, условия проигрыша', () => {
-    expect(settleDay({ money: 50, pace: 'cozy' })).toEqual({ money: 0, over: false, rent: PACE.cozy.rent });
-    expect(settleDay({ money: 100, pace: 'hard' }).over).toBe(true);
-    expect(settleDay({ money: 100, pace: 'normal' })).toMatchObject({ money: -40, over: false });
-    expect(settleDay({ money: -500, pace: 'normal' }).over).toBe(true);
+  test('конец дня: аренда 140 ₽ на ранге 1, в минус можно уйти, но не глубже −600 ₽', () => {
+    expect(settleDay({ money: 50 })).toEqual({ money: -90, over: false, rent: 140 });
+    expect(settleDay({ money: 100 })).toMatchObject({ money: -40, over: false });
+    expect(settleDay({ money: -460 })).toMatchObject({ money: -600, over: false });
+    expect(settleDay({ money: -500 }).over).toBe(true);
   });
   test('себестоимость', () => {
     // по реальным объёмам (src/game/economy.ts, recipeCost): шот × число шотов, молоко/сливки/вода по мл, расходники по размеру чашки
@@ -96,7 +96,7 @@ describe('сохранение', () => {
     }
   });
   test('сохранение с рангом не трогается', () => {
-    expect(restore({ day: 9, money: 1, rating: 5, pace: 'cozy', rank: 2, served: 10, grindSet: 4, up: ['milk'] })).toMatchObject({ rank: 2, served: 10, grindSet: 4, up: ['milk'] });
+    expect(restore({ day: 9, money: 1, rating: 5, rank: 2, served: 10, grindSet: 4, up: ['milk'] })).toMatchObject({ rank: 2, served: 10, grindSet: 4, up: ['milk'] });
   });
 });
 

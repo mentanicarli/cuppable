@@ -86,7 +86,6 @@ export function simulate(seed: number, prof: Profile, days = 40): Run {
   const order: string[] = [];
   const run: Run = { avail: new Map(), afford: new Map(), bought: new Map(), rank: new Map([[1, 1]]), income: [], over: false, snaps: [], idle: [], guests: 0, lost: 0 };
   let money = 500, rank = 1, rating = 3, served = 0;
-  const pace = 'normal' as const;
   const typeOf = (day: number): CustomerType => {
     const r = rng();
     return day === 1 ? (r < 0.6 ? 'regular' : 'student') : r < 0.45 ? 'regular' : r < 0.75 ? 'student' : 'hurry';
@@ -117,7 +116,7 @@ export function simulate(seed: number, prof: Profile, days = 40): Run {
             nextArr = arrivalInterval({ day, rating, t, wifi: !!owned['wifi'] }, rng);
             const type = typeOf(day);
             const ord = rollOrder({ rank, day, milk: !!owned['milk'], eq }, type, rng);
-            const pat = patienceMax(type, { pace, cozy: !!owned['cozy'], helper: !!owned['helper'], prep: estimatedPrepSeconds(ord), day, rng });
+            const pat = patienceMax(type, { cozy: !!owned['cozy'], helper: !!owned['helper'], prep: estimatedPrepSeconds(ord), day, rng });
             queue.push({ type, pat, order: ord });
             run.guests++;
           }
@@ -151,7 +150,7 @@ export function simulate(seed: number, prof: Profile, days = 40): Run {
       }
     }
     if (prep) costs -= prepCost; // день закрылся посреди заказа: расход возвращается, как в игре
-    const fin = settleDay({ money: money + revenue - costs, pace, rank, wage: owned['helper'] ? helperWage(rank) : 0 });
+    const fin = settleDay({ money: money + revenue - costs, rank, wage: owned['helper'] ? helperWage(rank) : 0 });
     money = fin.money;
     run.income.push(revenue - costs - fin.rent);
     if (fin.over) {
@@ -164,7 +163,7 @@ export function simulate(seed: number, prof: Profile, days = 40): Run {
       run.rank.set(rank, day);
     }
     // вечер: магазин
-    const eveningRent = rentFor(pace, rank);
+    const eveningRent = rentFor(rank);
     let blocked = false;
     for (const it of PRIORITY) {
       if (owned[it.id]) continue;

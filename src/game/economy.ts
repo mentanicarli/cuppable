@@ -1,7 +1,7 @@
 import { drinkById, drinkOfKey } from './menu';
 import { recipeNumbers } from './volumes';
 import type { Recipe } from './volumes';
-import type { CustomerType, PaceId, Quality, Size } from './types';
+import type { CustomerType, Quality, Size } from './types';
 
 /** Цены ингредиентов. E — за шот, остальное за мл или грамм; расходники (стакан, крышка) растут с размером. */
 export const COST = { E: 18, W: 0.03, M: 0.16, ICE: 0.03 } as const;
@@ -26,12 +26,9 @@ export const UNIT_COST = {
 } as const;
 export const SYRUP_SURCHARGE = 20;
 
-export interface Pace { name: string; pat: number; rent: number; text: string }
-export const PACE: Readonly<Record<PaceId, Pace>> = {
-  cozy: { name: 'Уютный', pat: 1.5, rent: 100, text: 'Клиенты терпеливее, банкротства нет' },
-  normal: { name: 'Обычный', pat: 1.0, rent: 140, text: 'Можно уйти в минус, но не слишком глубоко' },
-  hard: { name: 'Жёсткий', pat: 0.75, rent: 190, text: 'Быстрые клиенты, минус на счёте означает конец' }
-};
+/** Уровней сложности нет (31-6): всегда прежний «обычный» темп. Терпение гостей ×1, аренда в день на ранге 1 — 140 ₽, минус на счёте до −600 ₽ допустим, дальше конец игры. */
+export const RENT_BASE = 140;
+export const DEBT_LIMIT = -600;
 
 export interface SettleIn {
   /** Цена напитка из меню (без надбавок). */
@@ -67,16 +64,15 @@ export function settle(i: SettleIn): Settled {
 export const ratingAfterLoss = (rating: number): number => Math.max(1, rating - 0.15);
 
 /** Плата за аренду и проверка конца игры в конце дня. */
-export const rentFor = (pace: PaceId, rank = 1): number => Math.round((PACE[pace].rent * (1 + 0.45 * (Math.max(1, rank) - 1))) / 10) * 10;
+export const rentFor = (rank = 1): number => Math.round((RENT_BASE * (1 + 0.45 * (Math.max(1, rank) - 1))) / 10) * 10;
 
 /** Зарплата помощника за смену: берёт часть выручки на себя, поэтому растёт вместе с рангом. */
 export const helperWage = (rank: number): number => 60 + 25 * Math.max(0, rank - 4);
 
-export function settleDay(i: { money: number; pace: PaceId; rank?: number; wage?: number }): { money: number; over: boolean; rent: number } {
-  const rent = rentFor(i.pace, i.rank) + (i.wage ?? 0);
-  let money = i.money - rent;
-  if (i.pace === 'cozy' && money < 0) money = 0;
-  const over = (i.pace === 'hard' && money < 0) || (i.pace === 'normal' && money < -600);
+export function settleDay(i: { money: number; rank?: number; wage?: number }): { money: number; over: boolean; rent: number } {
+  const rent = rentFor(i.rank) + (i.wage ?? 0);
+  const money = i.money - rent;
+  const over = money < DEBT_LIMIT;
   return { money, over, rent };
 }
 

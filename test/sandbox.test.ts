@@ -124,8 +124,8 @@ describe('песочница: состояние выводится из дня'
     expect(makeSandboxState({ day: 1, showTutorial: true }).tutorialSeen).toEqual(freshSeen());
   });
   test('границы значений и разбор сохранённой конфигурации', () => {
-    const c = normalizeSandboxConfig({ day: 999, profile: 'x' as never, mode: 'y' as never, pace: 'z' as never });
-    expect(c).toMatchObject({ day: SANDBOX_MAX_DAY, profile: 'medium', mode: 'all', pace: 'normal', custom: null });
+    const c = normalizeSandboxConfig({ day: 999, profile: 'x' as never, mode: 'y' as never });
+    expect(c).toMatchObject({ day: SANDBOX_MAX_DAY, profile: 'medium', mode: 'all', custom: null });
     expect(parseSandboxConfig(null)).toEqual(defaultSandboxConfig());
     expect(parseSandboxConfig('{{')).toEqual(defaultSandboxConfig());
     const mine = { ...defaultSandboxConfig(), day: 10, profile: 'confident' as const, mode: 'typical' as const, custom: { rank: 3, items: ['milk'] } };

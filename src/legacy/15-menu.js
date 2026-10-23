@@ -67,10 +67,6 @@ function showTitle(notice) {
   menuRender(titleHTML({ cont, notice: msg, np: npText(), dev: DEV }), true);
   focusFirst();
 }
-function showPace() {
-  const paces = Object.keys(PACE).map(k => `<button type="button" class="pace${k === selPace ? ' sel' : ''}" data-pace="${k}">${PACE_ICON[k]}<b>${PACE[k].name}</b><span>${PACE[k].text}</span></button>`).join('');
-  menuRender(paceScreenHTML(paces), true); focusFirst('.pace.sel');
-}
 function showHowto(msg) { menuRender(howtoHTML(msg), menuFrom === 'title'); focusFirst('.big'); }
 function showSettings(from, msg) {
   if (from) menuFrom = from;
@@ -93,7 +89,7 @@ function confirmDialog(title, text, yes, onYes, onNo) {
 function menuBack() {
   const mv = menuView();
   if (mv === 'settings' || mv === 'howto') { if (menuFrom === 'pause') showPauseCard(); else showTitle(); return true; }
-  if (mv === 'pace' || mv === 'sandbox') { showTitle(); return true; }
+  if (mv === 'sandbox') { showTitle(); return true; }
   if (mv === 'confirm') { (confirmBack || showTitle)(); return true; }
   return false;
 }
@@ -139,9 +135,11 @@ scr.addEventListener('input', e => {
 });
 
 /* ---------- клики ---------- */
+/* новая игра сразу открывает кофейню: уровней сложности нет (31-6) */
+function startNewGame() { clearSave(); newGame(); startDay(); }
 function startFromSave() {
   const sv = loadSave(); newGame();
-  if (sv) { const r = MENUAPI.restore(sv); Object.assign(G, { rank: r.rank, served: r.served, money: r.money, day: r.day, rating: r.rating, pace: r.pace, grindSet: r.grindSet, tutorialSeen: MENUAPI.migrateSeen(r.tutorialSeen, { rank: r.rank, day: r.day, served: r.served, milk: r.up.includes('milk'), up: r.up }) }); r.up.forEach(id => { G[id] = true; }); }
+  if (sv) { const r = MENUAPI.restore(sv); Object.assign(G, { rank: r.rank, served: r.served, money: r.money, day: r.day, rating: r.rating, grindSet: r.grindSet, tutorialSeen: MENUAPI.migrateSeen(r.tutorialSeen, { rank: r.rank, day: r.day, served: r.served, milk: r.up.includes('milk'), up: r.up }) }); r.up.forEach(id => { G[id] = true; }); }
   applyUpgrades(); lastHud = ''; startDay();
 }
 scr.addEventListener('click', e => {
@@ -149,10 +147,9 @@ scr.addEventListener('click', e => {
   if (d.continue) { sndTap(); startFromSave(); }
   else if (d.start) {
     sndTap(); const sv = loadSave();
-    if (sv) confirmDialog('Начать новую игру?', `Сохранённая игра (день ${sv.day}) будет заменена новой, когда вы откроете кофейню.`, 'Начать новую', showPace, () => showTitle());
-    else showPace();
+    if (sv) confirmDialog('Начать новую игру?', `Сохранённая игра (день ${sv.day}) будет заменена новой.`, 'Начать новую', startNewGame, () => showTitle());
+    else startNewGame();
   }
-  else if (d.go) { clearSave(); newGame(); G.pace = selPace; startDay(); }
   else if (d.settings) { sndTap(); showSettings(d.settings); }
   else if (d.howto) { sndTap(); showHowto(); }
   else if (d.menuback) { sndTap(); menuBack(); }

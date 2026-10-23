@@ -28,33 +28,33 @@ describe('оценка времени заказа', () => {
 describe('терпение гостя', () => {
   test('растёт со сложностью заказа и зависит от типа', () => {
     for (const type of ['regular', 'student', 'hurry'] as const) {
-      const easy = patienceMax(type, { pace: 'normal', prep: 30 });
-      const hard = patienceMax(type, { pace: 'normal', prep: 90 });
+      const easy = patienceMax(type, { prep: 30 });
+      const hard = patienceMax(type, { prep: 90 });
       expect(hard).toBeGreaterThan(easy);
       expect(easy).toBeCloseTo(PATIENCE_A[type] + PATIENCE_K[type] * 30);
     }
-    expect(patienceMax('hurry', { pace: 'normal', prep: 60 })).toBeLessThan(patienceMax('regular', { pace: 'normal', prep: 60 }));
+    expect(patienceMax('hurry', { prep: 60 })).toBeLessThan(patienceMax('regular', { prep: 60 }));
   });
   test('новичкам больше: день 1 ×1,4, 2 ×1,3, 3 ×1,2, 4–5 ×1,1, дальше ×1', () => {
     expect([1, 2, 3, 4, 5, 6, 30].map(newbieFactor)).toEqual([1.4, 1.3, 1.2, 1.1, 1.1, 1, 1]);
-    const base = patienceMax('regular', { pace: 'normal', prep: 60, day: 6 });
-    expect(patienceMax('regular', { pace: 'normal', prep: 60, day: 1 })).toBeCloseTo(base * 1.4);
+    const base = patienceMax('regular', { prep: 60, day: 6 });
+    expect(patienceMax('regular', { prep: 60, day: 1 })).toBeCloseTo(base * 1.4);
   });
   test('случайный множитель 0,85–1,25 воспроизводим по генератору', () => {
     const [lo, hi] = PATIENCE_RANDOM;
-    const base = patienceMax('student', { pace: 'normal', prep: 50 });
+    const base = patienceMax('student', { prep: 50 });
     const r1 = seeded(5), r2 = seeded(5);
     for (let i = 0; i < 200; i++) {
-      const a = patienceMax('student', { pace: 'normal', prep: 50, rng: r1 });
-      expect(a).toBe(patienceMax('student', { pace: 'normal', prep: 50, rng: r2 }));
+      const a = patienceMax('student', { prep: 50, rng: r1 });
+      expect(a).toBe(patienceMax('student', { prep: 50, rng: r2 }));
       expect(a / base).toBeGreaterThanOrEqual(lo - 1e-9);
       expect(a / base).toBeLessThanOrEqual(hi + 1e-9);
     }
   });
-  test('темп, зал и помощник множатся как раньше', () => {
-    const b = patienceMax('regular', { pace: 'normal', prep: 40 });
-    expect(patienceMax('regular', { pace: 'cozy', prep: 40 })).toBeCloseTo(b * 1.5);
-    expect(patienceMax('regular', { pace: 'hard', prep: 40, cozy: true, helper: true })).toBeCloseTo(b * 0.75 * 1.15 * 1.2);
+  test('зал и помощник множатся как раньше (уровней сложности нет: темп всегда «обычный», множитель 1)', () => {
+    const b = patienceMax('regular', { prep: 40 });
+    expect(patienceMax('regular', { prep: 40, cozy: true })).toBeCloseTo(b * 1.15);
+    expect(patienceMax('regular', { prep: 40, cozy: true, helper: true })).toBeCloseTo(b * 1.15 * 1.2);
   });
 });
 

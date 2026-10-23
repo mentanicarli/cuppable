@@ -9,7 +9,6 @@ MENUAPI.DRINKS.forEach(d => { if (MENUAPI.isMenuKey(d.id)) { NAME[d.id] = d.name
 const COST = MENUAPI.COST;
 const SLOTS = [640, 510, 380];
 const { DAY_LEN, OPEN_MIN, SPAN_MIN } = MENUAPI;
-const PACE = MENUAPI.PACE;
 const SHOP = [
   { id: 'milk',       cat: 'menu',  name: 'Молоко и капучино',   desc: 'Открывает холодильник с молоком и молочные напитки: капучино, латте и другие.', cost: 400 },
   { id: 'beans',      cat: 'menu',  name: 'Зерно получше',       desc: 'Напитки дороже на 15%, порция дороже на ₽6.', cost: 450 },
@@ -34,5 +33,5 @@ const rnd = (a, b) => a + Math.random() * (b - a);
 const wpick = items => { let r = Math.random() * items.reduce((s, i) => s + i[1], 0); for (const [v, w] of items) { if ((r -= w) <= 0) return v; } return items[0][0]; };
 const money = n => (n < 0 ? '−' : '') + '₽ ' + Math.abs(Math.round(n)).toLocaleString('ru-RU');
 
-let G = null, D = null, paused = false, muted = false, selPace = 'normal', hintTimer = 0, toastTimer = 0;
+let G = null, D = null, paused = false, muted = false, hintTimer = 0, toastTimer = 0;
 

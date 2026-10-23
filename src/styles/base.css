@@ -73,11 +73,6 @@ button.chip:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink);
 .card h2 { margin: 0 0 14px; font-size: 32px; line-height: 1.1; }
 .card p { margin: 0 0 14px; font-size: 18px; line-height: 1.4; font-weight: 600; color: var(--ink-soft); max-width: 62ch; }
 .card .lbl { margin: 16px 0 8px; font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
-.paces { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.pace { font-family: inherit; text-align: left; padding: 12px 14px; border-radius: 16px; border: 3px solid var(--ink); background: #F4E6CF; color: var(--ink); cursor: pointer; box-shadow: 0 4px 0 var(--ink); }
-.pace b { display: block; font-size: 20px; margin-bottom: 3px; }
-.pace span { font-size: 14px; font-weight: 600; line-height: 1.25; display: block; }
-.pace.sel { background: linear-gradient(#EE9C76, #D07654); color: #FFF8EC; }
 .big { font-family: inherit; font-weight: 800; font-size: 22px; padding: 14px 28px; border-radius: 18px; border: 3px solid var(--ink); background: linear-gradient(#F6C467, #D99A2E); color: var(--ink); cursor: pointer; box-shadow: 0 5px 0 var(--ink), inset 0 3px 0 rgba(255,255,255,.5); }
 .big:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--ink); }
 .keys { margin: 18px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 22px; font-size: 14px; font-weight: 700; color: var(--ink-soft); }

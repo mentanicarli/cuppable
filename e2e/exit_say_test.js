@@ -34,8 +34,8 @@ const out = process.argv[3] || 'out/exit';
   await p.keyboard.press('KeyP'); await p.waitForSelector('[data-resume]'); await p.waitForTimeout(250);
   await p.click('[data-tomenu]'); await p.waitForSelector('[data-yes]'); await p.click('[data-yes]');
   await p.waitForSelector('[data-menu=title]'); await p.waitForTimeout(500);
-  await p.click('[data-start]'); await p.waitForSelector('[data-yes], [data-go]'); const y = await p.$('[data-yes]'); if (y) { await y.click(); await p.waitForSelector('[data-go]'); }
-  await p.waitForTimeout(700); await p.click('[data-go]'); await p.waitForTimeout(900);
+  await p.click('[data-start]'); await p.waitForSelector('[data-yes], #screen[hidden]', { state: 'attached' }); const y = await p.$('[data-yes]'); if (y) { await y.click(); }
+  await p.waitForFunction(() => document.querySelector('#screen').hidden); await p.waitForTimeout(900);
   s = await state(); ok('новая игра: в новом дне нет старых реплик', s.say === 0);
   await p.screenshot({ path: `${out}_newgame_after.png` });
   fs.unlinkSync(tmp); await b.close();

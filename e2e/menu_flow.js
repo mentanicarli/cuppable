@@ -47,8 +47,8 @@ const BASE = process.env.BASE || 'http://localhost:4173/';
   ok('«Назад» вернул на титул', (await menu()) === 'title');
 
   await p.click('[data-start]'); await p.waitForTimeout(700);
-  ok('новая игра без сохранения → выбор темпа', (await menu()) === 'pace'); await shot('5pace');
-  await p.click('[data-go]'); await p.waitForTimeout(1500);
+  await p.waitForTimeout(800);
+  ok('новая игра без сохранения → кофейня открыта сразу, экрана выбора темпа нет', await p.evaluate(() => document.querySelector('#screen').hidden && !document.querySelector('[data-menu=pace], [data-pace]'))); await shot('5start');
   ok('игра началась (экран закрыт)', await p.evaluate(() => document.querySelector('#screen').hidden));
   ok('автосохранение в начале дня', await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('coffee-sim-save-v1')); return s && s.day === 1 && s.v === 2; }));
 

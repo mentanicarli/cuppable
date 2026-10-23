@@ -5,7 +5,6 @@ export type Rng = () => number;
 export type Size = '0.2' | '0.3' | '0.4' | '0.6';
 export type Temp = 'hot' | 'cold' | 'both';
 export type CustomerType = 'regular' | 'student' | 'hurry';
-export type PaceId = 'cozy' | 'normal' | 'hard';
 /** Качество напитка: 0 плохо, 1 нормально, 2 идеально. */
 export type Quality = 0 | 1 | 2;
 

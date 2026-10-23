@@ -41,8 +41,7 @@ export function sandboxScreenHTML(o: SandboxScreenOpts): string {
 <div class="sbody">
 <div class="sbxrow">${num('day', 'День (1–60)', cfg.day, 1, 60)}
 ${sel('profile', 'Профиль игрока', PROFILE_IDS.map((p) => [p, PROFILE_NAMES[p]] as const), cfg.profile)}
-${sel('mode', 'Покупки', (['all', 'typical'] as const).map((m) => [m, MODE_NAMES[m]] as const), cfg.mode)}
-${sel('pace', 'Темп', [['cozy', 'Уютный'], ['normal', 'Обычный'], ['hard', 'Сложный']], cfg.pace)}</div>
+${sel('mode', 'Покупки', (['all', 'typical'] as const).map((m) => [m, MODE_NAMES[m]] as const), cfg.mode)}</div>
 <p class="shelp" data-sbx-summary>${summary}</p>
 <div class="sbxbtns"><label class="sbxc"><input type="checkbox" data-f="showTutorial"${cfg.showTutorial ? ' checked' : ''}> <span>Показывать обучение</span></label><button type="button" class="ghost sm" data-sbx="tutreset">Сбросить обучение</button></div>
 <details class="sbxcustom" data-custom${cfg.custom ? ' open' : ''}><summary>Своё</summary>

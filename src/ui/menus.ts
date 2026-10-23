@@ -33,13 +33,6 @@ ${nowPlayingHTML(o.np)}
 </div>`;
 }
 
-export function paceScreenHTML(paces: string): string {
-  return `<div class="title" data-menu="pace">
-<div class="sign"><i class="chain l"></i><i class="chain r"></i><div><h1><span class="vh">Cuppable</span>${WORDMARK}</h1><p>Кофе между парами</p></div></div>
-<div class="paper"><div class="lbl">Вы бариста в университетской кофейне. Как будем играть?</div><div class="paces">${paces}</div>
-<div class="foot"><button type="button" class="ghost" data-menuback="1">Назад</button><button type="button" class="big" data-go="1">Открыть кофейню</button></div></div></div>`;
-}
-
 export function howtoHTML(msg = ''): string {
   return `<div class="paper howto" data-menu="howto"><h2>Как играть</h2>
 <ul>

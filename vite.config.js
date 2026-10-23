@@ -19,7 +19,7 @@ function legacyPlugin() {
       const head = `import * as MENUAPI from '/src/game/api';\nimport { bookHTML, guideHTML } from '/src/ui/book';\nimport { InsetRenderer } from '/src/render/inset';\nimport { pitcherImage, pitcherOrigin, pitcherPt, PITCHER_BOX, PITCHER_K, PITCHER_INNER } from '/src/render/pitcherArt';\nimport { foodPanelHTML, heatPct } from '/src/ui/foodPanel';\nimport { World, lookFor } from '/src/render/world/world';\nimport { MusicPlayer, trackLabel } from '/src/ui/music';
 import { sandboxScreenHTML, devPanelHTML } from '/src/ui/sandbox';
 import { sectionNavHTML, navArrows, navLabelHTML } from '/src/ui/sectionNav';
-import { titleHTML, paceScreenHTML, howtoHTML, settingsHTML, confirmHTML, pauseHTML } from '/src/ui/menus';
+import { titleHTML, howtoHTML, settingsHTML, confirmHTML, pauseHTML } from '/src/ui/menus';
 import { panelHTML, panelUpdate, readoutFill, readoutTime, readoutBrew } from '/src/ui/stationPanel';\n${process.env.CUPPABLE_DEBUG ? 'window.__MENUAPI = MENUAPI;\n' : ''}(() => {\n'use strict';\n`;
       return head + files.map(f => `/* ===== ${f} ===== */\n` + readFileSync(resolve(LEGACY, f), 'utf8')).join('\n') + `\n${process.env.CUPPABLE_DEBUG ? 'window.__cam = { go: camGo, get sec() { return CAM.sec; } };\n' : ''}})();\n`;
     }

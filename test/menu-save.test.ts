@@ -51,15 +51,15 @@ describe('формат сохранения', () => {
   test('сохранение из будущей версии не читается', () => {
     expect(readSave('{"v":99,"day":2,"money":1}')).toEqual({ kind: 'broken', reason: 'newer' });
   });
-  test('неизвестный темп заменяется на обычный, рейтинг зажимается', () => {
-    const r = readSave('{"day":2,"money":1,"pace":"???","rating":9}');
+  test('поле pace из старых сохранений игнорируется (темп один), рейтинг зажимается', () => {
+    const r = readSave('{"day":2,"money":1,"pace":"hard","rating":9}');
     if (r.kind === 'ok') {
-      expect(r.data.pace).toBe('normal');
+      expect('pace' in r.data).toBe(false);
       expect(r.data.rating).toBe(5);
     } else throw new Error('ожидалось ok');
   });
   test('сериализация читается обратно', () => {
-    const r = readSave(serializeSave({ day: 3, money: 700, rating: 4, pace: 'cozy', rank: 2, served: 9, up: [] }));
+    const r = readSave(serializeSave({ day: 3, money: 700, rating: 4, rank: 2, served: 9, up: [] }));
     expect(r.kind).toBe('ok');
   });
 });

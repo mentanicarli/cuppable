@@ -8,7 +8,7 @@ function clearDayVisuals() {
   $('#toast').classList.remove('show');
 }
 function newGame() {
-  G = { rank: 1, served: 0, money: 500, day: 1, rating: 3, pace: selPace, milk: false, machine: false, cozy: false, beans: false, phase: 'title', grindSet: 3, idealGrind: 3, hints: SET.hintsSet ? SET.hints : true, hintsTouched: SET.hintsSet, tutorialSeen: MENUAPI.freshSeen(), tutOff: false, fresh: [], syrups: false, stencil: false, grinderPro: false, tamper: false, thermo: false, wifi: false, cards: false, helper: false };
+  G = { rank: 1, served: 0, money: 500, day: 1, rating: 3, milk: false, machine: false, cozy: false, beans: false, phase: 'title', grindSet: 3, idealGrind: 3, hints: SET.hintsSet ? SET.hints : true, hintsTouched: SET.hintsSet, tutorialSeen: MENUAPI.freshSeen(), tutOff: false, fresh: [], syrups: false, stencil: false, grinderPro: false, tamper: false, thermo: false, wifi: false, cards: false, helper: false };
   clearDayVisuals(); D = null;
   WORLD.clearActors(); ACT.clear();
   applyUpgrades();

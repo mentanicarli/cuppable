@@ -148,7 +148,7 @@ test('качество помощника: доли и рост с рангом'
   expect(c[0] ?? 0).toBeLessThan(c[1] ?? 0);
 });
 test('аренда растёт с рангом, зарплата помощника тоже', () => {
-  expect(rentFor('normal', 1)).toBe(140);
-  expect(rentFor('normal', 9)).toBeGreaterThan(rentFor('normal', 5));
+  expect(rentFor(1)).toBe(140);
+  expect(rentFor(9)).toBeGreaterThan(rentFor(5));
   expect(helperWage(9)).toBeGreaterThan(helperWage(5));
 });

@@ -1,5 +1,4 @@
 import { nextRank } from './menu';
-import type { PaceId } from './types';
 
 /* историческое имя, не переименовывать без миграции */
 export const SAVE_KEY = 'coffee-sim-save-v1';
@@ -14,14 +13,12 @@ export interface SaveData {
   money: number;
   day: number;
   rating: number;
-  pace: PaceId;
   grindSet?: number;
   up?: string[];
   /** оборудование, чьи подсказки игрок уже прошёл */
   tutorialSeen?: string[];
 }
 
-const PACES: readonly PaceId[] = ['cozy', 'normal', 'hard'];
 const num = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
 
 /** Результат чтения: сохранения нет, оно прочитано (возможно, мигрировано) или повреждено. */
@@ -61,7 +58,6 @@ export function readSave(raw: string | null): SaveRead {
     day: Math.floor(day),
     money,
     rating: num(rating) ? Math.min(5, Math.max(0, rating)) : 3,
-    pace: PACES.find((p) => p === r['pace']) ?? 'normal',
     up
   };
   const rank = r['rank'];
@@ -97,7 +93,6 @@ export interface Restored {
   money: number;
   day: number;
   rating: number;
-  pace: PaceId;
   grindSet: number;
   up: string[];
   tutorialSeen: string[];
@@ -112,5 +107,5 @@ export function restore(sv: SaveData): Restored {
     for (let n = nextRank(rank, { day: sv.day, rating: sv.rating, served }); n; n = nextRank(rank, { day: sv.day, rating: sv.rating, served }))
       rank = n.rank;
   }
-  return { rank, served, money: sv.money, day: sv.day, rating: sv.rating, pace: sv.pace, grindSet: sv.grindSet || 3, up: sv.up ?? [], tutorialSeen: sv.tutorialSeen ?? [] };
+  return { rank, served, money: sv.money, day: sv.day, rating: sv.rating, grindSet: sv.grindSet || 3, up: sv.up ?? [], tutorialSeen: sv.tutorialSeen ?? [] };
 }

@@ -1,9 +1,8 @@
-import { PACE } from './economy';
 import { buildTasks } from './recipes';
-import type { CustomerType, PaceId, Rng } from './types';
+import type { CustomerType, Rng } from './types';
 
 /* ---------- Терпение гостей: зависит от сложности заказа, дня игры и места в очереди ----------
-   patienceMax = (A_type + K_type · estimatedPrepSeconds(order)) · random · pace · cozy · helper · newbie
+   patienceMax = (A_type + K_type · estimatedPrepSeconds(order)) · random · cozy · helper · newbie
    Чистая логика: ни DOM, ни Pixi. Числа подбираются по симулятору (scripts/shop-sim.test.ts). */
 
 /** Типичные секунды на шаг бара (из реального замера: около 10 с на шаг). */
@@ -39,7 +38,6 @@ export const PATIENCE_RANDOM: readonly [number, number] = [0.85, 1.25];
 export const newbieFactor = (day: number): number => (day <= 1 ? 1.4 : day === 2 ? 1.3 : day === 3 ? 1.2 : day <= 5 ? 1.1 : 1);
 
 export interface PatienceOpts {
-  pace: PaceId;
   cozy?: boolean;
   helper?: boolean;
   /** секунды готовки заказа (estimatedPrepSeconds); без заказа — 0 */
@@ -54,7 +52,7 @@ export function patienceMax(type: CustomerType, o: PatienceOpts): number {
   const [lo, hi] = PATIENCE_RANDOM;
   const rand = o.rng ? lo + (hi - lo) * o.rng() : 1;
   const base = PATIENCE_A[type] + PATIENCE_K[type] * (o.prep ?? 0);
-  return base * rand * PACE[o.pace].pat * (o.cozy ? 1.15 : 1) * (o.helper ? 1.2 : 1) * (o.day !== undefined ? newbieFactor(o.day) : 1);
+  return base * rand * (o.cozy ? 1.15 : 1) * (o.helper ? 1.2 : 1) * (o.day !== undefined ? newbieFactor(o.day) : 1);
 }
 
 /* ---------- очередь у стойки ---------- */

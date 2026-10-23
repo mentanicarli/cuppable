@@ -11,7 +11,7 @@ const r2 = (x: number): number => Math.round(x * 100) / 100;
 
 export interface TableDay { day: number; rank: number; rating: number; served: number; servedMax: number; money: number; alive: number }
 export interface TableProfile { name: string; days: TableDay[]; purchases: Array<{ id: string; day: number }> }
-export interface TypicalTable { version: 1; runs: number; days: number; pace: 'normal'; profiles: Record<string, TableProfile> }
+export interface TypicalTable { version: 1; runs: number; days: number; profiles: Record<string, TableProfile> }
 
 export function buildTable(): TypicalTable {
   const profiles: Record<string, TableProfile> = {};
@@ -67,5 +67,5 @@ export function buildTable(): TypicalTable {
     }
     profiles[prof.id] = { name: prof.name, days: rows, purchases: out };
   }
-  return { version: 1, runs: RUNS, days: DAYS, pace: 'normal', profiles };
+  return { version: 1, runs: RUNS, days: DAYS, profiles };
 }

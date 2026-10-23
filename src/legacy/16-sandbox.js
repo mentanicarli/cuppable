@@ -10,7 +10,7 @@ const dvq = sel => devPanelEl.querySelector(sel);
 /* --- экран настройки старта --- */
 function sbxRead() {
   const q = k => scr.querySelector(`[data-f="${k}"]`), det = scr.querySelector('[data-custom]');
-  const cfg = { day: +q('day').value, profile: q('profile').value, mode: q('mode').value, pace: q('pace').value, showTutorial: q('showTutorial').checked, custom: null };
+  const cfg = { day: +q('day').value, profile: q('profile').value, mode: q('mode').value, showTutorial: q('showTutorial').checked, custom: null };
   if (det && det.open) cfg.custom = { rank: +q('rank').value, rating: +q('rating').value, served: +q('served').value, money: +q('money').value, items: [...scr.querySelectorAll('[data-item]:checked')].map(e => e.dataset.item) };
   return MENUAPI.normalizeSandboxConfig(cfg);
 }
@@ -161,7 +161,7 @@ if (DEV) {
     const f = e.target.dataset.f; if (e.target.dataset.item !== undefined) { sbxShow(sbxRead()); return; }
     if (!f || f === 'showTutorial') return;
     const cfg = sbxRead();
-    if (['day', 'profile', 'mode', 'pace'].includes(f)) sbxShow({ ...cfg, custom: cfg.custom ? {} : null });
+    if (['day', 'profile', 'mode'].includes(f)) sbxShow({ ...cfg, custom: cfg.custom ? {} : null });
     else if (f === 'rank') sbxShow({ ...cfg, custom: { ...cfg.custom, items: undefined } });
     else sbxShow(cfg);
   });

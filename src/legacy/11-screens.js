@@ -1,10 +1,5 @@
 /* ---------- значки для экранов ---------- */
 const KS = 'stroke="#4A2F25" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"';
-const PACE_ICON = {
-  cozy: `<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 38Q8 16 30 10Q40 10 38 22Q36 36 14 38Z" fill="#93A684" ${KS}/><path d="M12 36Q22 24 32 16" fill="none" ${KS} stroke-width="2.4"/></svg>`,
-  normal: `<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M9 18H35L32 38Q22 44 12 38Z" fill="#FFF8EC" ${KS}/><path d="M35 22Q45 22 43 31Q41 37 33 36" fill="none" ${KS}/><ellipse cx="22" cy="18" rx="13" ry="3.4" fill="#8A5B3A" ${KS} stroke-width="2.4"/><path d="M16 10q3 3 0 6M24 8q3 3 0 6" fill="none" ${KS} stroke-width="2.2"/></svg>`,
-  hard: `<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M27 5L11 27H22L19 43L37 20H26Z" fill="#E8B04A" ${KS}/></svg>`
-};
 /* оборудование из прогрессии: в магазине появляется только то, что уже работает в баре */
 MENUAPI.EQUIPMENT.filter(e => MENUAPI.EQ_IMPL.includes(e.id)).forEach(e => SHOP.push({ id: 'eq_' + e.id, cat: 'gear', name: e.name, desc: 'Открывает: ' + e.unlocks + '.', cost: e.cost }));
 const SHOP_ICON = {
@@ -72,7 +67,7 @@ ${row('Подано', s.served)}${row('Идеальных', s.perfect)}${row('У
 function showOver() {
   clearSave();
   scr.innerHTML = `<div class="title"><div class="sign closed"><i class="chain l"></i><i class="chain r"></i><div><h1>Закрыто</h1><p>кофейня отработала ${G.day} ${G.day === 1 ? 'день' : G.day < 5 ? 'дня' : 'дней'}</p></div></div>
-<div class="paper"><p class="overtxt">На счёте ${money(G.money)}, а аренду платить нечем. Попробуйте ещё раз: в «Уютном» темпе клиенты терпеливее и банкротства нет.</p><div class="foot"><button type="button" class="big" data-restart="1">Начать заново</button></div></div></div>`;
+<div class="paper"><p class="overtxt">На счёте ${money(G.money)}, а аренду платить нечем. Попробуйте ещё раз.</p><div class="foot"><button type="button" class="big" data-restart="1">Начать заново</button></div></div></div>`;
   scr.hidden = false;
 }
 let bookTab = 'drinks', bookBack = null, bookFam = 'all', bookTut = '', bookSel = {}, bookExact = [];
@@ -104,8 +99,7 @@ function closeBook() {
 }
 scr.addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
-  if (t.dataset.pace) { selPace = t.dataset.pace; scr.querySelectorAll('.pace').forEach(b => b.classList.toggle('sel', b === t)); sndOk(); }
-  else if (t.dataset.tab) { shopTab = t.dataset.tab; showEvening(true); sndTap(); }
+  if (t.dataset.tab) { shopTab = t.dataset.tab; showEvening(true); sndTap(); }
   else if (t.dataset.buy) { const it = SHOP.find(x => x.id === t.dataset.buy); if (it && !G[it.id] && G.money >= it.cost) { const was = shopState(); G.money -= it.cost; G[it.id] = true; if (MENUAPI.hasOrderEffect(it.id)) G.fresh.push(it.id); G.buyNote = [MENUAPI.purchaseToast(it.id.replace(/^eq_/, '')), MENUAPI.shopNewText(MENUAPI.newlyAvailable(SHOP, was, shopState()).map(i => i.name))].filter(Boolean).join(' ') || null; applyUpgrades(); saveGame(); sndCoin(); lastHud = ''; updateHud(true); showEvening(true); } }
   else if (t.dataset.next) { G.buyNote = null; G.day++; saveGame(); startDay(); }
   else if (t.dataset.restart) { newGame(); lastHud = ''; updateHud(); showTitle(); }

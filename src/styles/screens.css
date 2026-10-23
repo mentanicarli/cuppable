@@ -16,10 +16,6 @@
 .sign.closed h1 { font-size: 58px }
 .paper { width: 700px; box-sizing: border-box; padding: 30px 34px 22px; border-radius: 18px; background: #FBF4E8; border: 3px solid var(--ink); box-shadow: 0 9px 0 var(--ink); }
 .paper .lbl { margin: 0 0 10px; font-size: 15px; font-weight: 800; color: var(--ink-soft); }
-.paper .paces { grid-template-columns: repeat(3, 1fr); }
-.pace { position: relative; padding-top: 58px; transition: transform .15s; }
-.pace:hover { transform: translateY(-2px) } .pace:active { transform: translateY(2px) }
-.pace svg { position: absolute; left: 14px; top: 10px; width: 40px; height: 40px; }
 .paper .foot { justify-content: center; margin-top: 22px; }
 .ghost { font-family: inherit; font-weight: 800; font-size: 17px; padding: 12px 20px; border-radius: 16px; border: 3px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; }
 .ghost:hover { background: #F1E3CB }
@@ -166,7 +162,6 @@ padding-bottom: 26px; margin-bottom: 8px; }
 .confirm h2 { margin: 0 0 8px; font-size: 30px; }
 .confirm p { margin: 0; font-size: 17px; font-weight: 600; line-height: 1.4; color: var(--ink-soft); }
 .big.warn { background: linear-gradient(#EE9C76, #D07654); color: #FFF8EC; }
-.title .paces { max-width: 100%; }
 #stage.fx-low .steam, #stage.fx-low .mote, #stage.fx-low .sign .steam path { animation: none; }
 @media (pointer: coarse) {
   .mbtn { min-height: 76px; } .mbtn b { font-size: 28px; }
