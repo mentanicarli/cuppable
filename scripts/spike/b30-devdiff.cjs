@@ -16,7 +16,7 @@ async function shoot(file, sec, name) {
   await p.evaluate(() => { const d = __dbg; d.G.tutOff = true; d.G.hints = false; d.applyUpgrades(); d.D.nextArr = 1e9; d.spawn(); d.D.customers.forEach(c => { c.pat = c.max = 1e9; c.syrup = null; }); });
   await p.waitForFunction(() => __dbg.D.customers[0] && __dbg.D.customers[0].arrived, null, { timeout: 90000 });
   await p.evaluate(() => __dbg.barOpen(__dbg.D.customers[0])); await p.waitForTimeout(900); await PW.dismissCard(p);
-  await p.evaluate(() => { setInterval(() => { __dbg.D.t = 100; }, 16); document.querySelectorAll('#hud,#bTk,#bCoach,#toast,#bFloat,#bGoal,#frontHint,#devBtn,#devPanel,#miniMap,#secNav').forEach(e => { e.style.visibility = 'hidden'; }); });
+  await p.evaluate(() => { setInterval(() => { __dbg.D.t = 100; }, 16); document.querySelectorAll('#hud,#bTk,#bCoach,#toast,#bFloat,#bGoal,#frontHint,#devBtn,#devPanel,#bBack,#secNav').forEach(e => { e.style.visibility = 'hidden'; }); });
   await PW.goSection(p, sec); await p.waitForTimeout(2500);
   const f = path.join(OUT, name + '.png'); await p.evaluate(() => window.scrollTo(0, 0)); await p.locator('#stage').screenshot({ path: f, timeout: 120000 });
   await b.close(); return f;

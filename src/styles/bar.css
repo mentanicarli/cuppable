@@ -223,11 +223,6 @@ html.kbd .dcard :focus-visible { outline: 3px solid #E8B04A; outline-offset: 2px
 html.kbd .secNavBtn:focus-visible { outline: 3px solid #E8B04A; outline-offset: 2px; }
 
 /* Мини-карта секций (Б1-3): вверху по центру, x 598–766, y 12–56; не кликабельна */
-#miniMap { position: absolute; top: 12px; left: 598px; width: 168px; height: 44px; box-sizing: border-box; display: flex; justify-content: center; align-items: center; gap: 6px; padding: 0 9px; border: 3px solid var(--ink); border-radius: 14px; background: #FFF8EC; box-shadow: 0 4px 0 var(--ink); pointer-events: none; }
-#miniMap[hidden] { display: none; }
-#miniMap b { position: relative; width: 44px; height: 26px; border: 2.5px solid var(--ink); border-radius: 8px; background: #F1DFC2; display: block; flex: none; }
-#miniMap b.cur { background: #F0BC55; }
-#miniMap b u { position: absolute; right: -5px; top: -7px; width: 14px; height: 14px; border-radius: 50%; background: #C4694A; border: 2px solid var(--ink); }
 /* подсветка стрелки «нужная станция там»: рамка и точка, пульс 1,2 с три раза, потом спокойная рамка */
 .secNavBtn.hl { border-color: #C4694A; box-shadow: 0 3px 0 var(--ink), 0 0 0 4px #F0BC55; animation: secPulse 1.2s ease-in-out 3; }
 .secNavBtn.hl::after { content: ''; position: absolute; top: -8px; width: 14px; height: 14px; border-radius: 50%; background: #C4694A; border: 2px solid var(--ink); }

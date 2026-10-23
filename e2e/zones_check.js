@@ -25,7 +25,7 @@ let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' 
         const vis = e => e && !e.hidden && getComputedStyle(e).visibility !== 'hidden' && e.getBoundingClientRect().width > 0;
         const st = document.querySelector('#stage').getBoundingClientRect(), k = st.width / 1280;
         const zones = [...document.querySelectorAll(`#bZones [data-sec="${sec}"] rect`)].map(e => ({ id: e.dataset.z, ...R(e), on: e.style.pointerEvents !== 'none' }));
-        const strips = [['HUD', '#hud'], ['мини-карта', '#miniMap'], ['билет', '#bTk'], ['коуч', '#bCoach'], ['стрелка', '.secNavBtn:not([hidden])'], ['тосты', '#bFloat']].map(([n, q]) => { const e = document.querySelector(q); return e && vis(e) ? { n, ...R(e) } : null; }).filter(Boolean);
+        const strips = [['HUD', '#hud'], ['К залу', '#bBack'], ['билет', '#bTk'], ['коуч', '#bCoach'], ['стрелка', '.secNavBtn:not([hidden])'], ['тосты', '#bFloat']].map(([n, q]) => { const e = document.querySelector(q); return e && vis(e) ? { n, ...R(e) } : null; }).filter(Boolean);
         /* HUD: верхняя полоса сцены y 0–64 (макет), на экране — по масштабу */
         strips.push({ n: 'HUD-полоса 0–64', x: st.left, y: st.top, w: st.width, h: 64 * k });
         return { zones, strips, st: { x: st.left, y: st.top, k } };

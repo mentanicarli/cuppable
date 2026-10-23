@@ -186,18 +186,16 @@ if (sectionsPlayable()) {
     bz.appendChild(g);
   }
   /* стрелки с названиями секций */
-  const holder = document.createElement('div'); holder.innerHTML = sectionNavHTML() + minimapHTML(); const nav = holder.firstChild, mini = holder.lastChild; $('#bar').append(nav, mini);
+  const holder = document.createElement('div'); holder.innerHTML = sectionNavHTML(); const nav = holder.firstChild; $('#bar').append(nav);
   nav.addEventListener('click', e => { const b = e.target.closest('[data-secnav]'); if (b) { camStep(+b.dataset.secnav); b.blur(); } });
   secNavSync = () => {
     const blocked = camBlocked(), open = secOpenNow();
     const arrows = blocked ? [] : navArrows(CAM.sec, open);
     /* точка и подсветка — только при подсказках (то же условие, что у кольца и коуча) */
     const hv = blocked ? { dotSection: null, highlightArrow: null } : MENUAPI.needHint(hintZone(), CAM.sec, !!(G.hints || tutKey()), zonesInSide);
-    const cells = blocked || !(open.L || open.R) ? [] : minimapCells(CAM.sec, open, hv.dotSection); /* без боковых секций мини-карта из одной ячейки не нужна */
-    const key = arrows.map(a => a.dir + a.label).join('|') + '#' + hv.highlightArrow + '#' + cells.map(c => c.id + (c.cur ? 1 : 0) + (c.dot ? 1 : 0)).join('');
+    const key = arrows.map(a => a.dir + a.label).join('|') + '#' + hv.highlightArrow;
     if (key === secNavKey) return; secNavKey = key;
     nav.querySelectorAll('[data-secnav]').forEach(b => { const a = arrows.find(x => x.dir === +b.dataset.secnav); b.hidden = !a; b.classList.toggle('hl', !!a && hv.highlightArrow === a.dir); if (a) { b.innerHTML = navLabelHTML(a); b.setAttribute('aria-label', 'Перейти в секцию «' + a.label + '»'); } });
-    mini.hidden = !cells.length; mini.innerHTML = minimapFill(cells, CAM.sec); mini.setAttribute('aria-label', minimapLabel(CAM.sec));
   };
 }
 function barShow(on) {

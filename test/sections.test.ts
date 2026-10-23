@@ -230,12 +230,11 @@ describe('секции: подсказки и тосты (Б1-3)', () => {
     expect(zonesInSideSections(true)).toBe(true);
   });
 
-  test('зоны боковых секций: покрывают все 9 станций, внутри секции, не пересекаются, не лежат под стрелками, мини-картой, билетом, коучем и тостами', () => {
+  test('зоны боковых секций: покрывают все 9 станций, внутри секции, не пересекаются, не лежат под стрелками, билетом, коучем и тостами', () => {
     expect(SIDE_ZONES.map((z) => z.id).sort()).toEqual([...SECTION_EQ.L, ...SECTION_EQ.R].sort());
     const hit = (a: { x: number; y: number; w: number; h: number }, b: { x: number; y: number; w: number; h: number }): boolean => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
     const fixed = [
       { n: 'стрелки', x: 0, y: 516, w: 1280, h: 30 },
-      { n: 'мини-карта', x: 598, y: 12, w: 168, h: 44 },
       { n: 'билет', x: 0, y: 76, w: 870, h: 150 },
       { n: 'коуч', x: 472, y: 520, w: 322, h: 100 },
       { n: 'тосты', x: 484, y: 136, w: 380, h: 120 }
@@ -305,17 +304,17 @@ describe('секции: подсказки и тосты (Б1-3)', () => {
 
   test('needHint: 3 секции × флаг × подсказки', () => {
     for (const sec of ['L', 'C', 'R'] as const) {
-      expect(needHint('matcha', sec, false, true)).toEqual({ dotSection: null, highlightArrow: null });
-      expect(needHint(null, sec, true, true)).toEqual({ dotSection: null, highlightArrow: null });
+      expect(needHint('matcha', sec, false, true)).toEqual({ highlightArrow: null });
+      expect(needHint(null, sec, true, true)).toEqual({ highlightArrow: null });
       /* флаг выключен: станция всегда в центре */
-      expect(needHint('matcha', sec, true, false)).toEqual({ dotSection: 'C', highlightArrow: sec === 'C' ? null : sec === 'L' ? 1 : -1 });
+      expect(needHint('matcha', sec, true, false)).toEqual({ highlightArrow: sec === 'C' ? null : sec === 'L' ? 1 : -1 });
     }
-    expect(needHint('matcha', 'C', true, true)).toEqual({ dotSection: 'L', highlightArrow: -1 });
-    expect(needHint('shaker', 'C', true, true)).toEqual({ dotSection: 'R', highlightArrow: 1 });
-    expect(needHint('matcha', 'L', true, true)).toEqual({ dotSection: 'L', highlightArrow: null });
-    expect(needHint('shaker', 'L', true, true)).toEqual({ dotSection: 'R', highlightArrow: 1 }); /* через центр */
-    expect(needHint('matcha', 'R', true, true)).toEqual({ dotSection: 'L', highlightArrow: -1 });
-    expect(needHint('grind', 'R', true, true)).toEqual({ dotSection: 'C', highlightArrow: -1 });
-    expect(needHint('grind', 'L', true, true)).toEqual({ dotSection: 'C', highlightArrow: 1 });
+    expect(needHint('matcha', 'C', true, true)).toEqual({ highlightArrow: -1 });
+    expect(needHint('shaker', 'C', true, true)).toEqual({ highlightArrow: 1 });
+    expect(needHint('matcha', 'L', true, true)).toEqual({ highlightArrow: null });
+    expect(needHint('shaker', 'L', true, true)).toEqual({ highlightArrow: 1 }); /* через центр */
+    expect(needHint('matcha', 'R', true, true)).toEqual({ highlightArrow: -1 });
+    expect(needHint('grind', 'R', true, true)).toEqual({ highlightArrow: -1 });
+    expect(needHint('grind', 'L', true, true)).toEqual({ highlightArrow: 1 });
   });
 });

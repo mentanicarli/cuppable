@@ -115,7 +115,6 @@ const PANEL = new Set(['juice', 'tonic', 'powder', 'boba', 'topping', 'whisk', '
   ok(tt.includes('Станция «Чайная станция» в секции «Чайный бар». Нажмите стрелку с этим названием.'), 'Space из центра: тост «станция в другой секции»');
   ok(await p.evaluate(() => __dbg.BR.inset === null), 'окно станции не открылось');
   ok(await p.evaluate(() => !!document.querySelector('.secNavBtn.hl:not([hidden])')), 'нужная стрелка подсвечена');
-  ok(await p.evaluate(() => { const m = document.querySelector('#miniMap'); return !m.hidden && /cur|on|dot/.test(m.innerHTML); }), 'мини-карта показана');
   await at('C', 0, 'тост камеру не двигает');
   await shot('howto_hint_center');
 

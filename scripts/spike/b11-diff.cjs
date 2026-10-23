@@ -28,7 +28,7 @@ async function shoot(file, dsf, keys, name) {
   await p.evaluate(() => __dbg.barOpen(__dbg.D.customers[0]));
   await p.waitForTimeout(900); await PW.dismissCard(p);
   /* время суток держим на месте, интерфейс скрыт */
-  await p.evaluate(() => { setInterval(() => { __dbg.D.t = 100; }, 16); document.querySelectorAll('#hud,#bTk,#bCoach,#toast,#bFloat,#bGoal,#frontHint,#miniMap,#secNav').forEach(e => { e.style.visibility = 'hidden'; }); });
+  await p.evaluate(() => { setInterval(() => { __dbg.D.t = 100; }, 16); document.querySelectorAll('#hud,#bTk,#bCoach,#toast,#bFloat,#bGoal,#frontHint,#bBack,#secNav').forEach(e => { e.style.visibility = 'hidden'; }); });
   await p.waitForTimeout(2500);
   const f = path.join(OUT, `${name}_${dsf}x.png`);
   await p.evaluate(() => window.scrollTo(0, 0));
