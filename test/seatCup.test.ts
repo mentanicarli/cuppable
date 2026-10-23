@@ -11,8 +11,8 @@ describe('чашка на блюдце гостя (31-1)', () => {
   test('центр углубления блюдца в cupPlan совпадает с art-src/hall/saucer.svg', () => {
     const m = SAUCER.match(/<ellipse cx="([\d.]+)" cy="([\d.]+)" rx="12" ry="2\.8"/);
     expect(m, 'эллипс углубления в saucer.svg').not.toBeNull();
-    expect(+(m as RegExpMatchArray)[1]).toBe(SAUCER_RECESS.x);
-    expect(+(m as RegExpMatchArray)[2]).toBe(SAUCER_RECESS.y);
+    expect(Number(m?.[1])).toBe(SAUCER_RECESS.x);
+    expect(Number(m?.[2])).toBe(SAUCER_RECESS.y);
   });
 
   test('центр донышка чашки попадает в углубление с допуском ±2 px для всех сосудов и размеров', () => {
