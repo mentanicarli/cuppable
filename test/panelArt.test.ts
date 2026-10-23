@@ -1,8 +1,10 @@
 import { describe, expect, test } from 'vitest';
 import PAL from '../art-src/palette.json';
+import { sizesOf, specOf } from '../src/game/drinkModel';
 import { layerView } from '../src/game/layers';
+import { drinkPx } from '../src/render/world/drinkModel';
 import { paletteOf } from '../src/game/recipes';
-import { barObject, fillCounts, groupOf, jarFor, panelArt, sourceOf, whiskGeom } from '../src/ui/panelArt';
+import { LAYER_GLASS, barObject, fillCounts, groupOf, jarFor, layerSourceRect, panelArt, sourceOf, whiskGeom } from '../src/ui/panelArt';
 
 /* 31-2, шаг 3: окна станций нового ядра рисуются теми же предметами, что стоят на баре. Тест падает, если окно потеряло главные цвета
    предмета бара, использует цвет вне палитры или толщину вне L/M/D. */
@@ -14,7 +16,10 @@ const REPLACED: Record<string, string[]> = { brew: ['TERRA', 'BAKE'], powder: ['
 const col = (task: string): string => (task === 'powder' ? PAL.colors.CHOC : PAL.colors.MUSTARD);
 const art = (task: string, drink?: string): string => panelArt({ task, col: col(task), col2: PAL.colors.PAPER, drink: task === 'layer' ? 'orange_bumble' : drink });
 /** цвета слоёв — данные напитка (спецификация), не палитра */
-const specColors = new Set(layerView('orange_bumble', 1).map((l) => l.color.toLowerCase()));
+const espressoSpec = specOf('espresso', sizesOf('espresso', false)[0] as never, false);
+const specColors = new Set([...layerView('orange_bumble', 1).map((l) => l.color), ...espressoSpec.liquid.map((l) => l.color), espressoSpec.top.color].map((c) => c.toLowerCase()));
+/* демитас модели напитка: его цвета (кофе, крема, керамика) — данные модели, а не палитры */
+for (const m of drinkPx(espressoSpec, { level: 'full', s: 1.1, noSaucer: true }).all.inner.matchAll(/#[0-9a-fA-F]{6}/g)) specColors.add(m[0].toLowerCase());
 
 /** Строка без вложенных групп с масштабом (data-k): толщины внутри них проверяются отдельно (значение × k). */
 function split(svg: string): { flat: string; scaled: { k: number; body: string }[] } {
@@ -36,7 +41,9 @@ describe('окна станций: предметы бара', () => {
     test(`${task}: цвета только из палитры, толщины только L/M/D`, () => {
       const svg = art(task, 'cocoa');
       for (const m of svg.matchAll(/(?:fill|stroke)="(#[0-9a-fA-F]{6})"/g)) expect(colors.has((m[1] as string).toLowerCase()) || (task === 'layer' && specColors.has((m[1] as string).toLowerCase())), `цвет ${m[1]}`).toBe(true);
-      const { flat, scaled } = split(svg);
+      /* демитас — модель напитка со своими контурами (ручка толще токенов): у него проверяем только цвета */
+      const widthSvg = svg.includes('data-vessel="shot"') ? svg.replace(groupOf(svg, 'data-vessel="shot"'), '') : svg;
+      const { flat, scaled } = split(widthSvg);
       for (const m of flat.matchAll(/stroke-width="([\d.]+)"/g)) expect(TOKENS, `толщина ${m[1]}`).toContain(Number(m[1]));
       for (const g of scaled) for (const m of g.body.matchAll(/stroke-width="([\d.]+)"/g)) {
         const v = Number(m[1]) * g.k;
@@ -97,5 +104,45 @@ describe('окно «Взбить матчу» (31-3)', () => {
   });
   test('те же цвета, что у предмета бара: чаша и венчик из matcha.svg', () => {
     for (const marker of ['data-item="bowl"', 'data-item="whisk"']) for (const [c] of fillCounts(barObject('matcha', marker)).slice(0, 2)) expect(svg.toUpperCase().includes(c), `${marker} ${c}`).toBe(true);
+  });
+});
+
+describe('окно «Налить слоями»: источник, ложка, геометрия (31-3)', () => {
+  const DRINKS_LAYER = ['matcha_bumble', 'matcha_tonic', 'orange_bumble', 'pomegranate_bumble', 'espresso_tonic'];
+  const art = (drink: string): string => panelArt({ task: 'layer', col: PAL.colors.MUSTARD, col2: PAL.colors.PAPER, drink, size: '0.3', cold: true });
+  test('источник не заходит на стакан больше чем на 6 px по x при прогрессе 0, 0,25, 0,5, 0,75, 1; носик над ободом в пределах 10 px от края', () => {
+    for (const d of DRINKS_LAYER) for (const p of [0, 0.25, 0.5, 0.75, 1]) {
+      const r = layerSourceRect(d, p);
+      expect(r.x1 - LAYER_GLASS.x0, `${d} p=${p}: заход на стакан`).toBeLessThanOrEqual(6);
+      expect(r.x1 - LAYER_GLASS.x0, `${d} p=${p}: носик у края`).toBeGreaterThanOrEqual(-10);
+      expect(r.x0, `${d} p=${p}: левее сцены`).toBeGreaterThanOrEqual(0);
+      expect(r.y0, `${d} p=${p}: выше сцены`).toBeGreaterThanOrEqual(0);
+    }
+  });
+  test('матча: источник — группа чаши бара; эспрессо: сосуд для шота, питчера нет; ложка и верхний слой на месте', () => {
+    for (const d of ['matcha_bumble', 'matcha_tonic']) {
+      const s = art(d);
+      expect(s).toContain('data-vessel="bowl"');
+      expect(s).toContain(PAL.colors.DUSTY);
+      expect(s).not.toContain('data-vessel="shot"');
+    }
+    for (const d of ['orange_bumble', 'pomegranate_bumble', 'espresso_tonic']) {
+      const s = art(d);
+      expect(s).toContain('data-vessel="shot"');
+      expect(s).not.toContain('translate(940 514)'); /* питчер бара только у рафа и в окне «Пар» */
+      expect(s).not.toContain('data-vessel="bowl"');
+    }
+    for (const d of DRINKS_LAYER) {
+      const s = art(d);
+      expect(s).toContain('id="xpSpoon"');
+      expect(s).toContain('id="xpLayer"');
+      expect(s).toContain('id="xpSrc"');
+    }
+  });
+  test('источник ниже стакана по z (рисуется раньше), ложка и струя выше', () => {
+    const s = art('matcha_bumble');
+    expect(s.indexOf('id="xpSrc"')).toBeLessThan(s.indexOf('id="xpLayer"'));
+    expect(s.indexOf('id="xpLayer"')).toBeLessThan(s.indexOf('id="xpSpoon"'));
+    expect(s.indexOf('id="xpSpoon"')).toBeLessThan(s.indexOf('id="xpStream"'));
   });
 });

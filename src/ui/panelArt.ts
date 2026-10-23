@@ -8,7 +8,9 @@ import LEFT from '../assets/art/bar-parts-left.json';
 import RIGHT from '../assets/art/bar-parts-right.json';
 import CENTER from '../assets/art/bar-parts.json';
 import PAL from '../../art-src/palette.json';
+import { sizesOf, specOf } from '../game/drinkModel';
 import { layerSourceOf, layerView } from '../game/layers';
+import { drinkPx } from '../render/world/drinkModel';
 
 type Part = { svg: string };
 const PARTS_L = LEFT as unknown as Record<string, Part>;
@@ -254,13 +256,47 @@ ${place(empty, BOX.teapot, tx, ty, k)}
   }
 }
 
-/** Окно «Налить слоями»: нижние слои (сок, тоник) налиты и неподвижны, верхний (эспрессо или матча) льётся из кувшина и растёт до конца шага. */
-const LAYER_BASE = 172;
-const LAYER_FULL = 124;
-const ICE_CUBES: [number, number, number][] = [[160, 70, -8], [190, 62, 6], [222, 72, -5], [172, 100, 9], [208, 104, -7], [232, 98, 8]];
+/** Окно «Налить слоями» (31-3): стакан справа, источник слева выше и наклонён носиком к краю, ложка у поверхности. Нижние слои налиты и неподвижны, верхний растёт. */
+export const LAYER_GLASS = { x0: 140, x1: 260, top: 48, bottom: 176 } as const;
+const LAYER_PATH = 'M140 48H260L250 176H150Z';
+const LAYER_FULL = 108;
+const ICE_CUBES: [number, number, number][] = [[162, 82, -8], [192, 74, 6], [224, 84, -5], [174, 114, 9], [210, 118, -7], [234, 110, 8]];
+/** Наклон источника, градусов по часовой стрелке: растёт с прогрессом налива. */
+export const LAYER_ANGLE = { a0: 26, a1: 34 } as const;
+/** Носик (кромка источника) стоит над ободом стакана слева от его края. */
+const LIP = { x: 132, y: 47 };
+
+interface SourceBox { w: number; h: number; cx: number; cy: number }
+/** Рамка источника без поворота (центр, размер) для проверки пересечения со стаканом; поворот — вокруг центра на угол из LAYER_ANGLE. */
+export function layerSourceBox(drink: string): SourceBox {
+  const matcha = layerSourceOf(drink) === 'matcha';
+  const w = matcha ? BOX.bowl.w * 1.25 : espressoBox().w, h = matcha ? BOX.bowl.h * 1.25 : espressoBox().h;
+  /* носик — правый верхний угол рамки; центр выбран так, чтобы при среднем угле носик встал в LIP */
+  const a = (((LAYER_ANGLE.a0 + LAYER_ANGLE.a1) / 2) * Math.PI) / 180;
+  const lx = (w / 2) * Math.cos(a) + (h / 2) * Math.sin(a), ly = (w / 2) * Math.sin(a) - (h / 2) * Math.cos(a);
+  return { w, h, cx: LIP.x - lx, cy: LIP.y - ly };
+}
+/** Охватывающий прямоугольник источника при прогрессе p (поворот рамки вокруг центра). */
+export function layerSourceRect(drink: string, p: number): { x0: number; y0: number; x1: number; y1: number } {
+  const b = layerSourceBox(drink);
+  const a = ((LAYER_ANGLE.a0 + (LAYER_ANGLE.a1 - LAYER_ANGLE.a0) * p) * Math.PI) / 180;
+  const xs: number[] = [], ys: number[] = [];
+  for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]] as const) {
+    const x = (sx * b.w) / 2, y = (sy * b.h) / 2;
+    xs.push(b.cx + x * Math.cos(a) - y * Math.sin(a));
+    ys.push(b.cy + x * Math.sin(a) + y * Math.cos(a));
+  }
+  return { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
+}
+
+function espressoBox(): { x: number; y: number; w: number; h: number; inner: string } {
+  const px = drinkPx(specOf('espresso', sizesOf('espresso', false)[0] as never, false), { level: 'full', s: 1.1, noSaucer: true });
+  return { ...px.all.box, inner: px.all.inner };
+}
+
 function layerArt(drink: string, size: string, cold: boolean): string {
   const lv = layerView(drink, 0, size as never, cold);
-  let y = LAYER_BASE;
+  let y: number = LAYER_GLASS.bottom;
   const base: string[] = [];
   for (const l of lv.slice(0, -1)) {
     const h = l.share * LAYER_FULL;
@@ -271,15 +307,28 @@ function layerArt(drink: string, size: string, cold: boolean): string {
   const topFull = top.share * LAYER_FULL;
   const cubes = ICE_CUBES.map(([cx, cy, r]) => `<g transform="rotate(${r} ${cx} ${cy})"><rect x="${cx - 13}" y="${cy - 13}" width="26" height="26" rx="4" fill="${col('GLASS')}" fill-opacity=".7" ${sw('D')}/><path d="M${cx - 9} ${cy - 8}V${cy + 2}" fill="none" stroke="${col('PAPER')}" ${sw('D')}/></g>`).join('');
   const matcha = layerSourceOf(drink) === 'matcha';
-  const pourer = matcha
-    ? place(groupOf(PARTS_L.matcha?.svg ?? '', 'data-item="kyusu"'), { x: 436, y: 438, w: 64, h: 60 }, 24, 14, 1.75, '', 28)
-    : place(groupOf(PARTS_C.pitFront?.svg ?? '', 'transform="translate(940 514)"'), { x: 903, y: 434, w: 83, h: 78 }, 22, 16, 1.4, '', -32, { flip: true, src: 1 });
-  const sx = matcha ? 124 : 126, sy = matcha ? 70 : 62;
-  return `<g ${WRAP}><defs><clipPath id="xpClip"><path d="${CUP_PATH}"/></clipPath></defs>
-<path d="${CUP_PATH}" fill="${col('GLASS')}" stroke="none"/>
+  const sb = layerSourceBox(drink);
+  const a0 = LAYER_ANGLE.a0;
+  let source: string;
+  if (matcha) {
+    /* чаша, в которой взбивали матчу: та же группа бара; зелёная гладь в обводе чаши убывает по мере налива */
+    const bowl = barObject('matcha', 'data-item="bowl"');
+    const liq = `<ellipse id="xpSrcLiq" cx="547" cy="458" rx="31" ry="4.6" fill="${top.color}" stroke="none" style="transform-box:fill-box;transform-origin:center"/>`;
+    const withLiq = bowl.replace(/<path d="M530 497H564"/, `${liq}<path d="M530 497H564"`);
+    source = place(withLiq, BOX.bowl, sb.cx - sb.w / 2, sb.cy - sb.h / 2, 1.25, 'data-vessel="bowl"');
+  } else {
+    /* сосуд для шота: демитас модели (чашка с эспрессо), ручка слева, носик справа */
+    const e = espressoBox();
+    source = place(e.inner, e, sb.cx - sb.w / 2, sb.cy - sb.h / 2, 1, 'data-vessel="shot"', 0, { flip: true, src: 1 });
+  }
+  const spoonY = y;
+  const spoon = `<g id="xpSpoon" data-top="${y.toFixed(1)}" data-full="${topFull.toFixed(1)}" transform="translate(0 0)"><path d="M206 ${(spoonY - 2).toFixed(1)}L262 ${(spoonY - 62).toFixed(1)}L266 ${(spoonY - 59).toFixed(1)}L210 ${(spoonY + 1).toFixed(1)}Z" fill="${col('STEEL')}" ${sw('D')}/><ellipse cx="192" cy="${(spoonY - 1).toFixed(1)}" rx="19" ry="4" fill="${col('STEEL_HI')}" ${sw('M')}/><ellipse cx="192" cy="${(spoonY - 1.6).toFixed(1)}" rx="13" ry="1.8" fill="${col('STEEL_SH')}" stroke="none"/></g>`;
+  return `<g ${WRAP}><defs><clipPath id="xpClip"><path d="${LAYER_PATH}"/></clipPath></defs>
+<g id="xpSrc" data-a0="${a0}" data-a1="${LAYER_ANGLE.a1}" data-cx="${sb.cx.toFixed(1)}" data-cy="${sb.cy.toFixed(1)}" transform="rotate(${a0} ${sb.cx.toFixed(1)} ${sb.cy.toFixed(1)})">${source}</g>
+<path d="${LAYER_PATH}" fill="${col('GLASS')}" stroke="none"/>
 <g clip-path="url(#xpClip)">${base.join('')}<rect id="xpLayer" data-top="${y.toFixed(1)}" data-full="${topFull.toFixed(1)}" x="130" y="${y.toFixed(1)}" width="140" height="0" fill="${top.color}"/>${cubes}</g>
-<path d="${CUP_PATH}" fill="none" ${sw('M')}/>
-<path d="M156 40L162 150" fill="none" stroke="${col('HILITE')}" stroke-opacity=".75" ${sw('M')}/>
+<path d="${LAYER_PATH}" fill="none" ${sw('M')}/>
+<path d="M156 60L162 160" fill="none" stroke="${col('HILITE')}" stroke-opacity=".75" ${sw('M')}/>
 <path id="xpMark" d="M0 0" opacity="0"/>
-<g class="xpTilt">${pourer}</g>${stream(sx, sy, 176, y, top.color)}</g>`;
+${spoon}${stream(LIP.x + 3, LIP.y + 3, 190, y, top.color)}</g>`;
 }

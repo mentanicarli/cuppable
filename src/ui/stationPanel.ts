@@ -89,7 +89,7 @@ export function panelUpdate(root: HTMLElement, v: PanelView, l: PanelLive): void
     mat.setAttribute('fill-opacity', (0.35 + 0.65 * p).toFixed(2));
     root.querySelectorAll<SVGGraphicsElement>('[data-at]').forEach((e) => e.setAttribute('opacity', p >= Number(e.getAttribute('data-at')) ? '1' : '0'));
   }
-  /* «Налить слоями»: верхний слой растёт за время цели, нижние налиты заранее; струя кончается на поверхности */
+  /* «Налить слоями»: верхний слой растёт за время цели, нижние налиты заранее; ложка поднимается с поверхностью, источник наклоняется, струя кончается на лопатке */
   const lay = root.querySelector<SVGGraphicsElement>('#xpLayer');
   if (lay) {
     const p = Math.min(1, l.value / ((v.zone[0] + v.zone[1]) / 2));
@@ -97,8 +97,17 @@ export function panelUpdate(root: HTMLElement, v: PanelView, l: PanelLive): void
     const full = Number(lay.getAttribute('data-full'));
     lay.setAttribute('y', (top - full * p).toFixed(1));
     lay.setAttribute('height', (full * p).toFixed(1));
+    const spoon = root.querySelector<SVGGraphicsElement>('#xpSpoon');
+    if (spoon) spoon.setAttribute('transform', `translate(0 ${(-full * p).toFixed(1)})`);
+    const src = root.querySelector<SVGGraphicsElement>('#xpSrc');
+    if (src) {
+      const a = Number(src.getAttribute('data-a0')) + (Number(src.getAttribute('data-a1')) - Number(src.getAttribute('data-a0'))) * p;
+      src.setAttribute('transform', `rotate(${a.toFixed(1)} ${src.getAttribute('data-cx')} ${src.getAttribute('data-cy')})`);
+    }
+    const sl = root.querySelector<SVGGraphicsElement>('#xpSrcLiq');
+    if (sl) sl.style.transform = `scale(${(1 - 0.8 * p).toFixed(2)})`;
     const st = root.querySelector<SVGPathElement>('#xpStream');
-    if (st) st.setAttribute('d', streamD(Number(st.getAttribute('data-sx')), Number(st.getAttribute('data-sy')), Number(st.getAttribute('data-ex')), top - full * p));
+    if (st) st.setAttribute('d', streamD(Number(st.getAttribute('data-sx')), Number(st.getAttribute('data-sy')), Number(st.getAttribute('data-ex')), top - full * p - 2));
   }
   const mark = root.querySelector<SVGPathElement>('#xpMark');
   if (mark && v.kind === 'fill') {
