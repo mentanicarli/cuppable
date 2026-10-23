@@ -78,16 +78,25 @@ export function panelUpdate(root: HTMLElement, v: PanelView, l: PanelLive): void
     /* верх (дно сосуда) и полная высота налива задаёт иллюстрация: у каждого предмета бара свои */
     const top = Number(liq.getAttribute('data-top') ?? 172);
     const full = Number(liq.getAttribute('data-full') ?? 140);
-    const h = Math.min(full, frac * full);
+    const start = Number(liq.getAttribute('data-start') ?? 0);
+    const h = Math.min(full, (start + (1 - start) * frac) * full);
     liq.setAttribute('y', (top - h).toFixed(1));
     liq.setAttribute('height', h.toFixed(1));
   }
   /* «Взбить матчу»: жидкость насыщается, пена появляется по мере взбивания (доля времени цели) */
+  /* общий прогресс окна: доля налива для «налить», доля времени цели для «держать» */
+  const prog = v.kind === 'fill' ? frac : Math.min(1, l.value / ((v.zone[0] + v.zone[1]) / 2));
+  root.querySelectorAll<SVGGraphicsElement>('[data-at]').forEach((e) => e.setAttribute('opacity', prog >= Number(e.getAttribute('data-at')) ? '1' : '0'));
+  root.querySelectorAll<SVGGraphicsElement>('[data-fade]').forEach((e) => e.setAttribute('opacity', (1 - 0.85 * prog).toFixed(2)));
+  root.querySelectorAll<SVGGraphicsElement>('[data-grow]').forEach((e) => {
+    const ry = Number(e.getAttribute('data-ry')) * prog;
+    e.setAttribute('ry', ry.toFixed(1));
+    e.setAttribute('cy', (Number(e.getAttribute('data-base')) - ry * 0.55).toFixed(1));
+  });
   const mat = root.querySelector<SVGGraphicsElement>('#xpMat');
   if (mat) {
     const p = Math.min(1, l.value / ((v.zone[0] + v.zone[1]) / 2));
     mat.setAttribute('fill-opacity', (0.35 + 0.65 * p).toFixed(2));
-    root.querySelectorAll<SVGGraphicsElement>('[data-at]').forEach((e) => e.setAttribute('opacity', p >= Number(e.getAttribute('data-at')) ? '1' : '0'));
   }
   /* «Налить слоями»: верхний слой растёт за время цели, нижние налиты заранее; ложка поднимается с поверхностью, источник наклоняется, струя кончается на лопатке */
   const lay = root.querySelector<SVGGraphicsElement>('#xpLayer');
@@ -118,7 +127,13 @@ export function panelUpdate(root: HTMLElement, v: PanelView, l: PanelLive): void
     mark.setAttribute('d', `M${mark.getAttribute('data-x0') ?? 144} ${y.toFixed(1)}H${mark.getAttribute('data-x1') ?? 256}`);
   }
   const foam = root.querySelector<SVGGraphicsElement>('#xpFoam');
-  if (foam) { const h = Math.min(30, frac * 30); foam.setAttribute('y', (172 - 60 - h).toFixed(1)); foam.setAttribute('height', h.toFixed(1)); }
+  if (foam) {
+    const top = Number(foam.getAttribute('data-top') ?? 112);
+    const full = Number(foam.getAttribute('data-full') ?? 30);
+    const h = Math.min(full, frac * full);
+    foam.setAttribute('y', (top - h).toFixed(1));
+    foam.setAttribute('height', h.toFixed(1));
+  }
   const liq2 = root.querySelector<SVGGraphicsElement>('#xpLiq2');
   if (liq2) { const h = Math.min(60, frac * 60); liq2.setAttribute('y', (172 - 70 - h).toFixed(1)); liq2.setAttribute('height', h.toFixed(1)); }
   const sg = root.querySelector<SVGGraphicsElement>('#xpSteamG');

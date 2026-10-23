@@ -14,10 +14,10 @@ const TOKENS = [PAL.stroke.L, PAL.stroke.M, PAL.stroke.D];
 /** Заливки предмета, которые окно заменяет цветом напитка (налив вместо встроенного чая, порошок банки). */
 const REPLACED: Record<string, string[]> = { brew: ['TERRA', 'BAKE'], powder: ['CHOC'] };
 const col = (task: string): string => (task === 'powder' ? PAL.colors.CHOC : PAL.colors.MUSTARD);
-const art = (task: string, drink?: string): string => panelArt({ task, col: col(task), col2: PAL.colors.PAPER, drink: task === 'layer' ? 'orange_bumble' : drink });
+const art = (task: string, drink?: string): string => panelArt({ task, col: col(task), col2: PAL.colors.PAPER, drink: task === 'layer' ? 'orange_bumble' : task === 'topping' || task === 'whip' ? 'aerocano' : drink });
 /** цвета слоёв — данные напитка (спецификация), не палитра */
 const espressoSpec = specOf('espresso', sizesOf('espresso', false)[0] as never, false);
-const specColors = new Set([...layerView('orange_bumble', 1).map((l) => l.color), ...espressoSpec.liquid.map((l) => l.color), espressoSpec.top.color].map((c) => c.toLowerCase()));
+const specColors = new Set([...layerView('orange_bumble', 1).map((l) => l.color), ...specOf('aerocano', sizesOf('aerocano', true)[0] as never, true).liquid.map((l) => l.color), ...espressoSpec.liquid.map((l) => l.color), espressoSpec.top.color].map((c) => c.toLowerCase()));
 /* демитас модели напитка: его цвета (кофе, крема, керамика) — данные модели, а не палитры */
 for (const m of drinkPx(espressoSpec, { level: 'full', s: 1.1, noSaucer: true }).all.inner.matchAll(/#[0-9a-fA-F]{6}/g)) specColors.add(m[0].toLowerCase());
 
@@ -40,7 +40,7 @@ describe('окна станций: предметы бара', () => {
   for (const task of TASKS) {
     test(`${task}: цвета только из палитры, толщины только L/M/D`, () => {
       const svg = art(task, 'cocoa');
-      for (const m of svg.matchAll(/(?:fill|stroke)="(#[0-9a-fA-F]{6})"/g)) expect(colors.has((m[1] as string).toLowerCase()) || (task === 'layer' && specColors.has((m[1] as string).toLowerCase())), `цвет ${m[1]}`).toBe(true);
+      for (const m of svg.matchAll(/(?:fill|stroke)="(#[0-9a-fA-F]{6})"/g)) expect(colors.has((m[1] as string).toLowerCase()) || specColors.has((m[1] as string).toLowerCase()), `цвет ${m[1]}`).toBe(true);
       /* демитас — модель напитка со своими контурами (ручка толще токенов): у него проверяем только цвета */
       const widthSvg = svg.includes('data-vessel="shot"') ? svg.replace(groupOf(svg, 'data-vessel="shot"'), '') : svg;
       const { flat, scaled } = split(widthSvg);
@@ -66,9 +66,9 @@ describe('окна станций: предметы бара', () => {
   test('налив: у каждого окна есть #xpLiq с data-top и data-full; у окон «залить» есть #xpMark', () => {
     for (const t of TASKS) {
       const svg = art(t);
-      if (t === 'whisk') expect(svg, t).toMatch(/id="xpMat"/);
-      else if (t === 'layer') expect(svg, t).toMatch(/id="xpLayer" data-top="[\d.]+" data-full="[\d.]+"/);
-      else if (t !== 'whip') expect(svg, t).toMatch(/id="xpLiq" data-top="[\d.]+" data-full="[\d.]+"/);
+      /* у каждого окна есть то, что растёт по прогрессу: налив (#xpLiq), слой (#xpLayer), жидкость матчи (#xpMat), шарики (data-at), топпинг (#xpTop), пена (#xpFoam), сливки (#xpCream) */
+      const grows: Record<string, RegExp> = { whisk: /id="xpMat"/, layer: /id="xpLayer" data-top="[\d.]+" data-full="[\d.]+"/, boba: /data-at="1\.00"/, topping: /id="xpTop" data-grow/, foam: /id="xpFoam" data-top="[\d.]+" data-full="[\d.]+"/, whip: /id="xpCream" data-grow/ };
+      expect(svg, t).toMatch(grows[t] ?? /id="xpLiq"( data-start="[\d.]+")? data-top="[\d.]+" data-full="[\d.]+"/);
     }
     for (const t of ['juice', 'tonic', 'powder', 'boba', 'topping']) expect(art(t), t).toMatch(/id="xpMark" data-top=/);
   });
@@ -144,5 +144,36 @@ describe('окно «Налить слоями»: источник, ложка, 
     expect(s.indexOf('id="xpSrc"')).toBeLessThan(s.indexOf('id="xpLayer"'));
     expect(s.indexOf('id="xpLayer"')).toBeLessThan(s.indexOf('id="xpSpoon"'));
     expect(s.indexOf('id="xpSpoon"')).toBeLessThan(s.indexOf('id="xpStream"'));
+  });
+});
+
+describe('аудит окон (31-3): приёмник и источник по предыдущим шагам рецепта', () => {
+  const win = (task: string, drink: string, cold = true): string => panelArt({ task, col: PAL.colors.MUSTARD, col2: PAL.colors.PAPER, drink, size: '0.3', cold });
+  const cubes = (s: string): number => s.split('rx="4" fill="' + PAL.colors.GLASS).length - 1;
+  test('лёд, насыпанный шагом «Лёд», лежит в приёмнике: сок, тоник, шарики, топпинг, сливки', () => {
+    for (const [t, d] of [['juice', 'orange_bumble'], ['tonic', 'espresso_tonic'], ['boba', 'boba_guava'], ['topping', 'frappe_caramel'], ['whip', 'aerocano']] as const) expect(cubes(win(t, d)), `${t} ${d}`).toBeGreaterThanOrEqual(5);
+    expect(cubes(win('juice', 'hot_bumble', false)), 'горячий бамбл без льда').toBe(0);
+  });
+  test('блендер и шейкер: кувшин уже полон (data-start), лёд тает по прогрессу (data-fade); без льда кубиков нет', () => {
+    expect(win('blend', 'milkshake_vanilla')).toMatch(/data-start="0\.72"/);
+    expect(win('blend', 'milkshake_vanilla')).toContain('data-fade="1"');
+    expect(win('shake', 'boba_guava')).toContain('data-fade="1"');
+    expect(win('shake', 'protein_milk')).not.toContain('data-fade="1"');
+  });
+  test('шарики: стакан с чаем и льдом, шарики кастрюли появляются по прогрессу на дне; кастрюля бара — источник', () => {
+    const s = win('boba', 'boba_guava');
+    expect(s).toContain('data-pot="1"');
+    expect([...s.matchAll(/data-at="/g)].length).toBeGreaterThanOrEqual(15);
+  });
+  test('пена: разрез кувшина миксера (молоко и поднимающаяся пена), а не стакан; шапка пены появляется в конце', () => {
+    const s = win('foam', 'latte_coconut', false);
+    expect(s).toContain('id="xpFoam"');
+    expect(s).toContain('data-at="0.9"');
+    expect(s).not.toContain(`d="${'M140 28H260L250 172H150Z'}"`);
+  });
+  test('сливки и топпинг лежат на напитке в стакане: растущие эллипсы, а не жидкость с дна', () => {
+    expect(win('whip', 'aerocano')).toContain('id="xpCream"');
+    expect(win('topping', 'frappe_caramel')).toContain('id="xpTop"');
+    expect(win('topping', 'frappe_caramel')).not.toContain('id="xpLiq"');
   });
 });
