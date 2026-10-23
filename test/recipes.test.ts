@@ -127,7 +127,7 @@ describe('заказы новых напитков', () => {
   });
 });
 
-import { helperPick, helperQuality, helperPrepTime } from '../src/game/helper';
+import { helperPick, helperQuality, helperPrepTime, helperCanPour } from '../src/game/helper';
 import { rentFor, helperWage } from '../src/game/economy';
 test('помощник берёт только простые напитки и самого нетерпеливого', () => {
   const g = (id: number, drink: string, pat: number, extra = {}) => ({ id, drink, arrived: true, leaving: false, pat, syrup: null, food: false, ...extra });
@@ -139,6 +139,18 @@ test('помощник берёт только простые напитки и 
   expect(helperPrepTime('espresso2', 2)).toBe(32);
   expect(helperPrepTime('americano', 2)).toBe(helperPrepTime('americano') + 16);
   expect(helperPick([g(1, 'espresso2', 30)], null)?.id).toBe(1);
+});
+test('31-8Б: помощник наливает фильтр-кофе только из готовой колбы, где хватает на чашку', () => {
+  const g = (id: number, drink: string, pat: number, extra = {}) => ({ id, drink, arrived: true, leaving: false, pat, syrup: null, food: false, ml: 300, ...extra });
+  expect(helperPrepTime('filter_coffee')).toBe(10);
+  expect(helperPrepTime('filter_coffee')).toBeLessThan(helperPrepTime('espresso'));
+  expect(helperPick([g(1, 'filter_coffee', 30)], null, { ml: 598, brewing: false })?.id).toBe(1); /* хватает */
+  expect(helperPick([g(1, 'filter_coffee', 30)], null, { ml: 250, brewing: false })).toBeNull(); /* мало: заказ остаётся игроку */
+  expect(helperPick([g(1, 'filter_coffee', 30)], null, { ml: 598, brewing: true })).toBeNull(); /* идёт заварка: ждём молча */
+  expect(helperPick([g(1, 'filter_coffee', 30)], null)).toBeNull(); /* без колбы (нет кофеварки) */
+  expect(helperPick([g(1, 'filter_coffee', 5, { food: true }), g(2, 'americano', 90)], null, { ml: 598, brewing: false })?.id).toBe(2); /* с блюдом не берёт */
+  expect(helperPick([g(1, 'filter_coffee', 5), g(2, 'espresso', 40)], null, { ml: 100, brewing: false })?.id).toBe(2); /* пустая колба не мешает остальным */
+  expect(helperCanPour(g(1, 'americano', 5), null)).toBe(true);
 });
 test('качество помощника: доли и рост с рангом', () => {
   let s = 1; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;

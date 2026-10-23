@@ -123,6 +123,37 @@ let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' 
   ok(await p.evaluate(() => __dbg.D.carafe.ml === 1200 && !__dbg.D.carafe.brew), 'кнопка песочницы «Колба полная»: 1200 мл');
   await shot('r8_full');
 
+  /* --- 8. помощник (31-8Б, шаг 4): наливает из полной колбы за 10 с, резервирует объём и расход; при пустой колбе заказ остаётся игроку --- */
+  await p.evaluate(() => { const d = __dbg; if (d.BR) d.barAbort(); d.G.helper = true; d.G.rank = 5; d.G.eq_drip = true; d.D.carafe.brew = null; d.D.carafe.ml = 1200; d.D.cup = null; d.D.customers.slice().forEach(d.exit); d.applyUpgrades(); });
+  await p.waitForTimeout(500);
+  const money1 = await p.evaluate(() => __dbg.G.money), costs1 = await p.evaluate(() => __dbg.D.stats.costs);
+  await order('0.3');
+  await p.waitForFunction(() => __dbg.D.helper && __dbg.D.helper.c, null, { timeout: 15000 });
+  ok(await p.evaluate(() => __dbg.D.carafe.ml === 900), 'помощник взял гостя из полной колбы: объём чашки 300 мл зарезервирован (1200 → 900)');
+  ok(await p.evaluate(() => __dbg.D.stats.costs) - costs1 === 66, 'расход за чашку при выборе гостя: 66 ₽');
+  ok(/Помощник: фильтр-кофе/.test(await p.evaluate(() => document.querySelector('#helperChip').textContent)), 'чип «Помощник: фильтр-кофе»');
+  await shot('h1_helper_pours');
+  const th = await p.evaluate(() => performance.now());
+  await p.waitForFunction(() => !__dbg.D.helper.c, null, { timeout: 20000 });
+  const hs = (await p.evaluate(() => performance.now()) - th) / 1000;
+  ok(hs > 5 && hs < 12, 'помощник налил за оставшиеся секунды из 10 (прошло ' + hs.toFixed(1) + ' с)');
+  ok(await p.evaluate(() => __dbg.D.carafe.ml === 900 && __dbg.D.stats.served >= 1), 'гость обслужен помощником, из колбы ушло 300 мл');
+  /* пустая колба: помощник пропускает, гость остаётся, тост один раз */
+  await p.evaluate(() => { __dbg.D.carafe.ml = 0; });
+  await order('0.3');
+  await p.waitForTimeout(2500);
+  t = (await toasts()).join(' | ');
+  ok(/Фильтр-кофе закончился/.test(t), 'при пустой колбе тост «Фильтр-кофе закончился»: ' + t);
+  ok(await p.evaluate(() => !__dbg.D.helper.c && __dbg.D.customers.some(c => c.drink === 'filter_coffee' && !c.leaving)), 'гость остался игроку, помощник его не взял');
+  ok(await p.evaluate(() => __dbg.D.customers.filter(c => c.helperSkip).length === 1), 'флаг пропуска один на гостя (тост не повторяется)');
+  /* возврат: колба наполнилась, помощник взял гостя, игрок открыл его заказ сам — деньги и объём возвращаются */
+  await p.evaluate(() => { __dbg.D.carafe.ml = 1200; });
+  await p.waitForFunction(() => __dbg.D.helper && __dbg.D.helper.c, null, { timeout: 15000 });
+  const ml1 = await p.evaluate(() => __dbg.D.carafe.ml), costs2 = await p.evaluate(() => __dbg.D.stats.costs);
+  await p.evaluate(() => __dbg.barOpen(__dbg.D.helper.c)); await p.waitForTimeout(1500); await PW.dismissCard(p);
+  ok(await p.evaluate(() => __dbg.D.carafe.ml) === ml1 + 300, 'игрок открыл заказ сам: зарезервированные 300 мл вернулись в колбу');
+  void money1;
+
   await b.close();
   const bad = errs.filter(e => /^PAGE|error/i.test(e)); if (bad.length) { console.log(bad.join('\n')); fails++; }
   console.log(fails ? 'FAILED ' + fails : 'NO_ERRORS'); process.exit(fails ? 1 : 0);
