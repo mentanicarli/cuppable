@@ -66,22 +66,30 @@ const out = process.argv[3] || 'out/tn';
       acts.push([key, a]);
     });
     await new Promise(r => setTimeout(r, 2500));
-    let worstLen = '';
+    let worstLen = '', minPx = 99; const minOf = { px: 99, n: '' };
     for (const [key, a] of acts) {
       const L = a.bubbleLayout(); if (!L) { res.push(key + ': нет раскладки'); continue; }
       const bad = [];
-      if (L.icon && L.name.x0 < L.icon.x1 + 3.5) bad.push(`название ${L.name.x0.toFixed(1)} ближе 4 к иконке ${L.icon.x1.toFixed(1)}`);
+      const hit = (a, c) => a.x0 < c.x1 && c.x0 < a.x1 && a.y0 < c.y1 && c.y0 < a.y1;
       if (!L.icon) bad.push('иконка не загрузилась');
-      if (L.name.x0 < L.card.x0 || L.name.x1 > L.card.x1 - 3.5 || L.name.y0 < L.card.y0 + 20 || L.name.y1 > L.card.y1) bad.push('название вне карточки ' + JSON.stringify(L.name));
+      if (L.icon && hit(L.name, L.icon)) bad.push('название пересекает иконку');
+      if (hit(L.name, L.bar)) bad.push('название пересекает полосу терпения');
+      if (L.name.x0 < L.card.x0 + 2 || L.name.x1 > L.card.x1 - 2 || L.name.y0 < L.card.y0 || L.name.y1 > L.card.y1) bad.push('название вне карточки ' + JSON.stringify(L.name));
+      if (L.fontSize * 0.9 < 9.99) bad.push('шрифт ' + (L.fontSize * 0.9).toFixed(1) + ' px на экране < 10');
+      minPx = Math.min(minPx, L.fontSize * 0.9);
+      if (L.fontSize * 0.9 < minOf.px) { minOf.px = L.fontSize * 0.9; minOf.n = d.NAME[key]; }
       if (L.lines > 2) bad.push('строк ' + L.lines);
       if (d.NAME[key].length > worstLen.length) worstLen = d.NAME[key];
       if (bad.length) res.push(key + ': ' + bad.join(', '));
     }
     acts.forEach(([, a]) => d.WORLD.removeActor(a));
-    return { res, n: acts.length, worstLen };
+    /* три места очереди: пузыри (ширина 142 единицы × 0,9) не пересекаются и не выходят за сцену */
+    const SL = [640, 510, 380], half = 71 * 0.9, gaps = SL.slice(1).map((x, k) => (SL[k] - half) - (x + half));
+    if (gaps.some(g => g < 0) || SL.some(x => x - half < 0 || x + half > 1280)) res.push('пузыри соседей пересекаются или вне сцены: ' + gaps.join(','));
+    return { res, n: acts.length, worstLen, minPx, minOf, gaps };
   });
   ok('пузырь: проблем ' + bub.res.length + ': ' + bub.res.slice(0, 3).join('; '), bub.res.length === 0);
-  console.log(`пузырь: проверено ${bub.n} названий, самое длинное «${bub.worstLen}»`);
+  console.log(`пузырь: проверено ${bub.n} названий × 3 места очереди, самое длинное «${bub.worstLen}», минимальный шрифт ${bub.minPx.toFixed(2)} px у «${bub.minOf.n}», зазоры между пузырями ${bub.gaps.map(g => g.toFixed(1)).join(' / ')} px`);
   /* кадры: билет с «К залу» в HUD бара уже снят выше; пузыри трёх длинных названий в зале */
   await p.evaluate(async () => {
     const d = window.__dbg, acts = []; d.barShow(false);
@@ -94,6 +102,19 @@ const out = process.argv[3] || 'out/tn';
     await new Promise(r => setTimeout(r, 2500)); clearInterval(t);
   });
   await p.screenshot({ path: `${out}_bubble_3drinks.png` });
+  /* самые длинные названия в трёх местах очереди; первый гость с тегами */
+  await p.evaluate(async () => {
+    const d = window.__dbg, acts = [];
+    const keys = Object.keys(d.NAME).sort((a, b2) => d.NAME[b2].length - d.NAME[a].length).slice(0, 3);
+    [640, 510, 380].forEach((x, i) => {
+      const key = keys[i], id = d.MENUAPI.drinkById[key] ? key : 'latte';
+      const a = d.WORLD.addActor({ look: d.D.customers[0].look, model: d.MENUAPI.modelRefOf(id, '0.4', true), title: d.NAME[key], tags: i === 0 ? [{ text: '0,4 л', color: '#8FA58A' }, { text: 'крепкий', color: '#C4694A' }] : [], x, onTap() {} });
+      a.showBubble(true); a.showTags(true); acts.push([a, x]);
+    });
+    const ty = d.D.customers[0].ty, t = setInterval(() => acts.forEach(([a, x]) => a.update(0.033, x, ty)), 33);
+    await new Promise(r => setTimeout(r, 2500)); clearInterval(t);
+  });
+  await p.screenshot({ path: `${out}_bubble_longest.png`, clip: { x: 24 + 240, y: 24 + 130, width: 520, height: 230 } });
   fs.unlinkSync(tmp); await b.close();
   const bad = errs.filter(e => /^FAIL|^PAGE|error/i.test(e)); console.log(bad.length ? bad.join('\n') : 'NO_ERRORS'); process.exit(bad.length ? 1 : 0);
 })();

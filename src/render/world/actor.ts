@@ -63,28 +63,33 @@ class IconTex {
 const modelIcons = new TexCache<IconTex>();
 const modelIconPending = new Map<string, Promise<IconTex>>();
 /* пузырь заказа (Н1-2): слот картинки слева ≈ 38 × 41 px на экране (42 × 45 единиц пузыря), справа полоса терпения и название */
-const SLOT = { cx: -41, cy: 347, w: 42, h: 45 };
-const PAT_X = -12;
-const PAT_Y = 328;
-const PAT_W = 66;
+/* 31-3: карточка 142 × 80 единиц (≈ 128 × 72 px; соседние гости стоят через 130 px): сверху ряд «иконка + полоса терпения», под ним название на всю ширину (≥ 11,2 единицы = 10 px на экране) */
+const CARD = { x0: -71, x1: 71, y0: 296, y1: 376 };
+const SLOT = { cx: -45, cy: 321, w: 42, h: 44 };
+const PAT_X = -18;
+const PAT_Y = 316;
+const PAT_W = 78;
+const TAGS_Y = 274;
 /** Кисти сидящего за ноутбуком лежат на клавиатуре за крышкой (крышка 196–264 × 482–540, основание до 547,5): центр кисти y 522, x ±12, чтобы ничего не выглядывало под основанием, а локти уходили за боковые края крышки. */
 const KEYS_X = 12;
 const KEYS_Y = 522;
 /** Область названия в пузыре: от правого края иконки (зазор ≥ 4 с запасом на сжатие растра) до правого края карточки (с зазором 4); не больше двух строк. */
-export const NAME_BOX = { x0: SLOT.cx + SLOT.w / 2 + 6, x1: 60, cy: 356, maxH: 28, lines: 2 };
+export const NAME_BOX = { x0: CARD.x0 + 3, x1: CARD.x1 - 3, y0: 346, y1: 374, cy: 360.5, lines: 2 };
+/** Нижняя граница шрифта названия: 10 px на экране при масштабе пузыря 0,9 (BUBBLE_SCALE). */
+export const NAME_MIN_FONT = 10 / 0.9;
 const NAME_FONT = 'Nunito, system-ui, sans-serif';
 
 /** Подбирает размер шрифта и перенос (по пробелам, затем по дефису): название целиком, ≤ 2 строк, шире области не выходит, без «…». */
 export function fitBubbleTitle(title: string, w: number): { text: string; size: number } {
   const hy = title.replace(/-/g, '-\n');
-  for (let fs = 11; fs >= 7; fs -= 0.5) {
+  for (let fs = 13; fs >= NAME_MIN_FONT - 0.001; fs -= 0.4) {
     const style = new TextStyle({ fontFamily: NAME_FONT, fontSize: fs, fontWeight: '800', align: 'center', wordWrap: true, wordWrapWidth: w, lineHeight: fs + 1 });
     for (const text of hy === title ? [title] : [title, hy]) {
       const m = CanvasTextMetrics.measureText(text, style);
       if (m.lines.length <= NAME_BOX.lines && m.maxLineWidth <= w) return { text, size: fs };
     }
   }
-  return { text: hy, size: 7 };
+  return { text: hy, size: NAME_MIN_FONT };
 }
 
 
@@ -1209,15 +1214,15 @@ export class Actor {
     b.addChild(this.tagsC);
     o.tags.forEach((t, i) => {
       const w = ws[i] as number;
-      const g = new Graphics().roundRect(tx, 296, w, 18, 9).fill(t.color).stroke({ width: 2, color: INK });
+      const g = new Graphics().roundRect(tx, TAGS_Y, w, 18, 9).fill(t.color).stroke({ width: 2, color: INK });
       const tt = new Text({ text: t.text, style: { fontFamily: 'Nunito, system-ui, sans-serif', fontSize: 11, fontWeight: '800', fill: readableOn(t.color) }, resolution: o.res });
       tt.anchor.set(0.5, 0.5);
-      tt.position.set(tx + w / 2, 305.5);
+      tt.position.set(tx + w / 2, TAGS_Y + 9.5);
       this.tagsC.addChild(g, tt);
       tx += w + 6;
     });
     const card = new Graphics();
-    card.roundRect(-64, 318, 128, 58, 14).fill('#FFF8EC').stroke({ width: 3, color: INK, join: 'round' });
+    card.roundRect(CARD.x0, CARD.y0, CARD.x1 - CARD.x0, CARD.y1 - CARD.y0, 14).fill('#FFF8EC').stroke({ width: 3, color: INK, join: 'round' });
     card.poly([-9, 375, 0, 387, 9, 375]).fill('#FFF8EC');
     card.moveTo(-9, 376).lineTo(0, 387).lineTo(9, 376).stroke({ width: 3, color: INK, join: 'round', cap: 'round' });
     card.roundRect(PAT_X, PAT_Y, PAT_W, 10, 5).fill('#E7D6BC').stroke({ width: 2, color: INK });
@@ -1262,7 +1267,7 @@ export class Actor {
   }
 
   /** Рамки названия, иконки и карточки в координатах пузыря (для проверки: название не пересекает иконку и не выходит из карточки). */
-  bubbleLayout(): { name: { x0: number; y0: number; x1: number; y1: number }; icon: { x0: number; y0: number; x1: number; y1: number } | null; card: { x0: number; y0: number; x1: number; y1: number }; lines: number } | null {
+  bubbleLayout(): { name: { x0: number; y0: number; x1: number; y1: number }; icon: { x0: number; y0: number; x1: number; y1: number } | null; card: { x0: number; y0: number; x1: number; y1: number }; bar: { x0: number; y0: number; x1: number; y1: number }; lines: number; fontSize: number } | null {
     const n = this.nameT;
     if (!n) return null;
     const nb = n.getLocalBounds();
@@ -1271,7 +1276,9 @@ export class Actor {
     return {
       name: { x0: n.x + nb.minX * n.scale.x, y0: n.y + nb.minY * n.scale.y, x1: n.x + nb.maxX * n.scale.x, y1: n.y + nb.maxY * n.scale.y },
       icon: hasIc && ic ? { x0: ic.x, y0: ic.y, x1: ic.x + ic.width, y1: ic.y + ic.height } : null,
-      card: { x0: -64, y0: 318, x1: 64, y1: 376 },
+      card: { ...CARD },
+      bar: { x0: PAT_X, y0: PAT_Y, x1: PAT_X + PAT_W, y1: PAT_Y + 10 },
+      fontSize: Number(n.style.fontSize),
       lines: n.text.split('\n').length
     };
   }
