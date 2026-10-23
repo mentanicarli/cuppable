@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import PAL from '../art-src/palette.json';
+import CENTER from '../src/assets/art/bar-parts.json';
 import { sizesOf, specOf } from '../src/game/drinkModel';
 import { layerView } from '../src/game/layers';
 import { drinkPx } from '../src/render/world/drinkModel';
@@ -175,5 +176,48 @@ describe('аудит окон (31-3): приёмник и источник по 
     expect(win('whip', 'aerocano')).toContain('id="xpCream"');
     expect(win('topping', 'frappe_caramel')).toContain('id="xpTop"');
     expect(win('topping', 'frappe_caramel')).not.toContain('id="xpLiq"');
+  });
+});
+
+describe('решения владельца по аудиту окон (31-4)', () => {
+  const win = (task: string, drink: string, cold = true): string => panelArt({ task, col: PAL.colors.MUSTARD, col2: PAL.colors.PAPER, drink, size: '0.3', cold });
+  const rest = (s: string, marker: string): string => s.replace(groupOf(s, marker), '');
+  test('протеин: приёмник — большой стакан шейкера бара; какао и цикорий остаются со стаканом', () => {
+    for (const d of ['protein_milk', 'protein_water']) {
+      const s = win('powder', d);
+      expect(s).toContain('data-receiver="shaker"');
+      const top = fillCounts(barObject('shaker', 'data-glass="tinBig"')).slice(0, 3).map((x) => x[0]);
+      for (const c of top) expect(s.toUpperCase().includes(c), `${d} ${c}`).toBe(true);
+      expect(s).toContain('class="xpTilt"'); /* банка-источник наклонена над шейкером */
+    }
+    for (const d of ['cocoa', 'chicory_latte']) expect(win('powder', d, false)).not.toContain('data-receiver="shaker"');
+  });
+  test('чай со смородиной: в стакане слой заварки по спецификации, сок — отдельным слоем сверху; остальные напитки с соком без заварки', () => {
+    const spec = specOf('tea_currant', sizesOf('tea_currant', false)[0] as never, false);
+    const s = win('juice', 'tea_currant', false);
+    expect(s.toLowerCase()).toContain((spec.liquid[0] as { color: string }).color.toLowerCase());
+    expect(s).toMatch(/id="xpLiq" data-top="[5-9]\d\.\d"/); /* сок льётся выше слоя заварки, а не со дна */
+    expect(win('juice', 'orange_bumble')).toMatch(/id="xpLiq" data-top="172"/);
+  });
+  test('милкшейк банан: приёмник сока — кувшин блендера бара с молоком; в бамблах стакан', () => {
+    const s = win('juice', 'milkshake_banana');
+    expect(s).toContain('data-receiver="blender"');
+    expect(s).toContain('data-glass="blenderJug"');
+    for (const c of fillCounts(barObject('blender', 'data-item="blender"')).slice(0, 3).map((x) => x[0])) expect(s.toUpperCase().includes(c), c).toBe(true);
+    expect(s).toContain(`fill="${PAL.colors.PAPER}"`); /* молоко */
+    expect(win('juice', 'orange_bumble')).not.toContain('data-receiver="blender"');
+  });
+  test('тыквенный капучино: солонка со специями из примитивов палитры; остальные топпинги без неё', () => {
+    const s = win('topping', 'cappuccino_pumpkin', false);
+    expect(s).toContain('data-spice="1"');
+    expect(s).not.toContain('data-item="jarCocoa"');
+    expect(s).toContain(PAL.colors.MUSTARD); /* цвет специи */
+    expect(s).toContain(PAL.colors.STEEL_HI); /* крышка */
+    expect(win('topping', 'frappe_caramel')).not.toContain('data-spice="1"');
+    expect(win('topping', 'aerocano')).not.toContain('data-spice="1"');
+  });
+  test('солонка рисуется только в окне: у предметов бара её нет', () => {
+    expect(JSON.stringify(Object.keys(CENTER))).not.toMatch(/spice/i);
+    expect(rest(win('topping', 'cappuccino_pumpkin', false), 'data-spice="1"').length).toBeGreaterThan(100);
   });
 });

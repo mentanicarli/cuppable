@@ -16,8 +16,9 @@ const PANELS = { whisk: 'matcha_latte', brew: 'tea_sencha', juice: 'orange_bumbl
   await p.evaluate(() => window.__sandbox.start({ day: 10, profile: 'medium' })); await p.waitForSelector('#screen', { state: 'hidden', timeout: 20000 });
   await p.evaluate(() => { const d = __dbg; ['tea', 'matcha', 'powders', 'juice', 'whipper', 'foamer', 'blender', 'boba', 'shaker'].forEach(k => { d.G['eq_' + k] = true; }); d.G.eq_ice = true; d.G.milk = true; d.G.tutOff = true; d.applyUpgrades(); });
   await p.waitForFunction(() => __dbg.D.customers[0] && __dbg.D.customers[0].arrived, null, { timeout: 90000 });
-  for (const [task, id] of Object.entries(PANELS)) {
-    if (only.length && !only.includes(task)) continue;
+  const list = process.env.PAIRS ? process.env.PAIRS.split(',').map(x => x.split('=')) : Object.entries(PANELS); /* PAIRS=станция=напиток,… — произвольные пары */
+  for (const [task, id] of list) {
+    if (!process.env.PAIRS && only.length && !only.includes(task)) continue;
     await p.evaluate(() => { if (__dbg.D) __dbg.D.t = Math.min(__dbg.D.t, 60); });
     await p.evaluate(() => __dbg.resetBar()); await p.waitForTimeout(150);
     await p.evaluate(({ id }) => { const M = window.__MENUAPI, c = __dbg.D.customers[0], dk = M.drinkById[id]; c.drink = id; c.order.key = id; c.order.id = id; c.order.name = dk.name; c.order.size = '0.4'; c.order.cold = /bumble|tonic|shake|boba|frappe|aero|protein/.test(id); c.order.food = null; c.syrup = null; c.pumps = 0; c.strong = false; c.pat = c.max = 1e9; __dbg.barOpen(c); }, { id });
@@ -29,7 +30,7 @@ const PANELS = { whisk: 'matcha_latte', brew: 'tea_sencha', juice: 'orange_bumbl
     await p.evaluate(sec => __dbg.camGo(sec, true), sec); await p.waitForTimeout(300);
     await p.evaluate(t => __dbg.zoneClick(t), task); await p.waitForTimeout(700); await PW.dismissCard(p); await p.waitForTimeout(300);
     const el = await p.$('#xPanel:not([hidden])'); if (!el) { console.log('нет окна', task, await p.evaluate(() => JSON.stringify({ inset: __dbg.BR.inset, msgs: [...document.querySelectorAll('.bmsg')].map(e => e.textContent), tasks: __dbg.BR.tasks, done: Object.keys(__dbg.BR.done), sec: document.querySelector('#xPanel')?.outerHTML.slice(0, 80) }))); continue; }
-    await el.screenshot({ path: `${out}/panel_${task}_${tag}.png` });
+    await el.screenshot({ path: `${out}/panel_${task}${process.env.PAIRS ? '_' + id : ''}_${tag}.png` });
     console.log('ok', task, id);
   }
   fs.unlinkSync(tmp); await b.close();

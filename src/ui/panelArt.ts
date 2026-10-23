@@ -69,13 +69,15 @@ const sw = (k: 'L' | 'M' | 'D'): string => `stroke-width="${W[k]}"`;
 
 /** Принимающий стакан окна (холодный стакан модели: стенка GLASS, налив, контур, блик); налив через #xpLiq. */
 const CUP_PATH = 'M140 28H260L250 172H150Z';
-function cup(liq: string, extra = ''): string {
+function cup(liq: string, extra = '', pre?: { base: string; top: number; full: number }): string {
+  const top = pre ? pre.top.toFixed(1) : '172';
+  const full = pre ? pre.full.toFixed(1) : '140';
   return `<defs><clipPath id="xpClip"><path d="${CUP_PATH}"/></clipPath></defs>
 <path d="${CUP_PATH}" fill="${col('GLASS')}" stroke="none"/>
-<g clip-path="url(#xpClip)"><rect id="xpLiq" data-top="172" data-full="140" x="130" y="172" width="140" height="0" fill="${liq}"/>${extra}</g>
+<g clip-path="url(#xpClip)">${pre ? pre.base : ''}<rect id="xpLiq" data-top="${top}" data-full="${full}" x="130" y="${top}" width="140" height="0" fill="${liq}"/>${extra}</g>
 <path d="${CUP_PATH}" fill="none" ${sw('M')}/>
 <path d="M156 40L162 150" fill="none" stroke="${col('HILITE')}" stroke-opacity=".75" ${sw('M')}/>
-<path id="xpMark" data-top="172" data-full="140" data-x0="144" data-x1="256" d="M144 100H256" fill="none" stroke="${INK}" stroke-dasharray="5 5" ${sw('D')}/>`;
+<path id="xpMark" data-top="${top}" data-full="${full}" data-x0="144" data-x1="256" d="M144 100H256" fill="none" stroke="${INK}" stroke-dasharray="5 5" ${sw('D')}/>`;
 }
 
 /** Струя: узкая лента цвета наливаемого (без контура), от носика (x1, y1) к стакану (x2, y2). */
@@ -203,6 +205,44 @@ function receiverDrink(drink: string | undefined, size: string | undefined, cold
   }
 }
 
+/** Солонка-банка со специями (31-3, шаг 4): рисуется только в окне, из примитивов палитры; координаты проектные (толщины токен / 1,1, как у предметов бара). */
+export function spiceShakerSvg(color: string): string {
+  const dw = `stroke-width="${(W.D / SRC_SCALE).toFixed(2)}"`;
+  const mw = `stroke-width="${(W.M / SRC_SCALE).toFixed(2)}"`;
+  return `<g data-spice="1"><path d="M6 14H34Q37 14 37 18V52Q37 58 31 58H9Q3 58 3 52V18Q3 14 6 14Z" fill="${col('GLASS')}" ${mw}/><path d="M4 36H36V52Q36 57 31 57H9Q4 57 4 52Z" fill="${color}" stroke="none"/><path d="M8 20Q7 34 8 50" fill="none" stroke="${col('HILITE')}" stroke-opacity=".75" ${mw}/><rect x="5" y="4" width="30" height="12" rx="4" fill="${col('STEEL_HI')}" ${mw}/><circle cx="12" cy="10" r="1.4" fill="${col('DARK')}" stroke="none"/><circle cx="20" cy="10" r="1.4" fill="${col('DARK')}" stroke="none"/><circle cx="28" cy="10" r="1.4" fill="${col('DARK')}" stroke="none"/><path d="M5 20H35" fill="none" stroke="${col('STEEL_SH')}" ${dw}/></g>`;
+}
+const SPICE_BOX: Box = { x: 3, y: 4, w: 34, h: 54 };
+
+/** Шаги рецепта после `task` содержат `what`. */
+function laterThan(drink: string | undefined, task: string, what: string, cold?: boolean): boolean {
+  if (!drink) return false;
+  try {
+    const t = buildTasks(drink, { cold: cold ?? true, syrup: false });
+    return t.indexOf(what) > t.indexOf(task) && t.indexOf(task) >= 0;
+  } catch {
+    return false;
+  }
+}
+/** Слои спецификации, кроме последнего (он наливается в окне): заварка под соком. */
+function receiverLayersSpec(drink: string | undefined, size: string | undefined, cold: boolean | undefined): { base: string; top: number; full: number } | null {
+  try {
+    const spec = specOf(drink ?? 'latte', (size ?? '0.3') as never, cold ?? true);
+    if (spec.liquid.length < 2) return null;
+    const H = 128;
+    let y = 172;
+    const rects: string[] = [];
+    for (const l of spec.liquid.slice(0, -1)) {
+      const h = l.frac * H;
+      y -= h;
+      rects.push(`<rect x="130" y="${y.toFixed(1)}" width="140" height="${h.toFixed(1)}" fill="${l.color}"/>`);
+    }
+    const last = spec.liquid[spec.liquid.length - 1];
+    return { base: rects.join(''), top: y, full: (last?.frac ?? 0.2) * H };
+  } catch {
+    return null;
+  }
+}
+
 export interface ArtOpts { task: string; col: string; col2: string; drink?: string; size?: string; cold?: boolean }
 
 /** Иллюстрация к шагу. Налив растёт через #xpLiq (его высоту ставит panelUpdate по data-top / data-full). */
@@ -214,15 +254,32 @@ export function panelArt(o: ArtOpts): string {
     case 'juice':
     case 'tonic': {
       const cap = task === 'tonic' ? 'SAGE' : 'TERRA';
+      const bottle = `<g class="xpTilt">${place(bottleSvg(c, cap), bottleBox(), 61, -19, 1.55, '', 98)}</g>${stream(134, 47, 182, 104, c)}`;
+      /* блендерный напиток (молоко → сок → блендер): приёмник — кувшин блендера бара с уже налитым молоком */
+      if (task === 'juice' && doneBefore(drink, task, 'milk', o.cold) && laterThan(drink, task, 'blend', o.cold)) {
+        const bl = barObject('blender', 'data-item="blender"');
+        const clip = backPath(groupOf(bl, 'data-glass="blenderJug"'));
+        const k = 0.84, bx = 168, by = 184 - BOX.blender.h * k;
+        const mapY = (v: number): number => by + (v - BOX.blender.y) * k;
+        const milkTop = 428 - (428 - 318) * 0.5;
+        const content = `<g clip-path="url(#xpClip)"><rect x="540" y="${milkTop}" width="130" height="${428 - milkTop}" fill="${col('PAPER')}"/><rect id="xpLiq" data-top="${milkTop}" data-full="${(milkTop - 322).toFixed(1)}" x="540" y="${milkTop}" width="130" height="0" fill="${c}"/>${receiverIceFlag(drink, task, o.cold) ? receiverCubesDesign([[590, 352], [618, 346], [600, 388], [628, 384]], 15, false) : ''}</g>`;
+        const withLiq = bl.replace(/(<path data-layer="back" d="[^"]+"[^>]*\/>)/, `$1${content}`);
+        return `<g ${WRAP}><defs><clipPath id="xpClip"><path d="${clip}"/></clipPath></defs><ellipse cx="${(bx + 56).toFixed(0)}" cy="186" rx="64" ry="5" fill="${col('SHADOW')}" fill-opacity=".25" stroke="none"/>${place(withLiq, BOX.blender, bx, by, k, 'data-receiver="blender"')}<path id="xpMark" data-top="${mapY(milkTop).toFixed(1)}" data-full="${(mapY(milkTop) - mapY(322)).toFixed(1)}" data-x0="190" data-x1="250" d="M0 0" opacity="0"/>${bottle}</g>`;
+      }
+      /* настой из прошлого шага (чай со смородиной): в стакане уже слой заварки по спецификации, сок наливается отдельной полосой сверху */
+      if (task === 'juice' && doneBefore(drink, task, 'brew', o.cold)) {
+        const r = receiverLayersSpec(drink, o.size, o.cold);
+        if (r) return `<g ${WRAP}>${cup(c, receiverIce(drink, task, o.cold), r)}${bottle}</g>`;
+      }
       /* приёмник — стакан заказа: лёд, насыпанный шагом «Лёд», уже лежит в нём */
-      return `<g ${WRAP}>${cup(c, receiverIce(drink, task, o.cold))}<g class="xpTilt">${place(bottleSvg(c, cap), bottleBox(), 61, -19, 1.55, '', 98)}</g>${stream(134, 47, 182, 104, c)}</g>`;
+      return `<g ${WRAP}>${cup(c, receiverIce(drink, task, o.cold))}${bottle}</g>`;
     }
     case 'topping': {
       /* приёмник — стакан с уже налитым напитком (слои из спецификации); топпинг ложится сверху и растёт по прогрессу */
       const r = receiverDrink(drink, o.size, o.cold, 120, 52);
       const spice = /pumpkin/.test(drink ?? '');
       const src = spice
-        ? place(barObject('powders', 'data-item="jarCocoa"').replace(/(<path d="M\d+ 424H\d+V476[^"]*" fill=")[^"]+(")/, `$1${c}$2`), BOX.jar, 32, 1, 0.85, '', 95)
+        ? place(spiceShakerSvg(c), SPICE_BOX, 58, 4, 1.7, '', 98)
         : place(bottleSvg(c, 'DARK', 20, 56), bottleBox(20, 56), 66, -5, 1.55, '', 98);
       return `<g ${WRAP}>${cupBase(r.layers + receiverIce(drink, task, o.cold))}<ellipse id="xpTop" data-grow="1" data-base="${r.surface.toFixed(1)}" data-ry="9" cx="200" cy="${r.surface.toFixed(1)}" rx="52" ry="0" fill="${c}" ${sw('M')}/><path id="xpMark" data-top="172" data-full="120" data-x0="144" data-x1="256" d="M0 0" opacity="0"/><g class="xpTilt">${src}</g>${dots(c, [168, 188, 205, 225], 22)}</g>`;
     }
@@ -231,7 +288,18 @@ export function panelArt(o: ArtOpts): string {
       const src = barObject('powders', `data-item="${jar}"`);
       /* порошок в банке — цвет порошка напитка; остальное как на баре */
       const tinted = src.replace(/(<path d="M\d+ 424H\d+V476[^"]*" fill=")[^"]+(")/, `$1${c}$2`);
-      return `<g ${WRAP}>${cup(c)}<g class="xpTilt">${place(tinted, BOX.jar, 32, 1, 0.85, '', 95)}</g>${dots(c, [150, 170, 190, 210, 230])}</g>`;
+      const jarSvg = `<g class="xpTilt">${place(tinted, { ...BOX.jar, x: { jarCocoa: 734, jarChicory: 826, jarProtein: 918 }[jar] }, 32, 1, 0.85, '', 95)}</g>${dots(c, [160, 178, 196, 214, 232])}`;
+      /* протеин: порошок сыплют сразу в большой стакан шейкера бара (дальше молоко или вода и шейкер) */
+      if (/protein/.test(drink ?? '')) {
+        const big = barObject('shaker', 'data-glass="tinBig"');
+        const clip = backPath(big);
+        const k = 1.45, bx = 168, by = 182 - BOX.tinBig.h * k;
+        const mapY = (v: number): number => by + (v - BOX.tinBig.y) * k;
+        const liqRect = `<g clip-path="url(#xpClip)"><rect id="xpLiq" data-top="${mapY(505).toFixed(1)}" data-full="${(mapY(505) - mapY(412)).toFixed(1)}" x="1000" y="${mapY(505).toFixed(1)}" width="60" height="0" fill="${c}"/></g>`;
+        const tin = big.replace(/(<path data-layer="back" d="[^"]+"[^>]*\/>)/, `$1${liqRect}`);
+        return `<g ${WRAP}><defs><clipPath id="xpClip" clipPathUnits="userSpaceOnUse"><path d="${clip}"/></clipPath></defs><ellipse cx="${(bx + 30).toFixed(0)}" cy="186" rx="44" ry="5" fill="${col('SHADOW')}" fill-opacity=".25" stroke="none"/>${place(tin, BOX.tinBig, bx, by, k, 'data-receiver="shaker"')}<path id="xpMark" data-top="${mapY(505).toFixed(1)}" data-full="${(mapY(505) - mapY(412)).toFixed(1)}" data-x0="${(bx + 6).toFixed(0)}" data-x1="${(bx + 56).toFixed(0)}" d="M0 0" fill="none" stroke="${INK}" stroke-dasharray="5 5" ${sw('D')}/>${jarSvg}</g>`;
+      }
+      return `<g ${WRAP}>${cup(c)}${jarSvg}</g>`;
     }
     case 'boba': {
       const pot = barObject('boba', 'data-pot="1"');
