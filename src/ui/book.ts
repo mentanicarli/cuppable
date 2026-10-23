@@ -119,7 +119,7 @@ function card(
 <div class="bkSub">${TEMP[d.temp]} · ранг ${d.rank} «${esc(rankInfo(d.rank).title)}»</div>
 ${model ? `<div class="bkModel" aria-hidden="true">${model}</div>${MODEL_TAGS[d.id] ? `<p class="mdlTag">${esc(MODEL_TAGS[d.id])}</p>` : ''}` : ''}<div class="imgSlot bkImg" data-img="${esc(d.id)}" hidden></div>
 ${t ? `<p class="bkWhat">${esc(t.what)}</p>` : ''}<p class="bkIng">Ингредиенты: ${esc(d.ing.join(', '))}</p>${pickBlock(d, pick)}
-<h5 class="bkH">Как готовится</h5>${list(human)}${ice.length ? `<h5 class="bkH">Если со льдом</h5>${list(ice)}` : ''}${t ? `<p class="bkDiff"><b>Чем отличается.</b> ${esc(t.differs)}</p>` : ''}${ex}${need}${hintBlock(d, tut)}</div>`;
+<h5 class="bkH">Как готовится</h5>${list(human)}${ice.length ? `<h5 class="bkH">Если со льдом</h5>${list(ice)}` : ''}${ex}${need}${hintBlock(d, tut)}</div>`;
 }
 /** Кнопка «Подсказка»: показывает коуча по станциям напитка ещё раз. */
 function hintBlock(d: Drink, tut: string): string {

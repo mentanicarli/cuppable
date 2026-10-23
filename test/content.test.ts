@@ -7,7 +7,7 @@ const POSITION = /слева|справа|в центре|по центру|св
 const allTexts = (): { id: string; t: string }[] => {
   const out: { id: string; t: string }[] = [];
   // «Размеры» и «Картинка» в игре не показываются как текст подсказки; «сверху» в описании слоёв допустимо только там, где это не положение на экране
-  for (const [id, d] of Object.entries(DRINK_TEXTS)) out.push({ id, t: [d.what, ...d.steps, ...d.ice, d.differs, d.sizes].join('\n') });
+  for (const [id, d] of Object.entries(DRINK_TEXTS)) out.push({ id, t: [d.what, ...d.steps, ...d.ice, d.sizes].join('\n') });
   for (const g of GLOSSARY) out.push({ id: 'glossary:' + g.name, t: g.name + '\n' + g.text });
   for (const [k, w] of Object.entries(WHY_TEXTS)) out.push({ id: k, t: w.title + '\n' + w.text.join('\n') });
   return out;
@@ -21,7 +21,7 @@ describe('тексты К1 в игре', () => {
   });
   test('нет пустых полей, «Если со льдом» только там, где есть холодная механика', () => {
     for (const [id, d] of Object.entries(DRINK_TEXTS)) {
-      for (const f of ['name', 'what', 'differs', 'sizes', 'picture'] as const) expect(d[f].trim().length, `${id}.${f}`).toBeGreaterThan(f === 'name' ? 2 : 5);
+      for (const f of ['name', 'what', 'sizes', 'picture'] as const) expect(d[f].trim().length, `${id}.${f}`).toBeGreaterThan(f === 'name' ? 2 : 5);
       expect(d.steps.length, id).toBeGreaterThan(1);
       d.steps.forEach((s, i) => expect(s.trim().length, `${id} шаг ${i}`).toBeGreaterThan(5));
     }

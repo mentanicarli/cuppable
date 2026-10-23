@@ -10,8 +10,7 @@ describe('карточка «Новый напиток»', () => {
     expect(c?.name).toBe('Латте');
     expect(c?.what).toMatch(/молока/);
     expect(c?.steps.length).toBeGreaterThan(3);
-    expect(c?.differs).toMatch(/капучино/);
-    expect([c?.what, ...(c?.steps ?? []), c?.differs].join(' ')).not.toMatch(/\d+\s?(г|мл|°|кг)\b/);
+    expect([c?.what, ...(c?.steps ?? [])].join(' ')).not.toMatch(/\d+\s?(г|мл|°|кг)\b/);
     // точные цифры — из recipeCard, как в книге
     expect(c?.exact).toEqual(exactLines('latte'));
     expect(c?.exact.join('\n')).toContain('лёгкая пена');

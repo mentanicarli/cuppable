@@ -46,7 +46,6 @@ function parseDrinks(md) {
       what: join(need('Что это')),
       steps: list(need('Как готовится')),
       ice: f['Если со льдом'] ? list(f['Если со льдом']) : [],
-      differs: join(need('Чем отличается')),
       sizes: join(need('Размеры')),
       picture: join(need('Картинка: особая деталь'))
     };
@@ -126,8 +125,6 @@ export interface DrinkText {
   steps: readonly string[];
   /** «Если со льдом»: чем холодный вариант отличается (пусто, если нет холодной механики) */
   ice: readonly string[];
-  /** «Чем отличается» */
-  differs: string;
   /** «Размеры» */
   sizes: string;
   /** подсказка для картинки напитка (этап Н), в игре не показывается */

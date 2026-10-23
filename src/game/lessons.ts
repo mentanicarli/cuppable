@@ -83,8 +83,6 @@ export interface DrinkCard {
   steps: string[];
   /** «Если со льдом» (только когда заказан холодный вариант и у напитка есть холодная механика) */
   ice: string[];
-  /** «Чем отличается» */
-  differs: string;
   /** точные цифры: шаги с количествами и пена (числа из recipeCard и параметров станции) */
   exact: string[];
   /** подсказка для картинки напитка (этап Н); слот в карточке пока скрыт */
@@ -114,7 +112,7 @@ export function newDrinkCard(drinkId: string, seen: readonly string[], foam?: nu
   const t = drinkText(drinkId);
   const steps = t ? stepsForShots(t.steps, rc?.shots ?? 1) : rc ? rc.steps.map((x) => x.label) : recipeLines(drinkId);
   const ice = t && rc?.cold ? [...t.ice] : [];
-  return { key: drinkSeenKey(drinkId), name: d.name, what: t?.what ?? '', steps, ice, differs: t?.differs ?? '', exact: exactLines(drinkId, size, cold, foam), picture: t?.picture ?? '' };
+  return { key: drinkSeenKey(drinkId), name: d.name, what: t?.what ?? '', steps, ice, exact: exactLines(drinkId, size, cold, foam), picture: t?.picture ?? '' };
 }
 
 /** Что показать перед приготовлением нового заказа: сначала «Зачем это нужно», потом карточка напитка (не два окна сразу). */

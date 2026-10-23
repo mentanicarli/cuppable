@@ -29,7 +29,7 @@ const out = process.argv[3] || 'out/content';
   await p.click('[data-bookfam=milk]'); await p.waitForTimeout(300);
   const latte = '[data-drink=latte]';
   ok('латте: один рецепт, выбор размера и горячий/холодный', await p.evaluate(s => { const c = document.querySelector(s); return !!c && !!c.querySelector('[data-booksize]') && !!c.querySelector('[data-bookcold]'); }, latte));
-  ok('«Что это» и «Чем отличается» из К1', await p.evaluate(s => { const c = document.querySelector(s); return /Много горячего молока/.test(c.querySelector('.bkWhat').textContent) && /От капучино/.test(c.querySelector('.bkDiff').textContent); }, latte));
+  ok('«Что это» из К1 (без «Чем отличается»)', await p.evaluate(s => { const c = document.querySelector(s); return /Много горячего молока/.test(c.querySelector('.bkWhat').textContent) && !c.querySelector('.bkDiff'); }, latte));
   ok('«Точные цифры» по умолчанию свёрнуты', await p.evaluate(s => { const c = document.querySelector(s); return !c.querySelector('.bkExact') && c.querySelector('.bkExactBtn').getAttribute('aria-expanded') === 'false'; }, latte));
   ok('в основном тексте нет граммов и миллилитров', await p.evaluate(s => !/\d+\s?(г|мл|°|кг)(\s|[.,:;)]|$)/.test(document.querySelector(s).querySelector('.bkHuman').textContent), latte));
   ok('«Если со льдом» не видно у горячего', await p.evaluate(s => !/Если со льдом/.test(document.querySelector(s).textContent), latte));
