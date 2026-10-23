@@ -104,7 +104,7 @@ dcEl.addEventListener('click', e => {
    Камера при входе в бар всегда в центре без анимации, покупка её не двигает, в сохранение она не пишется. Боковая секция открыта, если куплена
    любая её станция (sectionsOpen); в #dev открыты обе (window.__sec). */
 const CAM = { sec: 'C', from: 0, to: 0, t: 0, moving: false, drag: false, x: 0 };
-function secOpenNow() { const o = MENUAPI.sectionsOpen(G || {}); return DEV ? { L: true, C: true, R: true } : o; }
+function secOpenNow() { return MENUAPI.sectionsOpen(G || {}); } /* 31-7: и в #dev секции открывают покупки, а не всё сразу */
 /* камера → Pixi и окно просмотра зон (viewBox двигается только при включённом листании, иначе #barSvg остаётся как был) */
 function camPush() { WORLD.setBarCamera(CAM.x); if (sectionsPlayable()) $('#barSvg').setAttribute('viewBox', Math.round(CAM.x * 100) / 100 + ' 0 1280 720'); }
 /* текстуры боковых секций нужны, только когда секция открыта (куплена любая её станция) */
@@ -278,6 +278,7 @@ const SIDE_ZONE_IDS = new Set(['tea', 'matcha', 'powders', 'juice', 'whipper', '
 function zoneShown(z) {
   if (z === 'milk') return !!G.milk || !!G.eq_cream; /* кувшин сливок для рафа стоит у холодильника */
   if (z === 'ice') return !!G.eq_ice;
+  if (z === 'syrup' || z === 'syr1' || z === 'syr2' || z === 'syr3') return MENUAPI.barItems({ rank: G.rank, milk: !!G.milk, cream: !!G.eq_cream }).syrupShelf; /* полка сиропов появляется с рангом (31-7) */
   if (z === 'micro') return !!G.eq_microwave; /* микроволновка стоит в нише справа от холодильной витрины; клик ведёт на ту же станцию «Еда» */
   if (z === 'food') return !!(G.eq_case_snacks || G.eq_case_pastry || G.eq_case_dessert || G.eq_fridge_deli);
   if (SIDE_ZONE_IDS.has(z)) return !!G['eq_' + z];

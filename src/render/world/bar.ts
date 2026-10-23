@@ -66,6 +66,10 @@ export interface BarUpgrades {
   dessert: boolean;
   deli: boolean;
   micro: boolean;
+  /** питчер на столешнице: молоко или сливочный кувшин (31-7) */
+  pitcher: boolean;
+  /** полка сиропов: сиропы открываются рангом (31-7) */
+  syrups: boolean;
 }
 
 const hexNum = (c: string): number => {
@@ -161,6 +165,9 @@ export class BarScene {
   private bell = new Container();
   private stream = new Graphics();
   private pitUnderG = new Container();
+  /** питчер на столешнице (молоко или сливочный кувшин) и полка сиропов (ранг) — 31-7 */
+  private pitcher = new Container();
+  private syrupShelf!: Sprite;
   private steam!: Sprite;
   private ring = new Container();
   private fridge = new Container();
@@ -224,7 +231,8 @@ export class BarScene {
     };
 
     /* стена и столешница (29-4) вырезаны из static; вывеска, доска, полка с растением и стойка сиропов (29-3) тоже; вордмарк бренда отдельной частью поверх плашки; в static остались только подписи (Pixi-текст), рисуются выше */
-    for (const id of ['wall', 'counterTop', 'plantShelf', 'corkBoard', 'sign', 'wordmark', 'syrupShelf']) spr(id);
+    for (const id of ['wall', 'counterTop', 'plantShelf', 'corkBoard', 'sign', 'wordmark']) spr(id);
+    this.syrupShelf = spr('syrupShelf');
     txt('static', R);
     /* кофемашина: отдельная часть art-src (блок 29-1), раньше была в статике; подвижные детали (портафильтр, стрелка, чашка, пар) лежат выше */
     spr('machine');
@@ -268,12 +276,12 @@ export class BarScene {
     n.position.set(600 - 630, 225 - 257);
     R.addChild(this.needle);
 
-    spr('pitBack');
-    spr('pitFront');
+    this.pitcher.addChild(spr('pitBack', this.pitcher), spr('pitFront', this.pitcher));
     const pm = new Container();
     pm.position.set(940, 514);
     pm.addChild(this.pitLvl.root);
-    R.addChild(pm);
+    this.pitcher.addChild(pm);
+    R.addChild(this.pitcher);
 
     this.bell.position.set(1032, 526);
     const bs = spr('bell', this.bell);
@@ -352,7 +360,7 @@ export class BarScene {
     R.addChild(micro);
     /* кромка столешницы с тенью: поверх блоков, под плитками оборудования, чтобы блоки уходили под неё */
     spr('counterNose');
-    this.setUpgrades({ milk: false, ice: false, eq: {}, snacks: false, pastry: false, dessert: false, deli: false, micro: false });
+    this.setUpgrades({ milk: false, ice: false, eq: {}, snacks: false, pastry: false, dessert: false, deli: false, micro: false, pitcher: false, syrups: false });
     this.root.visible = false;
   }
 
@@ -452,6 +460,8 @@ export class BarScene {
     this.syncSideItems('L');
     this.syncSideItems('R');
     this.fridge.visible = u.milk;
+    this.pitcher.visible = u.pitcher;
+    this.syrupShelf.visible = u.syrups;
     this.iceMaker.visible = u.ice;
     this.showcase.visible = u.snacks || u.pastry || u.dessert || u.deli;
     this.subs.get('scSnacks')!.visible = u.snacks;

@@ -9,6 +9,7 @@ export * from './quality';
 export * from './save';
 export * from './settings';
 export * from './tutorial';
+export * from './barItems';
 export * from './contrast';
 export * from './layers';
 export * from './barLayout';
