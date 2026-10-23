@@ -146,6 +146,14 @@ function backPath(vessel: string): string {
 /** Убрать у предмета встроенный налив/слой (его рисует окно), оставив всё остальное. */
 const without = (svg: string, re: RegExp): string => svg.replace(re, '');
 
+/** Геометрия окна «Взбить матчу»: чаша бара k × 2,3, венчик (k × 2,6) опущен головой в чашу; всё в координатах окна 400 × 190. */
+export function whiskGeom(): { k: number; bx: number; by: number; cx: number; rimY: number; rx: number; ry: number; bowlBottom: number; bowlH: number; wk: number; whiskX: number; whiskY: number; whiskBottom: number } {
+  const k = 2.3, wk = 2.6;
+  const bx = 200 - (BOX.bowl.w * k) / 2, by = 176 - BOX.bowl.h * k;
+  const whiskY = 37;
+  return { k, bx, by, cx: 200, rimY: by + (458 - BOX.bowl.y) * k, rx: 35 * k, ry: 6.5 * k, bowlBottom: 176, bowlH: BOX.bowl.h * k, wk, whiskX: 200 - (BOX.whisk.w * wk) / 2, whiskY, whiskBottom: whiskY + BOX.whisk.h * wk };
+}
+
 export interface ArtOpts { task: string; col: string; col2: string; drink?: string; size?: string; cold?: boolean }
 
 /** Иллюстрация к шагу. Налив растёт через #xpLiq (его высоту ставит panelUpdate по data-top / data-full). */
@@ -174,22 +182,24 @@ export function panelArt(o: ArtOpts): string {
       return `<g ${WRAP}>${cup(col('KRAFT'))}<g id="xpPearls" fill="${col('DARK')}" stroke="none"></g><g class="xpTilt">${place(pot, BOX.pot, 16, 26, 1.0, '', 25)}</g>${dots(col('DARK'), [166, 190, 214])}</g>`;
     }
     case 'whisk': {
+      const g = whiskGeom();
       const bowl = barObject('matcha', 'data-item="bowl"');
       const whisk = barObject('matcha', 'data-item="whisk"');
-      const k = 2.3;
-      const bx = 200 - (BOX.bowl.w * k) / 2, by = 176 - BOX.bowl.h * k;
-      /* полость чаши: тело до линии обода; налив поднимается от дна (497) к ободу (458) */
-      const inner = 'M512 458Q512 488 530 497H564Q582 488 582 458Z';
-      const cx = (v: number): number => bx + (v - BOX.bowl.x) * k;
-      const cy = (v: number): number => by + (v - BOX.bowl.y) * k;
-      const rimY = cy(458), botY = cy(497), rimRx = 35 * k;
-      return `<g ${WRAP}><ellipse cx="200" cy="${(by + BOX.bowl.h * k + 2).toFixed(1)}" rx="${(BOX.bowl.w * k * 0.6).toFixed(1)}" ry="9" fill="${col('SHADOW')}" fill-opacity=".25" stroke="none"/>
-${place(bowl, BOX.bowl, bx, by, k)}
-<defs><clipPath id="xpClip"><path d="${inner}" transform="translate(${(bx - BOX.bowl.x * k).toFixed(2)} ${(by - BOX.bowl.y * k).toFixed(2)}) scale(${k})"/></clipPath></defs>
-<g clip-path="url(#xpClip)"><rect id="xpLiq" data-top="${botY.toFixed(1)}" data-full="${(botY - rimY).toFixed(1)}" x="${(bx - 4).toFixed(1)}" y="${botY.toFixed(1)}" width="${(BOX.bowl.w * k + 8).toFixed(1)}" height="0" fill="${c}"/></g>
-<ellipse cx="${cx(547).toFixed(1)}" cy="${rimY.toFixed(1)}" rx="${rimRx.toFixed(1)}" ry="${(6.5 * k).toFixed(1)}" fill="none" ${sw('M')}/>
-<path id="xpMark" data-top="${botY.toFixed(1)}" data-full="${(botY - rimY).toFixed(1)}" data-x0="${(cx(547) - rimRx * 0.8).toFixed(1)}" data-x1="${(cx(547) + rimRx * 0.8).toFixed(1)}" d="M0 0" fill="none" stroke="${INK}" stroke-dasharray="5 5" ${sw('D')} opacity="0"/>
-<g class="xpWhisk">${place(whisk, BOX.whisk, 168, 8, 2.1, '', 180)}</g></g>`;
+      const k = g.k;
+      /* передняя стенка: тот же предмет, обрезанный по нижней дуге обода (всё ниже дуги закрывает венчик) */
+      const front = `M${g.cx - g.rx - 200} ${g.rimY}H${g.cx - g.rx}A${g.rx} ${g.ry} 0 0 0 ${g.cx + g.rx} ${g.rimY}H${g.cx + g.rx + 200}V${g.bowlBottom + 40}H${g.cx - g.rx - 200}Z`;
+      const foam = [[-46, 1, 0.1], [-30, 5, 0.25], [-12, 2, 0.4], [6, 6, 0.55], [26, 1, 0.7], [44, 4, 0.85], [58, -1, 0.95]]
+        .map(([dx, dy, at]) => `<circle data-at="${at}" cx="${(g.cx + (dx as number) * 0.9).toFixed(1)}" cy="${(g.rimY + 1 + (dy as number)).toFixed(1)}" r="${(3 + (at as number) * 2).toFixed(1)}" fill="${col('SAGE_LT')}" stroke="none" opacity="0"/>`)
+        .join('');
+      return `<g ${WRAP}><ellipse cx="200" cy="${(g.bowlBottom + 3).toFixed(1)}" rx="${(BOX.bowl.w * k * 0.6).toFixed(1)}" ry="9" fill="${col('SHADOW')}" fill-opacity=".25" stroke="none"/>
+<g data-layer="bowl-back">${place(bowl, BOX.bowl, g.bx, g.by, k)}</g>
+<g data-layer="liquid"><ellipse id="xpMat" cx="${g.cx}" cy="${(g.rimY + 1).toFixed(1)}" rx="${(g.rx * 0.9).toFixed(1)}" ry="${(g.ry * 0.78).toFixed(1)}" fill="${c}" fill-opacity=".35" stroke="none"/>${foam}</g>
+<path id="xpMark" d="M0 0" opacity="0"/>
+<g data-layer="whisk"><g class="xpWhiskIn">${place(whisk, BOX.whisk, g.whiskX, g.whiskY, g.wk, '', 180)}</g>
+<g class="xpSwish" fill="none" stroke="${col('SAGE')}" ${sw('D')} stroke-linecap="round"><path d="M${g.cx - 62} ${g.rimY - 4}Q${g.cx - 54} ${g.rimY - 15} ${g.cx - 44} ${g.rimY - 5}"/><path d="M${g.cx + 44} ${g.rimY - 5}Q${g.cx + 54} ${g.rimY - 15} ${g.cx + 62} ${g.rimY - 4}"/></g></g>
+<defs><clipPath id="xpFront"><path d="${front}"/></clipPath></defs>
+<g data-layer="bowl-front" clip-path="url(#xpFront)">${place(bowl, BOX.bowl, g.bx, g.by, k)}</g>
+<ellipse cx="${g.cx}" cy="${g.rimY}" rx="${g.rx.toFixed(1)}" ry="${g.ry.toFixed(1)}" fill="none" ${sw('M')} clip-path="url(#xpFront)"/></g>`;
     }
     case 'brew': {
       const pot = barObject('tea', 'data-item="glassTeapot"');

@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'vitest';
 import PAL from '../art-src/palette.json';
 import { layerView } from '../src/game/layers';
-import { barObject, fillCounts, groupOf, jarFor, panelArt, sourceOf } from '../src/ui/panelArt';
+import { paletteOf } from '../src/game/recipes';
+import { barObject, fillCounts, groupOf, jarFor, panelArt, sourceOf, whiskGeom } from '../src/ui/panelArt';
 
 /* 31-2, шаг 3: окна станций нового ядра рисуются теми же предметами, что стоят на баре. Тест падает, если окно потеряло главные цвета
    предмета бара, использует цвет вне палитры или толщину вне L/M/D. */
@@ -58,7 +59,8 @@ describe('окна станций: предметы бара', () => {
   test('налив: у каждого окна есть #xpLiq с data-top и data-full; у окон «залить» есть #xpMark', () => {
     for (const t of TASKS) {
       const svg = art(t);
-      if (t === 'layer') expect(svg, t).toMatch(/id="xpLayer" data-top="[\d.]+" data-full="[\d.]+"/);
+      if (t === 'whisk') expect(svg, t).toMatch(/id="xpMat"/);
+      else if (t === 'layer') expect(svg, t).toMatch(/id="xpLayer" data-top="[\d.]+" data-full="[\d.]+"/);
       else if (t !== 'whip') expect(svg, t).toMatch(/id="xpLiq" data-top="[\d.]+" data-full="[\d.]+"/);
     }
     for (const t of ['juice', 'tonic', 'powder', 'boba', 'topping']) expect(art(t), t).toMatch(/id="xpMark" data-top=/);
@@ -68,5 +70,32 @@ describe('окна станций: предметы бара', () => {
     expect(jarFor('chicory_latte')).toBe('jarChicory');
     expect(jarFor('protein_milk')).toBe('jarProtein');
     expect(sourceOf('powder', 'protein_water')[0]?.marker).toContain('jarProtein');
+  });
+});
+
+describe('окно «Взбить матчу» (31-3)', () => {
+  const svg = panelArt({ task: 'whisk', col: paletteOf('matcha_latte').matcha, col2: PAL.colors.PAPER });
+  test('порядок слоёв: чаша сзади, жидкость, венчик, чаша спереди', () => {
+    const at = (k: string): number => svg.indexOf(`data-layer="${k}"`);
+    expect(at('bowl-back')).toBeGreaterThan(-1);
+    expect(at('bowl-back')).toBeLessThan(at('liquid'));
+    expect(at('liquid')).toBeLessThan(at('whisk'));
+    expect(at('whisk')).toBeLessThan(at('bowl-front'));
+  });
+  test('зубцы венчика ниже обода чаши не менее чем на 10 % высоты чаши, ручка над ободом', () => {
+    const g = whiskGeom();
+    expect(g.whiskBottom - g.rimY).toBeGreaterThanOrEqual(0.1 * g.bowlH);
+    expect(g.whiskY).toBeLessThan(g.rimY);
+    expect(g.whiskBottom).toBeLessThanOrEqual(g.bowlBottom + 1);
+  });
+  test('жидкость цвета матчи из спецификации напитка, пена растёт по прогрессу', () => {
+    const m = paletteOf('matcha_latte').matcha;
+    expect(m).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    expect(svg).toContain(`id="xpMat"`);
+    expect(svg).toMatch(new RegExp(`id="xpMat"[^>]*fill="${m}"`, 'i'));
+    expect([...svg.matchAll(/data-at="([\d.]+)"/g)].length).toBeGreaterThanOrEqual(5);
+  });
+  test('те же цвета, что у предмета бара: чаша и венчик из matcha.svg', () => {
+    for (const marker of ['data-item="bowl"', 'data-item="whisk"']) for (const [c] of fillCounts(barObject('matcha', marker)).slice(0, 2)) expect(svg.toUpperCase().includes(c), `${marker} ${c}`).toBe(true);
   });
 });

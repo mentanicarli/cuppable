@@ -82,6 +82,13 @@ export function panelUpdate(root: HTMLElement, v: PanelView, l: PanelLive): void
     liq.setAttribute('y', (top - h).toFixed(1));
     liq.setAttribute('height', h.toFixed(1));
   }
+  /* «Взбить матчу»: жидкость насыщается, пена появляется по мере взбивания (доля времени цели) */
+  const mat = root.querySelector<SVGGraphicsElement>('#xpMat');
+  if (mat) {
+    const p = Math.min(1, l.value / ((v.zone[0] + v.zone[1]) / 2));
+    mat.setAttribute('fill-opacity', (0.35 + 0.65 * p).toFixed(2));
+    root.querySelectorAll<SVGGraphicsElement>('[data-at]').forEach((e) => e.setAttribute('opacity', p >= Number(e.getAttribute('data-at')) ? '1' : '0'));
+  }
   /* «Налить слоями»: верхний слой растёт за время цели, нижние налиты заранее; струя кончается на поверхности */
   const lay = root.querySelector<SVGGraphicsElement>('#xpLayer');
   if (lay) {

@@ -118,11 +118,17 @@ html.kbd .xp button:focus-visible { outline: 3px solid #E8B04A; outline-offset: 
 .xpWhisk { transform-box: fill-box; transform-origin: 50% 100%; }
 .xp.hold .xpWhisk { animation: xpWhisk .22s ease-in-out infinite alternate; }
 @keyframes xpWhisk { from { transform: translateX(-16px) rotate(-8deg) } to { transform: translateX(16px) rotate(8deg) } }
+.xpWhiskIn { transform-box: fill-box; transform-origin: 50% 0%; }
+.xp.hold .xpWhiskIn { animation: xpWhiskIn .22s ease-in-out infinite alternate; }
+@keyframes xpWhiskIn { from { transform: translateX(-7px) rotate(-3deg) } to { transform: translateX(7px) rotate(3deg) } }
+.xpSwish { opacity: 0; }
+.xp.hold .xpSwish { opacity: 1; animation: xpSwish .22s ease-in-out infinite alternate; }
+@keyframes xpSwish { from { transform: translateX(-4px) } to { transform: translateX(4px) } }
 .xpShake { transform-box: fill-box; transform-origin: 50% 80%; }
 .xp.hold .xpShake { animation: xpShake .12s linear infinite alternate; }
 @keyframes xpShake { from { transform: translate(-5px, -3px) rotate(-4deg) } to { transform: translate(5px, 3px) rotate(4deg) } }
 .xp.hold .xpSwirl { animation: xpShake .2s linear infinite alternate; }
-@media (prefers-reduced-motion: reduce) { .xp.hold .xpWhisk, .xp.hold .xpShake, .xp.hold .xpSwirl, .xpDots circle { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .xp.hold .xpWhiskIn, .xp.hold .xpSwish, .xp.hold .xpWhisk, .xp.hold .xpShake, .xp.hold .xpSwirl, .xpDots circle { animation: none; } }
 .tutTag { display: inline-block; margin-right: 6px; padding: 0 9px; border-radius: 999px; border: 2px solid var(--ink); background: #E8B04A; font-size: 12px; font-weight: 800; vertical-align: 1px; }
 
 /* Пауза: все окна игры скрыты (но не удалены: состояние и таймеры стоят), виден только экран паузы */

@@ -3,6 +3,8 @@
 const { chromium } = require('playwright'); const path = require('path'); const fs = require('fs');
 const PW = require('./pw');
 const out = path.resolve(process.argv[3] || 'out/layers'); fs.mkdirSync(out, { recursive: true });
+const TASK = process.env.TASK || 'layer'; /* окно: layer (по умолчанию) или любое из PANEL_TASKS: whisk, boba, … */
+const SEC = { whisk: 'L', brew: 'L', powder: 'L', boba: 'L', layer: 'C', topping: 'C' }[TASK] || 'R';
 const drinks = (process.argv[4] || 'matcha_bumble,orange_bumble,espresso_tonic').split(',');
 (async () => {
   const src = fs.readFileSync(path.resolve(process.argv[2]), 'utf8').replace('newGame(); updateHud(); showTitle();', 'newGame(); updateHud(); showTitle(); window.__dbg = { get G() { return G; }, get D() { return D; }, get BR() { return BR; }, spawn, barOpen, zoneClick, applyUpgrades, camGo, resetBar() { try { barShow(false); } catch (e) { /* нет бара */ } BR = null; } };');
@@ -18,11 +20,11 @@ const drinks = (process.argv[4] || 'matcha_bumble,orange_bumble,espresso_tonic')
     await p.evaluate(() => { if (__dbg.D) __dbg.D.t = Math.min(__dbg.D.t, 60); __dbg.resetBar(); }); await p.waitForTimeout(150);
     await p.evaluate(({ id }) => { const M = window.__MENUAPI, c = __dbg.D.customers[0], dk = M.drinkById[id]; c.drink = id; c.order.key = id; c.order.id = id; c.order.name = dk.name; c.order.size = '0.3'; c.order.cold = true; c.order.food = null; c.syrup = null; c.pumps = 0; c.strong = false; c.pat = c.max = 1e9; __dbg.barOpen(c); }, { id });
     await p.waitForTimeout(450); await PW.dismissCard(p);
-    await p.evaluate(() => { const B = __dbg.BR; for (const t of B.tasks) { if (t === 'layer') break; B.done[t] = true; B.res[t] = 1; } });
-    await p.evaluate(() => __dbg.camGo('C', true)); await p.waitForTimeout(250);
-    await p.evaluate(() => __dbg.zoneClick('layer')); await p.waitForTimeout(700); await PW.dismissCard(p); await p.waitForTimeout(300);
+    await p.evaluate(task => { const B = __dbg.BR; for (const t of B.tasks) { if (t === task) break; B.done[t] = true; B.res[t] = 1; } }, TASK);
+    await p.evaluate(sec => __dbg.camGo(sec, true), SEC); await p.waitForTimeout(250);
+    await p.evaluate(t => __dbg.zoneClick(t), TASK); await p.waitForTimeout(700); await PW.dismissCard(p); await p.waitForTimeout(300);
     const el = await p.$('#xPanel:not([hidden])'); if (!el) { console.log('нет окна', id); continue; }
-    const shot = n => el.screenshot({ path: `${out}/layer_${id}_${n}.png` });
+    const shot = n => el.screenshot({ path: `${out}/${TASK}_${id}_${n}.png` });
     await shot('start');
     const r = await p.evaluate(() => { const e = document.querySelector('[data-xhold]').getBoundingClientRect(); return { x: e.left + e.width / 2, y: e.top + e.height / 2 }; });
     await p.mouse.move(r.x, r.y); await p.mouse.down(); await p.waitForTimeout(1900); await shot('mid'); await p.waitForTimeout(2200); await shot('end'); await p.mouse.up();
