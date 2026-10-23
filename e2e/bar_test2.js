@@ -3,7 +3,7 @@
    node e2e/bar_test2.js dist/artifact.html out/bar latte:0.4        — с размером
    node e2e/bar_test2.js dist/artifact.html out/bar espresso2,cappuccino:0.4,raf:0.2   — несколько заказов подряд в одном прогоне
    latte_sakura:0.4:cold — третий параметр «cold» заказывает холодный вариант напитка с механикой «оба» (Н2-2).
-   Ключи механики: espresso, espresso2 (двойной), americano, icedamericano, cappuccino, icedcappuccino, latte, icedlatte, flatwhite, raf, vanillaraf, rafhalva.
+   Ключи механики: espresso, espresso2 (двойной), americano, icedamericano, cappuccino, icedcappuccino, latte, icedlatte, flatwhite, raf (с ванильным сахаром; ключ raf-no-sugar — без него), rafhalva.
    Цели берутся из самой игры (BR.rc: шоты, молоко, вода, лёд, зона пара), поэтому сценарий не зависит от размера. */
 const { chromium } = require('playwright'); const path = require('path'); const fs = require('fs');
 const PANEL = new Set(['juice', 'tonic', 'powder', 'boba', 'topping', 'whisk', 'blend', 'shake', 'foam', 'layer']);
@@ -31,7 +31,7 @@ const specs = (process.argv[4] || 'espresso').split(',').map(s => { const [drink
     await p.evaluate(({ d, size, wantCold }) => {
       const M = window.__MENUAPI, dk = M.drinkOfKey(d), cold = wantCold || /^iced/.test(d) || M.drinkById[dk.id].temp === 'cold', c = window.__dbg.D.customers[0];
       c.drink = d; c.order.key = d; c.order.id = dk.id; c.order.name = M.drinkById[dk.id].name; c.order.size = size; c.order.cold = cold; c.order.food = null;
-      c.order.shots = M.legacyRecipe(d, size, cold).shots; c.strong = false; c.syrup = d === 'vanillaraf' ? 'vanilla' : null; c.pumps = 2; c.pat = c.max = 999;
+      c.order.shots = M.legacyRecipe(d, size, cold).shots; c.strong = false; c.syrup = d === 'raf' ? 'vanilla' : null; if (d === 'raf') c.order.vanillaSugar = true; c.pumps = 2; c.pat = c.max = 999;
     }, { d: drink, size, wantCold });
     await p.evaluate(() => { window.__dbg.G.hints = true; });
     await p.keyboard.press('Space'); await p.waitForTimeout(600); await require('./pw').dismissCard(p);

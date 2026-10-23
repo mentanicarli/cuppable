@@ -22,7 +22,7 @@ export const TASK_ZONE: Readonly<Record<string, string>> = {
 
 /** Это напиток нового ядра (рецепт собирается из шагов меню)? */
 const OLD_KEYS: ReadonlySet<string> = new Set([
-  'espresso', 'espresso2', 'americano', 'icedamericano', 'icedlatte', 'icedcappuccino', 'cappuccino', 'latte', 'flatwhite', 'raf', 'vanillaraf', 'rafhalva'
+  'espresso', 'espresso2', 'americano', 'icedamericano', 'icedlatte', 'icedcappuccino', 'cappuccino', 'latte', 'flatwhite', 'raf', 'rafhalva'
 ]);
 export const isMenuKey = (key: string): boolean => key in drinkById && !OLD_KEYS.has(key);
 
@@ -37,7 +37,7 @@ export interface BuildOpts {
   shots?: number;
 }
 
-const RAF_KEYS: ReadonlySet<string> = new Set(['raf', 'vanillaraf', 'rafhalva']);
+const RAF_KEYS: ReadonlySet<string> = new Set(['raf', 'rafhalva']);
 /** Повторяет цикл «помол → темпер → шот» n раз (двойной эспрессо и крупные размеры: два шота подряд в ту же чашку). */
 function expandShots(t: string[], n: number): string[] {
   const i = t.findIndex((x, k) => x === 'grind' && t[k + 1] === 'tamp' && t[k + 2] === 'shot');
@@ -233,15 +233,16 @@ export const paletteOf = (key: string): Palette => ({ ...DEFAULT_PAL, ...(PAL[ke
 
 export const isNewKeyEngine = isMenuKey;
 
-/** Подпись шага для билета и книги: «Шот 1/2», «Сливки» у рафа, остальное — TASK_NAME. */
+/** Подпись шага для билета и книги: «Шот 1/2», «Сливки» и «Ванильный сахар» у рафа, остальное — TASK_NAME. */
 export function stepLabels(tasks: readonly string[], drinkId = ''): string[] {
   const total: Record<string, number> = {};
   tasks.forEach((t) => (total[t] = (total[t] ?? 0) + 1));
   const seen: Record<string, number> = {};
   const raf = drinkById[drinkOfKey(drinkId).id]?.family === 'raf';
+  const vanillaSugar = drinkOfKey(drinkId).id === 'raf';
   return tasks.map((t) => {
     seen[t] = (seen[t] ?? 0) + 1;
-    const name = t === 'milk' && raf ? 'Сливки' : t === 'layer' ? layerLabel(drinkId) : (TASK_NAME[t] ?? t);
+    const name = t === 'milk' && raf ? 'Сливки' : t === 'syrup' && vanillaSugar ? 'Ванильный сахар' : t === 'layer' ? layerLabel(drinkId) : (TASK_NAME[t] ?? t);
     return (total[t] ?? 1) > 1 ? `${name} ${seen[t]}/${total[t]}` : name;
   });
 }

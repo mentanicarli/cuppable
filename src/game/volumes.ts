@@ -24,7 +24,7 @@ export const ICE_G_PER_ML = ICE_SHARE_G / (1 - LIQUID_SHARE);
 
 /** Расширение молока при вспенивании: объём после пара = молоко · (1 + x). */
 export const FOAM_X: Readonly<Record<string, number>> = {
-  cappuccino: 0.5, cappuccino_pumpkin: 0.5, latte: 0.2, flat_white: 0.1, raf: 0.3, vanilla_raf: 0.3, raf_halva: 0.3
+  cappuccino: 0.5, cappuccino_pumpkin: 0.5, latte: 0.2, flat_white: 0.1, raf: 0.3, raf_halva: 0.3
 };
 export const FOAM_X_DEFAULT = 0.2;
 /** Шкала «Пена» в баре: расширение 0,5 = 0,55 на шкале (так было у капучино). */
@@ -35,7 +35,7 @@ export const foamTarget = (x: number): number => Math.round(x * FOAM_SCALE * 100
 /** Температурные зоны пара по напиткам, °C. Остальные молочные напитки: ZONE_DEFAULT. */
 export const STEAM_ZONES: Readonly<Record<string, readonly [number, number]>> = {
   cappuccino: [60, 65], cappuccino_pumpkin: [60, 65], latte: [55, 62], flat_white: [55, 60],
-  raf: [60, 65], vanilla_raf: [60, 65], raf_halva: [60, 65], cocoa: [60, 65]
+  raf: [60, 65], raf_halva: [60, 65], cocoa: [60, 65]
 };
 export const ZONE_DEFAULT: readonly [number, number] = [55, 62];
 /** Питчер с термометром расширяет зону: на 2° вниз и на 3° вверх. */
@@ -132,7 +132,6 @@ export interface Recipe {
 }
 
 const round = Math.round;
-const r1 = (v: number): number => Math.round(v * 10) / 10;
 
 /** Нет ли у напитка рецептурного сиропа (его помпы входят в объём). */
 export function recipePumps(d: Drink, size: Size): number {
@@ -142,7 +141,7 @@ export function recipePumps(d: Drink, size: Size): number {
 }
 /** Напитки с сиропом в рецепте (совпадает с FORCED_SYRUP в menu.ts, сверяет тест). */
 export const FORCED_SYRUP_IDS: ReadonlySet<string> = new Set([
-  'vanilla_raf', 'raf_halva', 'latte_coconut', 'matcha_coconut', 'cappuccino_pumpkin', 'latte_sakura', 'latte_banana', 'latte_lemon',
+  'raf', 'raf_halva', 'latte_coconut', 'matcha_coconut', 'cappuccino_pumpkin', 'latte_sakura', 'latte_banana', 'latte_lemon',
   'boba_guava', 'boba_raspberry', 'milkshake_vanilla'
 ]);
 
@@ -167,8 +166,8 @@ export function recipeNumbers(d: Drink, size: Size, coldIn = false): Recipe {
     out.ice = round(bulkMl * ICE_G_PER_ML);
     parts.push({ task: 'ice', label: 'Лёд', amount: out.ice, unit: 'г', vol: bulkMl, note: 'занимает остаток стакана' });
   };
-  const syrupPart = (name: string): void => {
-    if (pumps) parts.push({ task: 'syrup', label: `Сироп (${name})`, amount: pumps, unit: 'помп', vol: syrupMl, note: `${syrupMl} мл` });
+  const syrupPart = (name: string, label?: string): void => {
+    if (pumps) parts.push({ task: 'syrup', label: label ?? `Сироп (${name})`, amount: pumps, unit: 'помп', vol: syrupMl, note: `${syrupMl} мл` });
   };
   const steamPart = (id: string, x: number): void => {
     out.foamX = x;
@@ -215,18 +214,16 @@ export function recipeNumbers(d: Drink, size: Size, coldIn = false): Recipe {
       if (d.id === 'cappuccino_pumpkin') parts.push({ task: 'topping', label: 'Специи', amount: SPICE_G, unit: 'г', vol: 0, note: 'щепотка' });
       return out;
     }
-    case 'vanilla_raf':
     case 'raf':
     case 'raf_halva': {
-      // классический раф: эспрессо сразу в питчер, холодные сливки и сахар (или сироп), всё взбивается паром, молока нет
+      // классический раф: эспрессо сразу в питчер, холодные сливки и сироп (у рафа это ванильный сахар), всё взбивается паром, молока нет
       const x = foamXOf(d.id);
       parts.push({ ...shotPart(S), label: S > 1 ? `Эспрессо, ${S} шота, в питчер` : 'Эспрессо в питчер' });
       const M = V - shotMl - syrupMl;
       out.milk = round(M / (1 + x));
       steamPart(d.id, x);
       parts.push({ task: 'milk', label: 'Сливки 10–15% (холодные)', amount: out.milk, unit: 'мл', vol: M, note: `после пара ${round(M)} мл` });
-      if (pumps) syrupPart(d.id === 'vanilla_raf' ? 'ваниль' : 'халва');
-      else parts.push({ task: 'milk', label: 'Сахар', amount: r1((5 * V) / 200), unit: 'г', vol: 0, note: 'вместе со сливками' });
+      syrupPart(d.id === 'raf' ? 'ваниль' : 'халва', d.id === 'raf' ? 'Ванильный сахар (сироп «ваниль»)' : undefined);
       return out;
     }
     case 'cocoa':

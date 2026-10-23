@@ -3,8 +3,8 @@ const NS = 'http://www.w3.org/2000/svg';
 const stage = $('#stage'), scr = $('#screen');
 const WORLD = new World(), FX = WORLD.fx;
 
-const PRICE = { espresso: MENUAPI.priceOf('espresso'), espresso2: MENUAPI.priceOf('espresso_double'), americano: MENUAPI.priceOf('americano'), icedamericano: MENUAPI.priceOf('americano', '0.3'), icedlatte: MENUAPI.priceOf('latte', '0.3'), icedcappuccino: MENUAPI.priceOf('cappuccino', '0.3'), cappuccino: MENUAPI.priceOf('cappuccino'), latte: MENUAPI.priceOf('latte'), flatwhite: MENUAPI.priceOf('flat_white'), vanillaraf: MENUAPI.priceOf('vanilla_raf'), raf: MENUAPI.priceOf('raf'), rafhalva: MENUAPI.priceOf('raf_halva') };
-const NAME = { espresso: 'Эспрессо', espresso2: 'Двойной эспрессо', americano: 'Американо', icedamericano: 'Холодный американо', icedlatte: 'Холодный латте', icedcappuccino: 'Холодный капучино', cappuccino: 'Капучино', latte: 'Латте', flatwhite: 'Флэт уайт', vanillaraf: 'Ванильный раф', raf: 'Раф кофе', rafhalva: 'Раф сливочная халва' };
+const PRICE = { espresso: MENUAPI.priceOf('espresso'), espresso2: MENUAPI.priceOf('espresso_double'), americano: MENUAPI.priceOf('americano'), icedamericano: MENUAPI.priceOf('americano', '0.3'), icedlatte: MENUAPI.priceOf('latte', '0.3'), icedcappuccino: MENUAPI.priceOf('cappuccino', '0.3'), cappuccino: MENUAPI.priceOf('cappuccino'), latte: MENUAPI.priceOf('latte'), flatwhite: MENUAPI.priceOf('flat_white'), raf: MENUAPI.priceOf('raf'), rafhalva: MENUAPI.priceOf('raf_halva') };
+const NAME = { espresso: 'Эспрессо', espresso2: 'Двойной эспрессо', americano: 'Американо', icedamericano: 'Холодный американо', icedlatte: 'Холодный латте', icedcappuccino: 'Холодный капучино', cappuccino: 'Капучино', latte: 'Латте', flatwhite: 'Флэт уайт', raf: 'Раф', rafhalva: 'Раф сливочная халва' };
 MENUAPI.DRINKS.forEach(d => { if (MENUAPI.isMenuKey(d.id)) { NAME[d.id] = d.name; PRICE[d.id] = MENUAPI.priceOf(d.id, Object.keys(d.sizes)[0]); } });
 const COST = MENUAPI.COST;
 const SLOTS = [640, 510, 380];

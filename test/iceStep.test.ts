@@ -9,7 +9,7 @@ import { recipeNumbers } from '../src/game/volumes';
 const ICED_KEY: Readonly<Record<string, string>> = { americano: 'icedamericano', cappuccino: 'icedcappuccino', latte: 'icedlatte' };
 /** Холодные варианты напитков «и горячий, и холодный» без холодной механики: в баре их заказать нельзя, видны только в книге и окне. У них шаг «лёд» стоит, а цели льда в рецепте нет
  *  (известное расхождение, решение владельца отдельно; список зафиксирован, чтобы новое расхождение не прошло незамеченным). */
-const BOOK_ONLY_COLD_WITHOUT_ICE_TARGET = ['chicory_latte', 'cocoa', 'latte_banana', 'latte_coconut', 'latte_lemon', 'latte_sakura', 'matcha_coconut', 'matcha_latte', 'raf_halva', 'vanilla_raf'];
+const BOOK_ONLY_COLD_WITHOUT_ICE_TARGET = ['chicory_latte', 'cocoa', 'latte_banana', 'latte_coconut', 'latte_lemon', 'latte_sakura', 'matcha_coconut', 'matcha_latte', 'raf_halva'];
 
 describe('шаг «лёд» и цель льда', () => {
   test('в баре: шаг «лёд» есть ровно тогда, когда в recipeNumbers есть цель льда (все напитки, варианты и размеры)', () => {

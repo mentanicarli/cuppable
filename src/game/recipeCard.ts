@@ -81,10 +81,10 @@ function stepDetail(task: string, d: Drink, r: Recipe, i: number, tasks: readonl
     }
     case 'water': return `${r.water} мл${d.id === 'protein_water' ? '' : r.cold ? ' холодной воды' : ' горячей воды'}`;
     case 'ice': return `${r.ice} г`;
-    case 'milk': return raf ? `${r.milk} мл холодных сливок 10–15% в питчер${r.pumps ? '' : ', сахар'}` : r.cupMilk ? `${r.milk} мл молока в стакан` : `${r.milk} мл молока в питчер`;
+    case 'milk': return raf ? `${r.milk} мл холодных сливок 10–15% в питчер` : r.cupMilk ? `${r.milk} мл молока в стакан` : `${r.milk} мл молока в питчер`;
     case 'steam': return `${r.zone ? `до ${r.zone[0]}–${r.zone[1]}°C, ` : ''}пена +${Math.round((r.foamX ?? 0) * 100)}% к объёму`;
     case 'pour': return raf || d.family === 'milk' || d.family === 'foamlatte' || d.family === 'matcha' || d.family === 'powder' ? 'переливаем в чашку, рисунок по контуру' : 'в чашку';
-    case 'syrup': return `${r.pumps || 1} помп (${(r.pumps || 1) * PUMP_ML} мл)`;
+    case 'syrup': return d.id === 'raf' ? `ванильный сахар: сироп «ваниль», ${r.pumps || 1} помп (${(r.pumps || 1) * PUMP_ML} мл); без него, если гость так просил` : `${r.pumps || 1} помп (${(r.pumps || 1) * PUMP_ML} мл)`;
     case 'juice': return d.id === 'milkshake_banana' ? `${r.juice} г банана (пюре)` : d.id === 'tea_currant' ? `${r.juice} мл смородинового пюре` : `${r.juice} мл${d.id === 'hot_bumble' ? ', тёплый (60–65°C, не кипятить)' : ''}`;
     case 'tonic': return `${r.tonic} мл`;
     case 'powder': return `${r.powder} г`;

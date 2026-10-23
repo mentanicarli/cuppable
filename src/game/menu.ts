@@ -38,7 +38,6 @@ export const ENGINE: Readonly<Record<string, string>> = {
   cappuccino: 'cappuccino',
   latte: 'latte',
   flat_white: 'flatwhite',
-  vanilla_raf: 'vanillaraf',
   raf: 'raf',
   raf_halva: 'rafhalva'
 };
@@ -74,14 +73,14 @@ export const KEY_DRINK: Readonly<Record<string, { id: string; cold: boolean }>> 
   americano: { id: 'americano', cold: false }, icedamericano: { id: 'americano', cold: true },
   cappuccino: { id: 'cappuccino', cold: false }, icedcappuccino: { id: 'cappuccino', cold: true },
   latte: { id: 'latte', cold: false }, icedlatte: { id: 'latte', cold: true },
-  flatwhite: { id: 'flat_white', cold: false }, raf: { id: 'raf', cold: false }, vanillaraf: { id: 'vanilla_raf', cold: false }, rafhalva: { id: 'raf_halva', cold: false }
+  flatwhite: { id: 'flat_white', cold: false }, raf: { id: 'raf', cold: false }, rafhalva: { id: 'raf_halva', cold: false }
 };
 /** Напиток меню и холодность по ключу механики. */
 export const drinkOfKey = (key: string): { id: string; cold: boolean } => KEY_DRINK[key] ?? { id: key, cold: false };
 
 /** Напитки, где сироп — часть рецепта (гость не просит его отдельно). */
 export const FORCED_SYRUP: Readonly<Record<string, string>> = {
-  vanilla_raf: 'Ваниль', raf_halva: 'Халва',
+  raf: 'Ваниль', raf_halva: 'Халва',
   latte_coconut: 'Кокос', matcha_coconut: 'Кокос', cappuccino_pumpkin: 'Тыква',
   latte_sakura: 'Сакура-вишня', latte_banana: 'Банан', latte_lemon: 'Лимонная меренга',
   boba_guava: 'Гуава-персик', boba_raspberry: 'Малина-лимон',
@@ -89,7 +88,7 @@ export const FORCED_SYRUP: Readonly<Record<string, string>> = {
 };
 
 /** Старые молочные напитки (ручная механика пара). */
-export const MILKY_OLD: readonly string[] = ['cappuccino', 'latte', 'flatwhite', 'raf', 'vanillaraf', 'rafhalva'];
+export const MILKY_OLD: readonly string[] = ['cappuccino', 'latte', 'flatwhite', 'raf', 'rafhalva'];
 
 export interface SyrupMeta { key: string; col: string; short: string }
 export const SYRUP_META: Readonly<Record<string, SyrupMeta>> = {

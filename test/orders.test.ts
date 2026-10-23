@@ -1,7 +1,7 @@
 import { test, expect } from 'vitest';
 const assert = { ok: (v: unknown, m?: string) => expect(v, m).toBeTruthy(), equal: (a: unknown, b: unknown) => expect(a).toBe(b), deepEqual: (a: unknown, b: unknown) => expect(a).toEqual(b), match: (a: string, re: RegExp) => expect(a).toMatch(re) };
 import type { Drink } from '../src/game/types';
-import { rollOrder } from '../src/game/orders';
+import { RAF_NO_VANILLA_SHARE, rollOrder } from '../src/game/orders';
 import { say } from '../src/game/phrases';
 import { nextRank, rankGap, isOrderable, drinkById, ENGINE } from '../src/game/menu';
 
@@ -32,8 +32,8 @@ test('размер классических напитков: с 3-го дня �
 test('раф идёт без молока: альтернативное молоко к нему не предлагается и не звучит', () => {
   const r = seeded(31);
   for (let i = 0; i < 300; i++) {
-    const o = rollOrder({ rank: 9, day: 30, milk: true, eq: { cream: true }, override: { drink: 'vanilla_raf', altMilk: 'Овсяное' } }, 'regular', r);
-    assert.equal(o.id, 'vanilla_raf'); assert.equal(o.altMilk, null); assert.ok(!/молоке/.test(o.line), o.line);
+    const o = rollOrder({ rank: 9, day: 30, milk: true, eq: { cream: true }, override: { drink: 'raf', altMilk: 'Овсяное' } }, 'regular', r);
+    assert.equal(o.id, 'raf'); assert.equal(o.altMilk, null); assert.ok(!/молоке/.test(o.line), o.line);
   }
 });
 test('сироп из рецепта: помпы по размеру', () => {
@@ -73,12 +73,28 @@ test('флэт уайт и эспрессо доступны с правильн
 test('раф-семейство требует кувшин сливок и молоко', () => {
   const r = seeded(21); const ids = new Set(); const none = new Set();
   for (let i = 0; i < 600; i++) { ids.add(rollOrder({ rank: 3, day: 6, milk: true, eq: { cream: true } }, 'regular', r).id); none.add(rollOrder({ rank: 3, day: 6, milk: true, eq: {} }, 'regular', r).id); }
-  assert.ok(ids.has('vanilla_raf'));
-  assert.ok(!none.has('vanilla_raf') && !none.has('raf'));
+  assert.ok(ids.has('raf'));
+  assert.ok(!none.has('raf'));
 });
-test('ванильный раф всегда с ванилью и без повторного «с ванильным сиропом» в реплике', () => {
-  const r = seeded(33);
-  for (let i = 0; i < 800; i++) { const o = rollOrder({ rank: 3, day: 6, milk: true, eq: { cream: true } }, 'regular', r); if (o.id === 'vanilla_raf') { assert.equal(o.syrup?.name, 'Ваниль'); assert.ok(!/сиропом/.test(o.line)); } }
+test('раф: ванильный сахар по умолчанию (без доплаты и без «с ванильным сиропом»), у части гостей «без ванильного сахара»', () => {
+  const r = seeded(33); let withV = 0, without = 0;
+  for (let i = 0; i < 4000; i++) {
+    const o = rollOrder({ rank: 3, day: 6, milk: true, eq: { cream: true } }, 'regular', r);
+    if (o.id !== 'raf') { assert.equal(o.vanillaSugar, undefined); continue; }
+    assert.equal(o.price, o.base);
+    assert.ok(!/сиропом/.test(o.line));
+    if (o.vanillaSugar) { withV++; assert.equal(o.syrup?.name, 'Ваниль'); assert.equal(o.syrupImplied, true); assert.ok(!/ванильного сахара/.test(o.line)); }
+    else { without++; assert.equal(o.syrup, null); assert.ok(/без ванильного сахара/.test(o.line), o.line); }
+  }
+  const share = without / (withV + without);
+  assert.ok(share > RAF_NO_VANILLA_SHARE - 0.05 && share < RAF_NO_VANILLA_SHARE + 0.05, 'доля без ванильного сахара ' + share);
+});
+test('раф в песочнице: syrup null означает «без ванильного сахара»', () => {
+  const r = seeded(5);
+  const a = rollOrder({ rank: 3, day: 6, milk: true, eq: { cream: true }, override: { drink: 'raf', syrup: null } }, 'regular', r);
+  assert.equal(a.vanillaSugar, false); assert.equal(a.syrup, null);
+  const b = rollOrder({ rank: 3, day: 6, milk: true, eq: { cream: true }, override: { drink: 'raf' } }, 'regular', r);
+  assert.ok(b.vanillaSugar === true || b.vanillaSugar === false);
 });
 test('сироп в обычном заказе добавляет 20 ₽', () => {
   const r = seeded(9); let seen = false;

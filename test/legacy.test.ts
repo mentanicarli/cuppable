@@ -39,7 +39,7 @@ describe('экономика', () => {
     expect(drinkCost('latte', false)).toBe(52);
     expect(drinkCost('flatwhite', false)).toBe(67);
     expect(drinkCost('cappuccino', false)).toBe(47);
-    expect(drinkCost('raf', true)).toBe(61);
+    expect(drinkCost('raf', true)).toBe(64); /* 31-6: раф с ванильным сахаром (2 помпы сиропа и 118 мл сливок вместо 131 мл и сахара) */
   });
 });
 

@@ -11,8 +11,8 @@ const GLASS_LATTES = ['latte', 'latte_sakura', 'latte_banana', 'latte_lemon', 'l
 const ALL_GROUPS: ModelGroup[] = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'C1', 'C2', 'C3', 'C5', 'C6'];
 
 describe('посуда по правилу владельца', () => {
-  test('в меню 35 напитков и у каждого есть хотя бы один вариант с описанием', () => {
-    expect(DRINKS.length).toBe(35);
+  test('в меню 34 напитка и у каждого есть хотя бы один вариант с описанием', () => {
+    expect(DRINKS.length).toBe(34);
     for (const d of DRINKS) {
       const n = variantsOf(d).reduce((a, cold) => a + sizesOf(d.id, cold).length, 0);
       expect(n, d.id).toBeGreaterThan(0);
@@ -42,11 +42,11 @@ describe('посуда по правилу владельца', () => {
 
 describe('описания всех напитков', () => {
   const specs = allSpecs();
-  test('54 вида (24 горячих и 30 холодных), на каждый вид хотя бы один размер', () => {
+  test('52 вида (23 горячих и 29 холодных), на каждый вид хотя бы один размер', () => {
     const looks = new Set(specs.map((s) => `${s.id}|${s.cold}`));
-    expect(looks.size).toBe(54);
-    expect([...looks].filter((k) => k.endsWith('false')).length).toBe(24);
-    expect([...looks].filter((k) => k.endsWith('true')).length).toBe(30);
+    expect(looks.size).toBe(52);
+    expect([...looks].filter((k) => k.endsWith('false')).length).toBe(23);
+    expect([...looks].filter((k) => k.endsWith('true')).length).toBe(29);
   });
   test('сумма долей слоёв равна 1 (допуск 0,001), доли положительные', () => {
     for (const s of specs) {
@@ -99,11 +99,11 @@ describe('описания всех напитков', () => {
     expect(pilotRef('boba_guava', '0.4', true)).toEqual({ id: 'boba_guava', size: '0.4', cold: true });
     expect(pilotRef('tea_sencha', '0.4', false)).toEqual({ id: 'tea_sencha', size: '0.4', cold: false });
   });
-  test('Н2-1: 24 горячих вида на модели (H1–H8), по группам таблицы', () => {
-    expect(HOT_MODEL_IDS.size).toBe(24);
+  test('Н2-1: 23 горячих вида на модели (H1–H8), по группам таблицы', () => {
+    expect(HOT_MODEL_IDS.size).toBe(23);
     const grp: Record<string, string[]> = {
       H1: ['espresso', 'espresso_double'], H2: ['americano', 'hot_bumble'], H3: ['cappuccino', 'cappuccino_pumpkin'], H4: ['flat_white'],
-      H5: ['vanilla_raf', 'cocoa', 'raf', 'raf_halva'], H6: ['tea_sencha', 'tea_assam', 'tea_hibiscus', 'tea_buckwheat', 'tea_currant'],
+      H5: ['cocoa', 'raf', 'raf_halva'], H6: ['tea_sencha', 'tea_assam', 'tea_hibiscus', 'tea_buckwheat', 'tea_currant'],
       H7: ['latte', 'latte_sakura', 'latte_banana', 'latte_lemon', 'latte_coconut'], H8: ['matcha_latte', 'chicory_latte', 'matcha_coconut']
     };
     const seen = new Set<string>();
@@ -122,7 +122,7 @@ describe('описания всех напитков', () => {
         }
       }
     }
-    expect(seen.size).toBe(24);
+    expect(seen.size).toBe(23);
   });
   test('Н2-1: цвета верха и детали по таблице', () => {
     const top = (id: string, size: '0.2' | '0.3' | '0.4' | '0.6' = '0.4') => specOf(id, size, false).top;
@@ -279,8 +279,8 @@ describe('Н2-1б: различимость в компактном уровне
   const topOf = (id: string): TopSpec => (allSpecs().find((x) => x.id === id && !x.cold) as DrinkSpec).top;
   /** ΔE76 ≈ 2,3 едва заметна, до 5 пара похожа; порог 7,5 подобран по самой близкой паре (раф и флэт уайт ≈ 7,9). */
   const MIN_DELTA_E = 7.5;
-  test('верх какао, рафа, ванильного рафа, халвы, капучино, тыквы и флэт уайт: попарное расстояние в Lab не меньше порога', () => {
-    const ids = ['cocoa', 'raf', 'vanilla_raf', 'raf_halva', 'cappuccino', 'cappuccino_pumpkin', 'flat_white'];
+  test('верх какао, рафа, халвы, капучино, тыквы и флэт уайт: попарное расстояние в Lab не меньше порога', () => {
+    const ids = ['cocoa', 'raf', 'raf_halva', 'cappuccino', 'cappuccino_pumpkin', 'flat_white'];
     for (let i = 0; i < ids.length; i++) {
       for (let j = i + 1; j < ids.length; j++) {
         expect(compactTopDelta(topOf(ids[i] as string), topOf(ids[j] as string)), `${ids[i]} / ${ids[j]}`).toBeGreaterThanOrEqual(MIN_DELTA_E);

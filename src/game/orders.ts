@@ -23,7 +23,6 @@ const WEIGHTS: Readonly<Record<string, number>> = {
   cappuccino: 0.25,
   latte: 0.25,
   flat_white: 0.15,
-  vanilla_raf: 0.2,
   raf: 0.2,
   raf_halva: 0.15
 };
@@ -36,6 +35,8 @@ const pickSize = (rng: Rng, d: Drink, w: ReadonlyArray<readonly [Size, number]>)
   const ok = w.filter((x) => d.sizes[x[0]] !== undefined);
   return ok.length ? wpick(rng, ok) : ((Object.keys(d.sizes)[0] as Size | undefined) ?? '0.2');
 };
+/** Какая доля гостей просит раф без ванильного сахара (остальным его кладут по умолчанию). */
+export const RAF_NO_VANILLA_SHARE = 0.2;
 /** Напитки, к которым сироп гость не просит. */
 const NO_GUEST_SYRUP: ReadonlySet<string> = new Set(['espresso', 'espresso_double']);
 /** Раф: классический, без молока: альтернативное молоко к нему не предлагается. */
@@ -119,12 +120,14 @@ export function rollOrder(state: OrderState, type: CustomerType, rng: Rng = Math
   if (cold && !fresh) key = ICED[baseKey] as string;
   const strongRoll = state.day >= 2 && rng() < 0.25;
   const strong = ov?.strong ?? strongRoll;
-  const forced = FORCED_SYRUP[d.id];
+  /* раф: ванильный сахар по умолчанию, у части гостей «без него» (случайное число бросается только у рафа, остальные напитки поток не меняют) */
+  const noVanilla = d.id === 'raf' && (ov?.syrup === null || (ov?.syrup === undefined && rng() < RAF_NO_VANILLA_SHARE));
+  const forced = noVanilla ? undefined : FORCED_SYRUP[d.id];
   const open = SYRUPS.filter((s) => s.rank <= state.rank && SYRUP_META[s.name] && !RECIPE_SYRUPS.has(s.name));
   const canSyrup = !fresh || d.steps.some((x) => x.st === 'milk' || x.st === 'shot');
-  const withSyrup = forced || (canSyrup && open.length > 0 && !NO_GUEST_SYRUP.has(d.id) && state.day >= 2 && rng() < 0.3);
+  const withSyrup = forced || (canSyrup && open.length > 0 && !noVanilla && !NO_GUEST_SYRUP.has(d.id) && state.day >= 2 && rng() < 0.3);
   let syrup = forced ? syrupByName[forced] : withSyrup ? open[Math.floor(rng() * open.length) % open.length] : undefined;
-  if (ov && ov.syrup !== undefined && !forced) syrup = ov.syrup ? syrupByName[ov.syrup] : undefined;
+  if (ov && ov.syrup !== undefined && !forced && d.id !== 'raf') syrup = ov.syrup ? syrupByName[ov.syrup] : undefined;
   const meta = syrup ? SYRUP_META[syrup.name] : undefined;
   const order: Order = {
     id: d.id,
@@ -138,6 +141,7 @@ export function rollOrder(state: OrderState, type: CustomerType, rng: Rng = Math
     syrup:
       syrup && meta ? { name: syrup.name, shelf: meta.key, pumps: syrupPumps(forced ? recipePumps(d, size) : 0, 1 + Math.floor(rng() * 2)) } : null,
     syrupImplied: !!forced,
+    ...(d.id === 'raf' ? { vanillaSugar: !noVanilla } : {}),
     altMilk: ov?.altMilk && !isRaf(d) ? { name: ov.altMilk } : null,
     cold,
     food: null,

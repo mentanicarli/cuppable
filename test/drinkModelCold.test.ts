@@ -2,10 +2,10 @@ import { describe, expect, test } from 'vitest';
 import { COLD_MODEL_GROUPS, allSpecs, compactGlassDelta, pilotRef, specOf, type DrinkSpec } from '../src/game/drinkModel';
 import { drinkIconSvg, drinkParts } from '../src/render/world/drinkModel';
 
-/** Н2-2: холодные группы C1–C3 (24 вида). */
+/** Н2-2: холодные группы C1–C3 (23 вида). */
 const COLD_GROUPS: Record<string, string[]> = {
   C1: ['americano', 'tea_sencha', 'tea_assam', 'tea_hibiscus', 'tea_currant'],
-  C2: ['cappuccino', 'latte', 'vanilla_raf', 'cocoa', 'raf', 'matcha_latte', 'chicory_latte', 'latte_sakura', 'latte_banana', 'latte_lemon', 'latte_coconut', 'matcha_coconut', 'cappuccino_pumpkin', 'raf_halva'],
+  C2: ['cappuccino', 'latte', 'cocoa', 'raf', 'matcha_latte', 'chicory_latte', 'latte_sakura', 'latte_banana', 'latte_lemon', 'latte_coconut', 'matcha_coconut', 'cappuccino_pumpkin', 'raf_halva'],
   C3: ['pomegranate_bumble', 'orange_bumble', 'espresso_tonic', 'matcha_bumble', 'matcha_tonic']
 };
 const ALL_IDS = Object.values(COLD_GROUPS).flat();
@@ -30,7 +30,7 @@ describe('Н2-2: холодные C1–C3 (24 вида)', () => {
         }
       }
     }
-    expect(n).toBe(24);
+    expect(n).toBe(23);
   });
   test('верх и детали: таро у четырёх, крем-брюле у банана, крапинки у тыквы, мутный тон у смородины, пузырьки у тоников, языки у C3', () => {
     for (const id of ['latte_sakura', 'latte_lemon', 'latte_coconut', 'matcha_coconut']) {
@@ -77,7 +77,7 @@ describe('Н2-2: холодные C1–C3 (24 вида)', () => {
   const CONFUSABLE: string[][] = [
     ['tea_sencha', 'tea_assam', 'tea_hibiscus', 'tea_currant', 'americano'],
     ['latte_sakura', 'latte_lemon', 'latte_coconut', 'matcha_coconut', 'latte_banana'],
-    ['raf', 'vanilla_raf', 'raf_halva'],
+    ['raf', 'raf_halva'],
     ['cocoa', 'americano', 'chicory_latte'],
     ['cappuccino', 'latte', 'cappuccino_pumpkin']
   ];

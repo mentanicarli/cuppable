@@ -81,7 +81,7 @@ export function settleDay(i: { money: number; pace: PaceId; rank?: number; wage?
 }
 
 /** Напитки с молочным циклом (молоко, вспенивание, подача) в баре. */
-export const MILKY_KEYS: ReadonlySet<string> = new Set(['cappuccino', 'latte', 'flatwhite', 'raf', 'vanillaraf', 'rafhalva']);
+export const MILKY_KEYS: ReadonlySet<string> = new Set(['cappuccino', 'latte', 'flatwhite', 'raf', 'rafhalva']);
 
 /** Себестоимость рецепта: ингредиенты по реальным объёмам плюс расходники. */
 export function recipeCost(r: Recipe): number {

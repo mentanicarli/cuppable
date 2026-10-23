@@ -8,6 +8,8 @@ export interface SpokenOrder {
   cold?: boolean;
   syrup?: { name: string } | null;
   syrupImplied?: boolean;
+  /** раф: false — гость просил без ванильного сахара */
+  vanillaSugar?: boolean;
   altMilk?: { name: string } | null;
   food?: { name: string; heat: boolean } | null;
   /** объём напитка, мл, если у напитка есть выбор размера (0.2 л — по умолчанию, не называется) */
@@ -40,7 +42,6 @@ const NAME_ACC: Readonly<Record<string, string>> = {
   cappuccino: 'капучино',
   latte: 'латте',
   flat_white: 'флэт уайт',
-  vanilla_raf: 'ванильный раф',
   raf: 'раф',
   raf_halva: 'раф со сливочной халвой'
 };
@@ -73,6 +74,7 @@ export function say(order: SpokenOrder, type: CustomerType | string, rng: Rng = 
   if (order.altMilk && !/raf/.test(order.id)) mods.push('на ' + (ALT_PREP[order.altMilk.name] ?? order.altMilk.name.toLowerCase()) + ' молоке');
   if (order.syrup && !order.syrupImplied)
     mods.push('с ' + (SYR_INSTR[order.syrup.name] ?? order.syrup.name.toLowerCase()) + ' сиропом');
+  if (order.vanillaSugar === false) mods.push('без ванильного сахара');
   if (order.strong) mods.push('покрепче');
   if (order.food) mods.push(`и «${order.food.name}»`);
   let s = pick(rng, OPEN[t]);

@@ -236,8 +236,8 @@ const CREMA = '#C99B6E';
 const COLD_SYRUP_COMPACT: Readonly<Record<string, string>> = {
   latte_sakura: '#EE8E7C', latte_banana: '#F6D23E', latte_lemon: '#F3EA5E', latte_coconut: '#FBF4E8', cappuccino_pumpkin: '#E0A24C'
 };
-/** Холодные раф с ванилью и сливочной халвой: оттенок жидкости (у рафа сливочный), чтобы три рафа различались и в стакане. */
-const COLD_RAF_TINT: Readonly<Record<string, string>> = { vanilla_raf: '#F1E19C', raf_halva: '#E2BC68' };
+/** Холодные раф (с ванильным сахаром) и раф с сливочной халвой: оттенок жидкости, чтобы они различались и в стакане. */
+const COLD_RAF_TINT: Readonly<Record<string, string>> = { raf: '#F1E19C', raf_halva: '#E2BC68' };
 const SYRUP_COLOR: Readonly<Record<string, string>> = {
   latte_sakura: '#F0B3A0', latte_banana: '#F2DA8A', latte_lemon: '#F3E6A8', latte_coconut: '#F3E6C8', cappuccino_pumpkin: '#E0A24C'
 };
@@ -261,7 +261,7 @@ export function groupOf(d: Drink, cold: boolean): ModelGroup {
     if (id === 'americano' || id === 'hot_bumble') return 'H2';
     if (id === 'cappuccino' || id === 'cappuccino_pumpkin') return 'H3';
     if (id === 'flat_white') return 'H4';
-    if (id === 'vanilla_raf' || id === 'raf' || id === 'raf_halva' || id === 'cocoa') return 'H5';
+    if (id === 'raf' || id === 'raf_halva' || id === 'cocoa') return 'H5';
     if (TEA_IDS.has(id)) return 'H6';
     if (id === 'latte' || id === 'latte_sakura' || id === 'latte_banana' || id === 'latte_lemon' || id === 'latte_coconut') return 'H7';
     return 'H8';
@@ -343,10 +343,10 @@ function build(d: Drink, r: Recipe, group: ModelGroup): Body {
       /* какао и халва отличаются от рафа цветным кольцом по краю пены, иначе под одной пеной их не различить */
       const ring = d.id === 'cocoa' ? pal.powder : d.id === 'raf_halva' ? CREAM_GOLD : undefined;
       const top: TopSpec = ring ? { color: FOAM, ring } : { color: FOAM };
-      /* компактный верх: какао — тёмное кольцо и тёмный центр, халва — золотая пена и кольцо, ванильный раф ярче рафа, раф кремовый */
+      /* компактный верх: какао — тёмное кольцо и тёмный центр, халва — золотая пена и кольцо, раф (с ванильным сахаром) светло-жёлтый */
       top.compact = d.id === 'cocoa' ? { color: '#B58A68', ring: '#6B4331', ringFrac: 0.32, core: '#6B4331', coreFrac: 0.45 }
         : d.id === 'raf_halva' ? { color: CREAM_GOLD, ring: '#C9A24A', ringFrac: 0.28 }
-        : d.id === 'vanilla_raf' ? { color: '#F7E8A4' }
+        : d.id === 'raf' ? { color: '#F7E8A4' }
         : { color: FOAM };
       return { liquid: toLayers([{ color, vol: r.drinkMl }]), top, detail: null };
     }
@@ -527,7 +527,7 @@ export const PILOT_IDS: ReadonlySet<string> = new Set(['latte', 'cappuccino', 'o
 /** Горячие напитки групп H1–H8 (Н2-1): рисуются моделью только в горячем варианте, холодные варианты ждут Н2-2. 24 вида вместе с горячими латте и капучино. */
 export const HOT_MODEL_IDS: ReadonlySet<string> = new Set([
   'espresso', 'espresso_double', 'americano', 'hot_bumble', 'cappuccino', 'cappuccino_pumpkin', 'flat_white',
-  'vanilla_raf', 'cocoa', 'raf', 'raf_halva', 'tea_sencha', 'tea_assam', 'tea_hibiscus', 'tea_buckwheat', 'tea_currant',
+  'cocoa', 'raf', 'raf_halva', 'tea_sencha', 'tea_assam', 'tea_hibiscus', 'tea_buckwheat', 'tea_currant',
   'latte', 'latte_sakura', 'latte_banana', 'latte_lemon', 'latte_coconut', 'matcha_latte', 'chicory_latte', 'matcha_coconut'
 ]);
 /** Холодные группы Н2-2 и Н2-3: прозрачные (C1), молочно-кофейные (C2), два слоя (C3), густые (C5) и бабл ти (C6). Их холодные варианты рисуются моделью. */

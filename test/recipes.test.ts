@@ -13,8 +13,8 @@ describe('сборка шагов', () => {
     expect(buildTasks('icedamericano', { cold: true, syrup: false })).toEqual(['grind', 'tamp', 'shot', 'ice', 'water']);
     expect(buildTasks('icedlatte', { cold: true, syrup: false })).toEqual(['grind', 'tamp', 'shot', 'ice', 'milk']);
     // раф: эспрессо в питчер, сливки, потом сироп, пар и заливка
-    expect(buildTasks('vanillaraf', { cold: false, syrup: true })).toEqual(['grind', 'tamp', 'shot', 'milk', 'syrup', 'steam', 'pour']);
-    expect(buildTasks('raf', { cold: false, syrup: false })).toEqual(['grind', 'tamp', 'shot', 'milk', 'steam', 'pour']);
+    expect(buildTasks('raf', { cold: false, syrup: true })).toEqual(['grind', 'tamp', 'shot', 'milk', 'syrup', 'steam', 'pour']);
+    expect(buildTasks('raf', { cold: false, syrup: false })).toEqual(['grind', 'tamp', 'shot', 'milk', 'steam', 'pour']); /* без ванильного сахара */
     expect(buildTasks('espresso2', { cold: false, syrup: false })).toEqual(['grind', 'tamp', 'shot', 'grind', 'tamp', 'shot']);
   });
   test('новые напитки по шагам меню', () => {

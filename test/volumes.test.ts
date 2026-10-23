@@ -37,7 +37,7 @@ describe('объёмы по формулам', () => {
     expect(SIZES.map((s) => recipeNumbers(d('cappuccino'), s).milk)).toEqual([113, 180, 227, 360]);
     expect(SIZES.map((s) => recipeNumbers(d('latte'), s).milk)).toEqual([142, 225, 283, 450]);
     expect(recipeNumbers(d('flat_white'), '0.2').milk).toBe(127);
-    expect(SIZES.map((s) => recipeNumbers(d('raf'), s).milk)).toEqual([131, 208, 262, 415]);
+    expect(SIZES.map((s) => recipeNumbers(d('raf'), s).milk)).toEqual([118, 189, 237, 385]);
   });
   test('капучино 0,2 л: пены больше и жидкого молока меньше, чем у латте 0,2 л', () => {
     const c = recipeNumbers(d('cappuccino'), '0.2');
@@ -51,17 +51,17 @@ describe('объёмы по формулам', () => {
     expect(recipeNumbers(d('cappuccino'), '0.2').shots).toBe(1);
     expect(recipeNumbers(d('latte'), '0.2').shots).toBe(1);
   });
-  test('раф: без молока, эспрессо в питчер, сливки и сахар или сироп', () => {
-    for (const id of ['raf', 'vanilla_raf', 'raf_halva']) {
+  test('раф: без молока, эспрессо в питчер, сливки и сироп (у рафа ванильный сахар)', () => {
+    for (const id of ['raf', 'raf_halva']) {
       const r = recipeNumbers(d(id), '0.3');
       expect(r.parts.some((p) => p.label === 'Молоко'), id).toBe(false);
       expect(r.parts.some((p) => /Сливки/.test(p.label)), id).toBe(true);
       expect(legacyRecipe(ENGINE[id] as string, '0.3').pitcherShot, id).toBe(true);
       expect(d(id).ing.includes('молоко'), id).toBe(false);
-      expect(buildTasks(ENGINE[id] as string, { cold: false, syrup: id !== 'raf', shots: 1 })).toEqual(id === 'raf' ? ['grind', 'tamp', 'shot', 'milk', 'steam', 'pour'] : ['grind', 'tamp', 'shot', 'milk', 'syrup', 'steam', 'pour']);
+      expect(buildTasks(ENGINE[id] as string, { cold: false, syrup: true, shots: 1 })).toEqual(['grind', 'tamp', 'shot', 'milk', 'syrup', 'steam', 'pour']);
     }
-    expect(recipeNumbers(d('raf'), '0.2').parts.some((p) => p.label === 'Сахар')).toBe(true);
-    expect(recipeNumbers(d('vanilla_raf'), '0.2').parts.some((p) => p.label === 'Сахар')).toBe(false);
+    expect(recipeNumbers(d('raf'), '0.2').parts.some((p) => p.label === 'Ванильный сахар (сироп «ваниль»)' && p.amount === 2)).toBe(true);
+    expect(recipeNumbers(d('raf'), '0.2').parts.some((p) => p.label === 'Сахар')).toBe(false);
   });
   test('раф получает подпись «Сливки» вместо «Молоко»', () => {
     expect(stepLabels(['grind', 'tamp', 'shot', 'milk', 'steam', 'pour'], 'raf')[3]).toBe('Сливки');

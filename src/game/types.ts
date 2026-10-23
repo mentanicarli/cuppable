@@ -92,6 +92,8 @@ export interface Order {
   base: number;
   syrup: { name: string; shelf: string; pumps: number } | null;
   syrupImplied: boolean;
+  /** Только у рафа: ванильный сахар кладут по умолчанию (true); гость просил без него (false). У остальных напитков поля нет. */
+  vanillaSugar?: boolean;
   altMilk: { name: string } | null;
   cold: boolean;
   food: OrderFood | null;

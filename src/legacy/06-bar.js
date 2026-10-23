@@ -4,7 +4,7 @@ const TS = 3; /* 1 реальная секунда = 3 секунды шота *
 const rcFor = c => MENUAPI.legacyRecipe(c.drink, c.order && c.order.size, !!(c.order && c.order.cold));
 /* вместимость питчера, мл: молоко (у рафа с эспрессо) после вспенивания и запас сверху; у мелких напитков прежние 330 */
 const pitCapOf = rc => rc.milk && !rc.cupMilk ? Math.max(330, Math.ceil((rc.milk + (rc.pitcherShot ? rc.shots * 30 : 0)) * (1 + (rc.foam || 0) / 1.1) * 1.18 / 10) * 10) : 330;
-const MILKY = new Set(['cappuccino', 'latte', 'flatwhite', 'raf', 'vanillaraf', 'rafhalva']);
+const MILKY = new Set(['cappuccino', 'latte', 'flatwhite', 'raf', 'rafhalva']);
 const TASK_NAME = MENUAPI.TASK_NAME;
 const SYR = Object.fromEntries(MENUAPI.SYRUPS.filter(s => MENUAPI.SYRUP_META[s.name]).map(s => { const m = MENUAPI.SYRUP_META[s.name]; return [m.key, { name: s.name, short: m.short, col: m.col, z: 'syrup', rank: s.rank, recipe: MENUAPI.RECIPE_SYRUPS.has(s.name) }]; }));
 const ZONE_POS = { grind: [160, 330], tamp: [330, 496], shot: [630, 380], water: [500, 336], ice: [680, 676], food: [405, 676], micro: [932, 676], milk: [1160, 380], steam: [836, 420], pour: [630, 430], bell: [1032, 500], syrup: [968, 250], syr1: [902, 250], syr2: [968, 250], syr3: [1034, 250] };
