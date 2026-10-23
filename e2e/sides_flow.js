@@ -1,6 +1,5 @@
 /* 30-3: боковые секции у игрока. Обычная игра (без #dev), настоящие события мыши, клавиатуры и касания.
-   Чайный бар: покупка чайной станции в магазине → плашка с названием секции → заказ чая → экран «Как листать бар» один раз (старое сохранение без ключа
-   why:sections) → тост «станция в другой секции» из центра → стрелка в L → кольцо у чая → окно станции → заварка → возврат (стрелка, A/D, перетаскивание,
+   Чайный бар: покупка чайной станции в магазине → плашка с названием секции → заказ чая → тост «станция в другой секции» из центра → стрелка в L → кольцо у чая → окно станции → заварка → возврат (стрелка, A/D, перетаскивание,
    касание) → подача. Холодный бар: то же для бабл ти. Плюс: покупка камеру не двигает, пауза и Esc во время перетаскивания.
    CHROMIUM_ARGS=--mute-audio node e2e/sides_flow.js out/b30/s3-debug.html [папка кадров] */
 const { chromium } = require('playwright'); const path = require('path'); const fs = require('fs');
@@ -25,9 +24,8 @@ const PANEL = new Set(['juice', 'tonic', 'powder', 'boba', 'topping', 'whisk', '
   const drag = async (dx, steps = 8, from = [790, 210]) => { const [x, y] = await stageXY(...from); await p.mouse.move(x, y); await p.mouse.down(); for (let i = 1; i <= steps; i++) { await p.mouse.move(x + dx * i / steps, y); await p.waitForTimeout(25); } await p.mouse.up(); };
   const toasts = () => p.evaluate(() => [...document.querySelectorAll('#bFloat .bmsg')].map(e => e.textContent));
   /* все окна «Зачем»/«Новый напиток» подряд: заголовки по порядку */
-  const cards = async () => { const t = []; for (let i = 0; i < 8; i++) { await p.waitForTimeout(500); const h = await p.evaluate(() => { const e = document.querySelector('#drinkCard'); return e && !e.hidden ? (e.querySelector('h3') || e).textContent.trim() : null; }); if (!h) break; t.push(h); if (h === await sectionsTitle()) await shot('howto_sections'); await p.click('[data-cardok]'); } return t; };
+  const cards = async () => { const t = []; for (let i = 0; i < 8; i++) { await p.waitForTimeout(500); const h = await p.evaluate(() => { const e = document.querySelector('#drinkCard'); return e && !e.hidden ? (e.querySelector('h3') || e).textContent.trim() : null; }); if (!h) break; t.push(h); await p.click('[data-cardok]'); } return t; };
   const waitFor = (fn, arg, to = 60000) => p.waitForFunction(fn, arg, { timeout: to, polling: 30 });
-  const sectionsTitle = () => p.evaluate(() => window.__MENUAPI.WHY_TEXTS['why:sections'].title);
 
   await p.goto('about:blank'); await p.goto(PW.url(tmp) + '#nopixi-lowfx');
   await PW.startNew(p);
@@ -37,11 +35,10 @@ const PANEL = new Set(['juice', 'tonic', 'powder', 'boba', 'topping', 'whisk', '
   /* ---------- 1. магазин: покупка чайной станции ---------- */
   await p.evaluate(() => {
     const G = __dbg.G, M = window.__MENUAPI; G.rank = 9; G.day = 15; G.served = 300; G.rating = 4.6; G.money = 30000; G.milk = true;
-    G.tutorialSeen = M.migrateSeen([], { rank: 9, day: 15, served: 300, milk: true, up: ['milk'] }); /* старое сохранение: ключа why:sections нет */
+    G.tutorialSeen = M.migrateSeen([], { rank: 9, day: 15, served: 300, milk: true, up: ['milk'] });
     __dbg.D.nextArr = 9999; __dbg.endDay();
   });
   await p.waitForSelector('.evening', { timeout: 15000 }); await p.waitForTimeout(1500);
-  ok(await p.evaluate(() => !__dbg.G.tutorialSeen.includes('why:sections')), 'старое сохранение: ключа why:sections нет');
   await p.click('[data-tab=gear]'); await p.waitForTimeout(300);
   ok(await p.locator('[data-buy=eq_tea]').count() === 1, 'чайная станция есть в магазине (ранг 9)');
   const camBefore = await cam();
@@ -103,9 +100,7 @@ const PANEL = new Set(['juice', 'tonic', 'powder', 'boba', 'topping', 'whisk', '
   await order('tea_sencha');
   await p.keyboard.press('Space');
   const titles = await cards(); console.log('окна по порядку:', JSON.stringify(titles));
-  const st = await sectionsTitle();
-  ok(titles.filter(t => t === st).length === 1 && titles[titles.length - 1] === st, 'экран «Как листать бар» показан один раз и последним окном');
-  ok(await p.evaluate(() => __dbg.G.tutorialSeen.includes('why:sections') && !!__dbg.BR), 'ключ why:sections записан, бар открыт');
+  ok(!titles.includes('Как листать бар') && await p.evaluate(() => !!__dbg.BR), 'экрана «Как листать бар» нет, бар открыт');
   await at('C', 0, 'вход в бар: камера в центре');
   ok(await p.evaluate(() => __dbg.BR.tasks.includes('brew')), 'в заказе есть заварка чая');
   ok((await p.evaluate(() => [...document.querySelectorAll('.secNavBtn')].filter(e => !e.hidden).map(e => e.textContent.replace(/\s+/g, ' ').trim()))).some(t => /Чайный бар/.test(t)), 'в центре есть стрелка «Чайный бар»');
@@ -169,9 +164,9 @@ const PANEL = new Set(['juice', 'tonic', 'powder', 'boba', 'topping', 'whisk', '
   if (await p.evaluate(() => !!__dbg.D.cup)) await p.evaluate(() => { const d = __dbg; d.D.customers.slice().forEach(d.exit); d.D.cup = null; });
   await p.evaluate(() => { __dbg.D.customers.slice().forEach(__dbg.exit); });
   await order('boba_guava');
-  await p.evaluate(() => { __dbg.G.tutorialSeen = __dbg.G.tutorialSeen.filter(k => k === 'why:sections' || !/^why:|^drink:/.test(k)); }); /* окна уже показаны выше; экран про листание второй раз — нет */
+  await p.evaluate(() => { __dbg.G.tutorialSeen = __dbg.G.tutorialSeen.filter(k => !/^why:|^drink:/.test(k)); }); /* окна уже показаны выше; экран про листание второй раз — нет */
   await p.keyboard.press('Space'); const t2 = await cards(); console.log('окна, заказ 2:', JSON.stringify(t2));
-  ok(!t2.includes(await sectionsTitle()), '«Как листать бар» второй раз не показан');
+  ok(!t2.includes('Как листать бар'), 'экрана «Как листать бар» нет и во втором заказе');
   await at('C', 0, 'второй заказ: вход в бар в центре');
   ok(await p.evaluate(() => __dbg.BR.tasks.includes('boba')), 'в заказе есть бабл ти');
   console.log('шаги заказа:', JSON.stringify(await p.evaluate(() => __dbg.BR.exp)));

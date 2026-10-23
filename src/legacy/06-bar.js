@@ -54,8 +54,6 @@ function barOpen(c) {
   const intro = c.order && !tutOffNow() ? MENUAPI.orderIntro(c.order.id, G.tutorialSeen, { shots: rc.shots || 1, foam: rc.foam, size: c.order.size, cold: !!c.order.cold }) : [];
   const again = () => { if (G && G.phase === 'day' && !paused && !c.leaving && D.customers.includes(c)) barOpen(c); };
   if (intro.length) { const it = intro[0]; if (it.kind === 'why') showWhy(it.key, again); else showDrinkCard(it.card, again, c.order); return; }
-  /* «Как листать бар» (Б1-3): один раз (и старым сохранениям), последним окном, когда открыта боковая секция; камера в центре, терпение и таймер стоят */
-  if (c.order && sectionsPlayable() && MENUAPI.sectionsIntroDue(G.tutorialSeen, secOpenNow(), tutOffNow())) { camGo('C', true); showWhy(MENUAPI.WHY_SECTIONS, again); return; }
   const d = c.drink, exp = MENUAPI.buildTasks(d, { cold: !!(c.order && c.order.cold), syrup: !!c.syrup, shots: rc.shots });
   if (c.order && c.order.food) exp.push('food');
   const tasks = MENUAPI.uniqueTasks(exp);

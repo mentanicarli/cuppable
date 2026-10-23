@@ -169,14 +169,6 @@ let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' 
     await p.keyboard.press('Space'); await p.waitForTimeout(500); await p.keyboard.up('Space'); await PW.dismissCard(p);
     ok(await p.evaluate(() => __dbg.BR.inset === 'whisk') && (await toasts()).length === 0, 'флаг выключен: Space открывает станцию, тоста нет'); await p.keyboard.press('Escape'); await p.waitForTimeout(300);
     m = await mm(); ok(m && m.hl.length === 0, 'флаг выключен: стрелка не подсвечена: ' + JSON.stringify(m));
-    /* «Как листать бар» */
-    const seenNo = () => p.evaluate(() => { const M = window.__MENUAPI; __dbg.G.tutOff = false; __dbg.G.hints = true; __dbg.G.tutorialSeen = M.fullSeen().filter(k => k !== 'why:sections'); });
-    const cards = async () => { const out = []; for (let i = 0; i < 6; i++) { const t = await p.evaluate(() => { const e = document.querySelector('#drinkCard'); return e && !e.hidden ? (e.querySelector('h3') || {}).textContent : null; }); if (!t) break; out.push(t); if (t === 'Как листать бар') await sh2('b13_6_how_to_browse'); await p.click('[data-cardok]'); await p.waitForTimeout(450); } return out; };
-    await seenNo(); await p.evaluate(() => __dbg.resetBar()); await p.evaluate(() => { const c = __dbg.D.customers[0]; __dbg.barOpen(c); }); await p.waitForTimeout(700);
-    let cs = await cards(); ok(cs.length >= 1 && cs[cs.length - 1] === 'Как листать бар', 'экран «Как листать бар» показан последним: ' + JSON.stringify(cs)); await at(p, 'C', 0, 'камера в центре под экраном');
-    await p.evaluate(() => __dbg.resetBar()); await p.evaluate(() => __dbg.barOpen(__dbg.D.customers[0])); await p.waitForTimeout(700); cs = await cards(); ok(cs.length === 0, 'повторно не показывается');
-    await p.evaluate(() => { __dbg.G.tutorialSeen = window.__MENUAPI.freshSeen(); }); await p.evaluate(() => __dbg.resetBar()); await p.evaluate(() => __dbg.barOpen(__dbg.D.customers[0])); await p.waitForTimeout(700); cs = await cards(); ok(cs.includes('Как листать бар'), '«Показать подсказки заново» (сброс tutorialSeen) возвращает экран: ' + JSON.stringify(cs));
-    await seenNo(); await p.evaluate(() => { __dbg.G.tutOff = true; }); await p.evaluate(() => __dbg.resetBar()); await p.evaluate(() => __dbg.barOpen(__dbg.D.customers[0])); await p.waitForTimeout(700); cs = await cards(); ok(cs.length === 0, 'подсказки выключены: экрана нет');
     await ctx.close(); }
   /* обычная игра: покупки боковых секций открывают стрелки, камера не двигается, тостов без нужного шага нет */
   { const { ctx, p } = await open('', false, { width: 1312, height: 752 }, shots2 ? 2 : 1);

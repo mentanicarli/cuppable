@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import {
-  COACH_LINES, DRINKS, DRINK_TEXTS, GLOSSARY, TASK_ZONE, STATION_NAMES, TUTORIALS, WHY_KEYS, WHY_MARK, WHY_SECTIONS, WHY_TEXTS, drinkSeenKey, freshSeen, glossaryGroups, lesson, orderIntro, stepsForShots, whyOfInset, whyOfOrder
+  COACH_LINES, DRINKS, DRINK_TEXTS, GLOSSARY, TASK_ZONE, STATION_NAMES, TUTORIALS, WHY_KEYS, WHY_MARK, WHY_TEXTS, drinkSeenKey, freshSeen, glossaryGroups, lesson, orderIntro, stepsForShots, whyOfInset, whyOfOrder
 } from '../src/game/api';
 
 const POSITION = /слева|справа|в центре|по центру|сверху|снизу|вверху|внизу/i;
@@ -36,17 +36,15 @@ describe('тексты К1 в игре', () => {
     for (const t of GLOSSARY) expect(t.text.length, t.name).toBeGreaterThan(20);
     expect(GLOSSARY.find((t) => /ристретто/i.test(t.name))).toBeUndefined();
   });
-  test('23 экрана «Зачем» с заголовком и текстом, среди них why:sections («Как листать бар»)', () => {
-    expect(WHY_KEYS).toHaveLength(23);
+  test('22 экрана «Зачем» с заголовком и текстом; экрана «Как листать бар» нет (31-7)', () => {
+    expect(WHY_KEYS).toHaveLength(22);
     for (const w of Object.values(WHY_TEXTS)) {
       expect(w.title.length).toBeGreaterThan(5);
       expect(w.text.length).toBeGreaterThan(1);
       expect(w.text.length).toBeLessThanOrEqual(5);
     }
-    expect(WHY_SECTIONS).toBe('why:sections');
-    expect(WHY_KEYS).toContain(WHY_SECTIONS);
-    expect(WHY_TEXTS[WHY_SECTIONS]?.title).toBe('Как листать бар');
-    for (const l of WHY_TEXTS[WHY_SECTIONS]?.text ?? []) expect(l.length).toBeLessThanOrEqual(100);
+    expect(WHY_KEYS).not.toContain('why:sections');
+    for (const w of Object.values(WHY_TEXTS)) for (const l of w.text) expect(l.length).toBeLessThanOrEqual(100);
   });
   test('реплика коуча есть у каждого шага новой станции, названия станций из списка, без положений, цифр и «!»', () => {
     const LEGACY = new Set(['syrup', 'grind', 'tamp', 'shot', 'water', 'milk', 'steam', 'pour']);

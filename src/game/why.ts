@@ -7,12 +7,6 @@ import { WHY_TEXTS } from './content';
 
 /** Метка «сохранение знает про экраны “Зачем”». Без неё старое сохранение переносится один раз (migrateSeen). */
 export const WHY_MARK = 'v3';
-/** Экран «Как листать бар» (Б1-3): первый вход в бар, когда листание включено и открыта боковая секция; показ — barOpen в 06-bar.js, текст — guide.md. */
-export const WHY_SECTIONS = 'why:sections';
-/** Показать ли «Как листать бар»: один раз (старым сохранениям тоже, миграции нет), когда открыта боковая секция и подсказки включены. */
-export function sectionsIntroDue(seen: readonly string[], open: { L: boolean; R: boolean }, hintsOff: boolean): boolean {
-  return !hintsOff && (open.L || open.R) && !seen.includes(WHY_SECTIONS);
-}
 export const WHY_KEYS: readonly string[] = Object.keys(WHY_TEXTS);
 export const isWhyKey = (k: string): boolean => k.startsWith('why:');
 

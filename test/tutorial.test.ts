@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { EQ_IMPL, SECTION_NAMES, WHY_SECTIONS, TUTORIALS, coachSteps,migrateSeen, sectionsIntroDue, exampleDrink, purchaseToast, readSave, restore, tutorialEqs, tutorialEqsOfDrink } from '../src/game/api';
+import { EQ_IMPL, SECTION_NAMES, WHY_TEXTS, TUTORIALS, coachSteps,migrateSeen, exampleDrink, purchaseToast, readSave, restore, tutorialEqs, tutorialEqsOfDrink } from '../src/game/api';
 
 describe('подсказки новых станций', () => {
   test('у каждого работающего оборудования есть 1–2 шага', () => {
@@ -35,15 +35,10 @@ describe('подсказки новых станций', () => {
     for (const eq of ['ice', 'cream', 'case_snacks', 'microwave']) expect(purchaseToast(eq) ?? '', eq).not.toContain('секции');
     expect(purchaseToast('milk')).not.toContain('секции');
   });
-  test('30-3: «Как листать бар» один раз, старому сохранению тоже', () => {
-    const open = { L: true, R: false };
-    const old = migrateSeen([], { rank: 5, day: 12, served: 100, milk: true, up: ['eq_tea'] });
-    expect(old).not.toContain(WHY_SECTIONS);
-    expect(sectionsIntroDue(old, open, false)).toBe(true);
-    expect(sectionsIntroDue([...old, WHY_SECTIONS], open, false)).toBe(false); /* второй заказ */
-    expect(sectionsIntroDue(old, { L: false, R: false }, false)).toBe(false); /* боковой секции нет */
-    expect(sectionsIntroDue(old, open, true)).toBe(false); /* подсказки выключены */
-    expect(sectionsIntroDue([], { L: false, R: true }, false)).toBe(true);
+  test('31-7: экрана «Как листать бар» нет, ключ why:sections из старого сохранения безвреден', () => {
+    const old = migrateSeen(['why:sections', 'drink:latte'], { rank: 5, day: 12, served: 100, milk: true, up: ['eq_tea'] });
+    expect(old).toContain('why:sections');
+    expect(Object.keys(WHY_TEXTS)).not.toContain('why:sections');
   });
   test('коуч по шагам нумерует их, у напитка без станций подсказки нет', () => {
     expect(coachSteps('matcha')).toMatch(/^1\. .+<br>2\. /);
