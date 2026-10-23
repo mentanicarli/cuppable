@@ -26,6 +26,11 @@ import { Spring, Spring2, damp, ik2 } from './anim';
 import { Fx } from './fx';
 import { cupTexture } from './cupTex';
 import { bakePaper, canvasTexture, raster, rasterAtlas } from './svg';
+import { TABLE_CUP } from './cupPlan';
+
+/** Крышка ноутбука гостя по x (art-src/hall/laptop-lid.svg: 196–264): за ней скрыты кисти, по бокам видны предплечья. */
+const LID_X0 = 196;
+const LID_X1 = 264;
 
 export { lookFor, type Look };
 
@@ -775,7 +780,7 @@ export class World {
         res: this.texRes * GUEST_K,
         shadow: this.shadow,
         onTap: () => undefined,
-        seat: { front: this.sitFront, tableCup: { x: 52, y: 538 } },
+        seat: { front: this.sitFront, tableCup: { x: TABLE_CUP.x, y: TABLE_CUP.y } },
         steam: (x, y) => this.fx.add({ x, y: y - 9, vx: (Math.random() - 0.5) * 6, vy: -(16 + Math.random() * 8), r: 2.5, grow: 8, a: 0.5, life: 2.2 })
       });
       a.root.eventMode = 'none';
@@ -833,9 +838,7 @@ export class World {
    */
   private seatMasks(a: Actor | null): void {
     const on = !!a && a.laptopK > 0.5;
-    const reach = on && !!a && a.reaching;
-    const kc = a ? a.cupK : 1;
-    const key = `${on ? 1 : 0}${reach ? 1 : 0}${a ? 1 : 0}${kc}`;
+    const key = `${on ? 1 : 0}${a ? 1 : 0}`;
     if (a && a.root.mask !== (on ? this.seatMaskA : null)) a.root.mask = on ? this.seatMaskA : null;
     if (key === this.seatMaskState) return;
     this.seatMaskState = key;
@@ -844,19 +847,17 @@ export class World {
     const mx = (x: number) => P.x + (x - P.x) * GUEST_K;
     const my = (y: number) => P.y + (y - P.y) * GUEST_K;
     const R = (g: Graphics, x: number, y: number, w: number, h: number) => g.rect(mx(x), my(y), w * GUEST_K, h * GUEST_K);
-    /* x1 — правая кромка скрытого; чашка на блюдце (x от 270, y от 524) остаётся видимой целиком */
-    const draw = (g: Graphics, x1: number, cup: boolean) => {
+    /* тело (маска A): скрыто за крышкой и по бокам до x 164–284; руки и чашка (маска B): скрыто только за самой крышкой (x 196–264), чтобы предплечья были видны с обеих сторон от плеч до боковых краёв крышки, а чашка на блюдце справа видна целиком */
+    const draw = (g: Graphics, x0: number, x1: number) => {
       g.clear();
       R(g, 0, 0, W, 490);
       R(g, 0, 546, W, H - 546);
-      R(g, 0, 490, 164, 56);
+      R(g, 0, 490, x0, 56);
       R(g, x1, 490, W - x1, 56);
-      /* окно под чашку растёт вместе с чашкой от её центра (280, 535): целая, с ручкой справа */
-      if (cup) R(g, 280 - 10 * kc, 531 - 12 * kc, 26 * kc, 15 + 12 * kc);
       g.fill(0xffffff);
     };
-    draw(this.seatMaskA, 284, false);
-    draw(this.seatMaskB, reach ? 262 : 284, true);
+    draw(this.seatMaskA, 164, 284);
+    draw(this.seatMaskB, LID_X0, LID_X1);
     this.sitFront.mask = on ? this.seatMaskB : null;
   }
 

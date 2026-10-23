@@ -16,18 +16,19 @@ const out = process.argv[3] || 'out/cs';
   await p.keyboard.press('Tab'); await p.waitForTimeout(500);
   const r = await p.evaluate(async () => {
     const d = window.__dbg, W = d.WORLD, M = d.MENUAPI, look = window.__look;
-    const cnt = { hot: 0, cold: 0, iced: 0 }, acts = [];
+    const cnt = { hot: 0, cold: 0, iced: 0 }, acts = [], emit = {};
     const mk = (name, x, id, size, cold) => {
-      const a = W.addActor({ look, title: '', tags: [], x, onTap() {}, steam: (sx, sy) => { cnt[name]++; W.fx.add({ x: sx, y: sy - 9, vx: 0, vy: -20, r: 2.5, grow: 8, a: 0.5, life: 2.2 }); } });
+      const a = W.addActor({ look, title: '', tags: [], x, onTap() {}, steam: (sx, sy) => { cnt[name]++; emit[name] = sy - 9; W.fx.add({ x: sx, y: sy - 9, vx: 0, vy: -20, r: 2.5, grow: 8, a: 0.5, life: 2.2 }); } });
       a.holdCup('#5A3A2A', 1, M.modelRefOf(id, size, cold)); acts.push([a, x]);
     };
     mk('hot', 420, 'latte', '0.3', false); mk('cold', 760, 'icedlatte', '0.4', true); mk('iced', 1060, 'orange_bumble', '0.4', true);
     const t = setInterval(() => acts.forEach(([a, x]) => a.update(0.033, x, 0)), 33);
     await new Promise(r => setTimeout(r, 3000)); clearInterval(t);
-    return cnt;
+    const top = acts[0][0].cupSpr.getGlobalPosition().y;
+    return { ...cnt, rimOk: emit.hot < top, emit: emit.hot, top };
   });
   console.log(JSON.stringify(r));
-  ok('у горячего пар идёт', r.hot > 0); ok('у холодного латте пара нет', r.cold === 0); ok('у холодного бамбла со льдом пара нет', r.iced === 0);
+  ok('у горячего пар идёт', r.hot > 0); ok('пар стартует над ободом чашки', r.rimOk); ok('у холодного латте пара нет', r.cold === 0); ok('у холодного бамбла со льдом пара нет', r.iced === 0);
   await p.screenshot({ path: `${out}_cold_no_steam.png` });
   fs.unlinkSync(tmp); await b.close();
   const bad = errs.filter(e => /^FAIL|^PAGE|error/i.test(e)); console.log(bad.length ? bad.join('\n') : 'NO_ERRORS'); process.exit(bad.length ? 1 : 0);

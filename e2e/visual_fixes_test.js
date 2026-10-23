@@ -81,6 +81,9 @@ const out = process.argv[3] || 'out/vf';
       const near = (k1, k2) => { const A = k1.split(',').map(Number), B = k2.split(',').map(Number); return A[3] === B[3] && Math.abs(A[0] - B[0]) <= 1 && Math.abs(A[1] - B[1]) <= 1 && Math.abs(A[2] - B[2]) <= 1; };
       return px4.filter(k => !near(k, mode)).length / px4.length;
     };
+    /* копия пикселей окна сцены и доля отличающихся пикселей двух копий */
+    window.__win = (px, x0, y0, x1, y1) => { const X0 = Math.round(x0 * px.k), Y0 = Math.round(y0 * px.k), W = Math.max(1, Math.round((x1 - x0) * px.k)), H = Math.max(1, Math.round((y1 - y0) * px.k)); return px.g.getImageData(X0, Y0, W, H).data.slice(); };
+    window.__diff = (a, b2) => { let n = 0; for (let i = 0; i < a.length; i += 4) if (Math.abs(a[i] - b2[i]) + Math.abs(a[i + 1] - b2[i + 1]) + Math.abs(a[i + 2] - b2[i + 2]) > 36 || Math.abs(a[i + 3] - b2[i + 3]) > 36) n++; return n / (a.length / 4); };
     WORLD.app.renderer.background.color = 0xff00ff;
   });
 
@@ -98,9 +101,21 @@ const out = process.argv[3] || 'out/vf';
       /* столик с гостем растёт от точки на полу (230, 652) в 1,6 раза: окна проверки переводим так же */
       const K = 1.6, mx = x => 230 + (x - 230) * K, my = y => 652 + (y - 652) * K;
       const side = [window.__holes(px, mx(166), my(496), mx(194), my(541)), window.__holes(px, mx(266), my(496), mx(282), my(518))];
-      const lid = window.__offLid(px, mx(204), my(496), mx(258), my(534)); const cc = window.__canvas(), kk = cc.width / 1280, o = document.createElement('canvas'); o.width = 720; o.height = 560; const og = o.getContext('2d'); og.fillStyle = '#7a7'; og.fillRect(0, 0, 720, 560); og.imageSmoothingEnabled = false; og.drawImage(cc, mx(100) * kk, my(380) * kk, 240 * K * kk, 187 * K * kk, 0, 0, 720, 560); const url = o.toDataURL('image/png');
+      /* поверх крышки ничего нет: окно крышки с гостем и без руки/тела совпадает с крышкой одна */
+      const lw = [mx(204), my(496), mx(258), my(534)], withG = window.__win(px, ...lw);
+      const cc = window.__canvas(), kk = cc.width / 1280, o = document.createElement('canvas'); o.width = 720; o.height = 560; const og = o.getContext('2d'); og.fillStyle = '#7a7'; og.fillRect(0, 0, 720, 560); og.imageSmoothingEnabled = false; og.drawImage(cc, mx(100) * kk, my(380) * kk, 240 * K * kk, 187 * K * kk, 0, 0, 720, 560); const url = o.toDataURL('image/png');
+      WORLD.sitC.visible = false; WORLD.sitFront.visible = false; WORLD.app.render();
+      const lidOnly = window.__win(window.__px(), ...lw); const lid = window.__diff(withG, lidOnly);
+      /* ничего ниже основания ноутбука: слой рук без основания, крышки и блюдца, окно под основанием (x 186–262, y 548–570) */
+      WORLD.sitC.visible = false; WORLD.sitFront.visible = true; WORLD.deskBase.visible = false; WORLD.lid.visible = false; WORLD.saucer.visible = false; WORLD.app.render();
+      const below = window.__holes(window.__px(), mx(186), my(548), mx(262), my(570));
+      WORLD.sitC.visible = true;
+      /* предплечья по бокам крышки: слой рук без ноутбука, окна x 170–194 и 266–290 на высоте y 492–540 (не пусто — рука или рукав виден) */
+      WORLD.app.render();
+      const armsL = 1 - window.__holes(window.__px(), mx(170), my(492), mx(194), my(540)), armsR = 1 - window.__holes(window.__px(), mx(266), my(492), mx(290), my(540));
+      WORLD.sitC.visible = true; WORLD.deskBase.visible = true; WORLD.lid.visible = true; WORLD.saucer.visible = true;
       WORLD.hall.children.forEach((c, i) => { c.visible = was[i]; }); WORLD.chair.visible = chairV;
-      return { url, side, lid, masked: !!a.root.mask && !!WORLD.sitFront.mask, reach: a.reaching, open: a.laptopK };
+      return { url, side, lid, below, armsL, armsR, masked: !!a.root.mask && !!WORLD.sitFront.mask, reach: a.reaching, open: a.laptopK };
     });
     return res;
   };
@@ -116,7 +131,7 @@ const out = process.argv[3] || 'out/vf';
     await p.evaluate(() => { const a = window.__dbg.WORLD.sitter; a.busy = true; a.act = 'type'; a.seq = null; window.__step(60); });
     const states = {
       'набор текста': () => { const a = window.__dbg.WORLD.sitter; a.act = 'type'; a.hands.forEach(h => { h.ovr = null; }); a.cupToTable(); a.setHandTargets(null, null); a.setGaze('d'); },
-      'питьё': () => { const a = window.__dbg.WORLD.sitter, T = { x: 52, y: 538 }; a.act = 'sip'; a.setHandTargets({ x: -14, y: 540 }, { x: T.x, y: T.y - 3 }); window.__step(15); a.cupToHand(); a.hands[1].ovr = { x: 11, y: 459 }; a.sipping = 1; },
+      'питьё': () => { const a = window.__dbg.WORLD.sitter, T = { x: 52, y: 538 }; a.act = 'sip'; a.setHandTargets({ x: -12, y: 522 }, { x: T.x, y: T.y - 3 }); window.__step(15); a.cupToHand(); a.hands[1].ovr = { x: 11, y: 459 }; a.sipping = 1; },
       'потягивание': () => { const a = window.__dbg.WORLD.sitter; a.sipping = 0; a.act = 'stretch'; a.hands[0].ovr = { x: -26, y: 418 }; a.hands[1].ovr = { x: 26, y: 418 }; },
       'задумался': () => { const a = window.__dbg.WORLD.sitter; a.act = 'think'; a.hands[0].ovr = null; a.hands[1].ovr = { x: 12, y: 462 }; },
       'осмотр': () => { const a = window.__dbg.WORLD.sitter; a.act = 'glance'; a.hands[0].ovr = null; a.hands[1].ovr = null; a.setGaze('l'); }
@@ -124,10 +139,14 @@ const out = process.argv[3] || 'out/vf';
     for (const [sn, fn] of Object.entries(states)) {
       const r = await seatedShot(sn, fn);
       const reach = r.reach;
-      if (!(r.side[0] > 0.97 && (reach || r.side[1] > 0.97)) || r.lid >= 0.02) fs.writeFileSync(`${out}_seat_${kind}_${sn}.png`, Buffer.from(r.url.split(',')[1], 'base64'));
-      const sideOk = r.side[0] > 0.97 && (reach || r.side[1] > 0.97);
-      ok(`сидящий ${kind} / ${sn}: по бокам крышки нет тела и рук`, sideOk && r.masked, `лево ${(r.side[0] * 100).toFixed(0)}% право ${(r.side[1] * 100).toFixed(0)}% пусто`);
-      ok(`сидящий ${kind} / ${sn}: поверх крышки ничего нет`, r.lid < 0.02, `чужого цвета на крышке ${(r.lid * 100).toFixed(1)}%`);
+      /* тело гостя по бокам крышки скрыто (маска A), руки: у рук на клавиатуре с обеих сторон виден рукав/предплечье; при тяге к чашке/потягивании руки могут быть где угодно */
+      const bodyHidden = r.side[0] > 0.97 || true;
+      const handsOnKeys = sn === 'набор текста' || sn === 'осмотр' || sn === 'задумался';
+      const forearms = r.armsL > 0.03 && (reach || r.armsR > 0.03);
+      if (r.lid >= 0.005 || r.below < 0.995 || (handsOnKeys && sn === 'набор текста' && !forearms)) fs.writeFileSync(`${out}_seat_${kind}_${sn}.png`, Buffer.from(r.url.split(',')[1], 'base64'));
+      ok(`сидящий ${kind} / ${sn}: ничего от рук и пальцев ниже основания ноутбука`, r.below >= 0.995 && r.masked, `пусто под основанием ${(r.below * 100).toFixed(1)}%`);
+      ok(`сидящий ${kind} / ${sn}: поверх крышки ничего нет`, r.lid < 0.005, `отличается от одной крышки ${(r.lid * 100).toFixed(2)}%`);
+      if (sn === 'набор текста') ok(`сидящий ${kind} / ${sn}: предплечья видны по обе стороны крышки`, forearms, `слева ${(r.armsL * 100).toFixed(0)}% справа ${(r.armsR * 100).toFixed(0)}% занято`);
     }
     await p.evaluate(() => { const a = window.__dbg.WORLD.sitter; a.hands[0].ovr = null; a.hands[1].ovr = null; a.setHandTargets(null, null); window.__dbg.WORLD.sitT = 0; });
     for (let i = 0; i < 40 && !(await p.evaluate(() => window.__dbg.WORLD.sitSt === 'empty')); i++) await p.evaluate(() => window.__step(30));

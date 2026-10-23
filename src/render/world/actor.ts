@@ -7,6 +7,7 @@ import { strokeAt } from './style';
 import { drinkIconPx } from './drinkModel';
 import { TexCache, modelTexKey } from './texCache';
 import { cupTexture } from './cupTex';
+import { tableCupDy } from './cupPlan';
 import { hasSteam, specOf, type ModelRef } from '../../game/drinkModel';
 import { readableOn } from '../../game/contrast';
 
@@ -66,6 +67,9 @@ const SLOT = { cx: -41, cy: 347, w: 42, h: 45 };
 const PAT_X = -12;
 const PAT_Y = 328;
 const PAT_W = 66;
+/** Кисти сидящего за ноутбуком лежат на клавиатуре за крышкой (крышка 196–264 × 482–540, основание до 547,5): центр кисти y 522, x ±12, чтобы ничего не выглядывало под основанием, а локти уходили за боковые края крышки. */
+const KEYS_X = 12;
+const KEYS_Y = 522;
 /** Область названия в пузыре: от правого края иконки (зазор ≥ 4 с запасом на сжатие растра) до правого края карточки (с зазором 4); не больше двух строк. */
 export const NAME_BOX = { x0: SLOT.cx + SLOT.w / 2 + 6, x1: 60, cy: 356, maxH: 28, lines: 2 };
 const NAME_FONT = 'Nunito, system-ui, sans-serif';
@@ -557,7 +561,7 @@ export class Actor {
       .call(() => {
         this.laptopK = 0.01;
         const p = this.cupFigPoint(T);
-        this.setHandTargets({ x: -14, y: 540 }, p ? { x: T.x, y: T.y - 4 } : null);
+        this.setHandTargets({ x: -KEYS_X, y: KEYS_Y }, p ? { x: T.x, y: T.y - 4 } : null);
       })
       .to(0.35, (u) => (this.laptopK = u), ease.outBack)
       .wait(0.35)
@@ -661,11 +665,11 @@ export class Actor {
     if (roll < 0.42) {
       /* пьёт кофе: рука к чашке, подняла, глоток, вернула */
       this.act = 'sip';
-      s.call(() => this.setHandTargets({ x: -14, y: 540 }, { x: T.x, y: T.y - 3 }))
+      s.call(() => this.setHandTargets({ x: -KEYS_X, y: KEYS_Y }, { x: T.x, y: T.y - 3 }))
         .wait(0.5)
         .call(() => {
           this.cupToHand();
-          this.setHandTargets({ x: -14, y: 540 }, null);
+          this.setHandTargets({ x: -KEYS_X, y: KEYS_Y }, null);
           const h = this.hands[1];
           if (h) h.ovr = { x: 11, y: 459 };
           this.setGaze('d');
@@ -1064,11 +1068,11 @@ export class Actor {
         ty = ovr.y;
       } else if (seated && this.phase === 'seated' && this.act === 'type') {
         const j = Math.sin(this.typeJ * 17 + i * 2) * Math.sin(this.typeJ * 3.1) * 1.6;
-        const p = this.toFig(i === 0 ? -14 : 14, 541 + j);
+        const p = this.toFig(i === 0 ? -KEYS_X : KEYS_X, KEYS_Y + 1 + j);
         tx = p.x;
         ty = p.y;
       } else if (seated) {
-        const p = this.toFig(i === 0 ? -15 : 15, 538);
+        const p = this.toFig(i === 0 ? -KEYS_X : KEYS_X, KEYS_Y);
         tx = p.x;
         ty = p.y;
       }
@@ -1118,7 +1122,9 @@ export class Actor {
     if (!t) return;
     /* текстура нарисована в px экрана; чашка живёт в координатах гостя, поэтому делим на рост гостя */
     this.cupSpr.texture = t.tex;
-    this.cupSpr.position.set(t.box.x / GUEST_K, t.box.y / GUEST_K + 11);
+    /* на столе донышко стоит в светлом углублении блюдца: сдвиг считает tableCupDy по сосуду и размеру */
+    const dy = this.cupState === 'table' && this.cupModel ? tableCupDy(this.cupModel) : 0;
+    this.cupSpr.position.set(t.box.x / GUEST_K, t.box.y / GUEST_K + 11 + dy);
     this.cupSpr.width = t.box.w / GUEST_K;
     this.cupSpr.height = t.box.h / GUEST_K;
   }
@@ -1132,8 +1138,10 @@ export class Actor {
     this.steamT += dt;
     if (this.steamT > 0.2 && this.o.steam && this.alive && this.cupSteams) {
       this.steamT = 0;
+      /* пар стартует над ободом чашки (верх спрайта модели), а не над блюдцем */
       const g = this.cup.getGlobalPosition();
-      this.o.steam(g.x + (vr() - 0.5) * 6, g.y - 12);
+      const top = this.cupSpr.visible ? this.cupSpr.getGlobalPosition().y + 4 : g.y - 12 + 9;
+      this.o.steam(g.x + (vr() - 0.5) * 6, top);
     }
   }
 

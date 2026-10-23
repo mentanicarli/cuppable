@@ -4,7 +4,7 @@
  */
 import { lodFor, specOf, type DrinkSpec, type Lod, type Material, type ModelRef } from '../../game/drinkModel';
 import { GUEST_K } from './art';
-import { geomOf } from './drinkModel';
+import { geomOf, seatOf } from './drinkModel';
 import { modelTexKey } from './texCache';
 
 export type CupPlace = 'barista' | 'guest' | 'fly';
@@ -30,4 +30,23 @@ export function cupPlan(ref: ModelRef, place: CupPlace, res: number): CupPlan {
   const heightPx = geomOf(spec.vessel).H * unit;
   const lod = lodFor(heightPx);
   return { spec, unit, heightPx, lod, key: `${modelTexKey(spec, lod, res)}|${place}|cup` };
+}
+
+/** Чашка на блюдце гостя (31-1). Якорь чашки в координатах гостя (x от оси гостя 230) и опускание основания модели относительно якоря (`syncCupModel`: спрайт сдвинут на 11). */
+export const TABLE_CUP = { x: 52, y: 538, baseDrop: 11 } as const;
+/** Центр светлого углубления блюдца на столе в координатах столика (art-src/hall/saucer.svg: эллипс cx 282, cy 549,5). */
+export const SAUCER_RECESS = { x: 282, y: 549.5 } as const;
+/** Ось гостя по x в координатах столика (якорь чашки отсчитывается от неё). */
+export const GUEST_AXIS_X = 230;
+
+/** Центр углубления под донышком модели в координатах столика при смещении спрайта на `dy` (по умолчанию 0). */
+export function tableCupRecess(ref: ModelRef, dy = 0): { x: number; y: number } {
+  const plan = cupPlan(ref, 'guest', 1);
+  const seat = seatOf(geomOf(plan.spec.vessel), plan.lod);
+  return { x: GUEST_AXIS_X + TABLE_CUP.x, y: TABLE_CUP.y + TABLE_CUP.baseDrop + dy + (seat.recess.cy * plan.unit) / GUEST_K };
+}
+
+/** Вертикальный сдвиг чашки на столе, при котором центр донышка совпадает с центром углубления блюдца (стакан, керамика, демитас, любой размер). */
+export function tableCupDy(ref: ModelRef): number {
+  return SAUCER_RECESS.y - tableCupRecess(ref).y;
 }
