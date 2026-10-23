@@ -6,11 +6,14 @@
  */
 import LEFT from '../assets/art/bar-parts-left.json';
 import RIGHT from '../assets/art/bar-parts-right.json';
+import CENTER from '../assets/art/bar-parts.json';
 import PAL from '../../art-src/palette.json';
+import { layerSourceOf, layerView } from '../game/layers';
 
 type Part = { svg: string };
 const PARTS_L = LEFT as unknown as Record<string, Part>;
 const PARTS_R = RIGHT as unknown as Record<string, Part>;
+const PARTS_C = CENTER as unknown as Record<string, Part>;
 const C = PAL.colors as Record<string, string>;
 const W = PAL.stroke as { L: number; M: number; D: number };
 /** Предметы боковых секций нарисованы в проектных единицах и раскладываются обёртками ×1,10: толщины в JSON = L/M/D ÷ 1,1. */
@@ -35,7 +38,7 @@ export function groupOf(svg: string, marker: string): string {
 
 /** Предмет бара по метке; сторона секции определяется по части. */
 export function barObject(part: string, marker: string): string {
-  const src = (part in PARTS_L ? PARTS_L : PARTS_R)[part];
+  const src = (part in PARTS_L ? PARTS_L : part in PARTS_R ? PARTS_R : PARTS_C)[part];
   if (!src) throw new Error('нет части ' + part);
   return groupOf(src.svg, marker);
 }
@@ -48,10 +51,11 @@ export function fillCounts(svg: string): [string, number][] {
 }
 
 /** Предмет в сцену окна: левый верхний угол рамки `box` встаёт в (x, y), масштаб k, поворот `rot` градусов вокруг центра рамки. */
-export function place(obj: string, box: Box, x: number, y: number, k: number, extra = '', rot = 0): string {
-  const body = obj.replace(/stroke-width="([\d.]+)"/g, (_m, v: string) => `stroke-width="${((Number(v) * SRC_SCALE) / k).toFixed(2)}"`);
+export function place(obj: string, box: Box, x: number, y: number, k: number, extra = '', rot = 0, o: { flip?: boolean; src?: number } = {}): string {
+  const srcScale = o.src ?? SRC_SCALE;
+  const body = obj.replace(/stroke-width="([\d.]+)"/g, (_m, v: string) => `stroke-width="${((Number(v) * srcScale) / k).toFixed(2)}"`);
   const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-  const r = rot ? ` rotate(${rot} ${cx} ${cy})` : '';
+  const r = (o.flip ? ` translate(${cx} 0) scale(-1 1) translate(${-cx} 0)` : '') + (rot ? ` rotate(${rot} ${cx} ${cy})` : '');
   return `<g data-k="${k}" ${extra} transform="translate(${(x - box.x * k).toFixed(2)} ${(y - box.y * k).toFixed(2)}) scale(${k})${r}">${body}</g>`;
 }
 
@@ -72,12 +76,14 @@ function cup(liq: string, extra = ''): string {
 }
 
 /** Струя: узкая лента цвета наливаемого (без контура), от носика (x1, y1) к стакану (x2, y2). */
-const stream = (x1: number, y1: number, x2: number, y2: number, c: string): string => {
+export function streamD(x1: number, y1: number, x2: number, y2: number): string {
   const len = Math.hypot(x2 - x1, y2 - y1) || 1;
   const nx = (-(y2 - y1) / len) * 3, ny = ((x2 - x1) / len) * 3;
-  const pt = (x: number, y: number): string => `${(x).toFixed(1)} ${(y).toFixed(1)}`;
-  return `<path id="xpStream" class="xpStream" d="M${pt(x1 + nx, y1 + ny)}L${pt(x2 + nx * 0.6, y2 + ny * 0.6)}L${pt(x2 - nx * 0.6, y2 - ny * 0.6)}L${pt(x1 - nx, y1 - ny)}Z" fill="${c}" stroke="none"/>`;
-};
+  const pt = (x: number, y: number): string => `${x.toFixed(1)} ${y.toFixed(1)}`;
+  return `M${pt(x1 + nx, y1 + ny)}L${pt(x2 + nx * 0.6, y2 + ny * 0.6)}L${pt(x2 - nx * 0.6, y2 - ny * 0.6)}L${pt(x1 - nx, y1 - ny)}Z`;
+}
+const stream = (x1: number, y1: number, x2: number, y2: number, c: string): string =>
+  `<path id="xpStream" class="xpStream" data-sx="${x1}" data-sy="${y1}" data-ex="${x2}" d="${streamD(x1, y1, x2, y2)}" fill="${c}" stroke="none"/>`;
 
 const dots = (c: string, xs: number[], y0 = 46): string =>
   `<g id="xpDots" class="xpDots" fill="${c}" stroke="${INK}" ${sw('D')}>${xs.map((x, i) => `<circle cx="${x}" cy="${y0 + (i % 3) * 18}" r="4.5" style="animation-delay:${(i * 0.11).toFixed(2)}s"/>`).join('')}</g>`;
@@ -140,15 +146,16 @@ function backPath(vessel: string): string {
 /** Убрать у предмета встроенный налив/слой (его рисует окно), оставив всё остальное. */
 const without = (svg: string, re: RegExp): string => svg.replace(re, '');
 
-export interface ArtOpts { task: string; col: string; col2: string; drink?: string }
+export interface ArtOpts { task: string; col: string; col2: string; drink?: string; size?: string; cold?: boolean }
 
 /** Иллюстрация к шагу. Налив растёт через #xpLiq (его высоту ставит panelUpdate по data-top / data-full). */
 export function panelArt(o: ArtOpts): string {
   const { task, col: c, col2: c2, drink } = o;
   switch (task) {
+    case 'layer':
+      return layerArt(drink ?? 'orange_bumble', o.size ?? '0.3', o.cold ?? true);
     case 'juice':
-    case 'tonic':
-    case 'layer': {
+    case 'tonic': {
       const cap = task === 'tonic' ? 'SAGE' : 'TERRA';
       return `<g ${WRAP}>${cup(c)}<g class="xpTilt">${place(bottleSvg(c, cap), bottleBox(), 61, -19, 1.55, '', 98)}</g>${stream(134, 47, 182, 104, c)}</g>`;
     }
@@ -235,4 +242,34 @@ ${place(empty, BOX.teapot, tx, ty, k)}
     default:
       return `<g ${WRAP}>${cup(c)}</g>`;
   }
+}
+
+/** Окно «Налить слоями»: нижние слои (сок, тоник) налиты и неподвижны, верхний (эспрессо или матча) льётся из кувшина и растёт до конца шага. */
+const LAYER_BASE = 172;
+const LAYER_FULL = 124;
+const ICE_CUBES: [number, number, number][] = [[160, 70, -8], [190, 62, 6], [222, 72, -5], [172, 100, 9], [208, 104, -7], [232, 98, 8]];
+function layerArt(drink: string, size: string, cold: boolean): string {
+  const lv = layerView(drink, 0, size as never, cold);
+  let y = LAYER_BASE;
+  const base: string[] = [];
+  for (const l of lv.slice(0, -1)) {
+    const h = l.share * LAYER_FULL;
+    base.push(`<rect x="130" y="${(y - h).toFixed(1)}" width="140" height="${h.toFixed(1)}" fill="${l.color}"/>`);
+    y -= h;
+  }
+  const top = lv[lv.length - 1] as (typeof lv)[number];
+  const topFull = top.share * LAYER_FULL;
+  const cubes = ICE_CUBES.map(([cx, cy, r]) => `<g transform="rotate(${r} ${cx} ${cy})"><rect x="${cx - 13}" y="${cy - 13}" width="26" height="26" rx="4" fill="${col('GLASS')}" fill-opacity=".7" ${sw('D')}/><path d="M${cx - 9} ${cy - 8}V${cy + 2}" fill="none" stroke="${col('PAPER')}" ${sw('D')}/></g>`).join('');
+  const matcha = layerSourceOf(drink) === 'matcha';
+  const pourer = matcha
+    ? place(groupOf(PARTS_L.matcha?.svg ?? '', 'data-item="kyusu"'), { x: 436, y: 438, w: 64, h: 60 }, 24, 14, 1.75, '', 28)
+    : place(groupOf(PARTS_C.pitFront?.svg ?? '', 'transform="translate(940 514)"'), { x: 903, y: 434, w: 83, h: 78 }, 22, 16, 1.4, '', -32, { flip: true, src: 1 });
+  const sx = matcha ? 124 : 126, sy = matcha ? 70 : 62;
+  return `<g ${WRAP}><defs><clipPath id="xpClip"><path d="${CUP_PATH}"/></clipPath></defs>
+<path d="${CUP_PATH}" fill="${col('GLASS')}" stroke="none"/>
+<g clip-path="url(#xpClip)">${base.join('')}<rect id="xpLayer" data-top="${y.toFixed(1)}" data-full="${topFull.toFixed(1)}" x="130" y="${y.toFixed(1)}" width="140" height="0" fill="${top.color}"/>${cubes}</g>
+<path d="${CUP_PATH}" fill="none" ${sw('M')}/>
+<path d="M156 40L162 150" fill="none" stroke="${col('HILITE')}" stroke-opacity=".75" ${sw('M')}/>
+<path id="xpMark" d="M0 0" opacity="0"/>
+<g class="xpTilt">${pourer}</g>${stream(sx, sy, 176, y, top.color)}</g>`;
 }

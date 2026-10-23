@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import PAL from '../art-src/palette.json';
+import { layerView } from '../src/game/layers';
 import { barObject, fillCounts, groupOf, jarFor, panelArt, sourceOf } from '../src/ui/panelArt';
 
 /* 31-2, шаг 3: окна станций нового ядра рисуются теми же предметами, что стоят на баре. Тест падает, если окно потеряло главные цвета
@@ -10,7 +11,9 @@ const TOKENS = [PAL.stroke.L, PAL.stroke.M, PAL.stroke.D];
 /** Заливки предмета, которые окно заменяет цветом напитка (налив вместо встроенного чая, порошок банки). */
 const REPLACED: Record<string, string[]> = { brew: ['TERRA', 'BAKE'], powder: ['CHOC'] };
 const col = (task: string): string => (task === 'powder' ? PAL.colors.CHOC : PAL.colors.MUSTARD);
-const art = (task: string, drink?: string): string => panelArt({ task, col: col(task), col2: PAL.colors.PAPER, drink });
+const art = (task: string, drink?: string): string => panelArt({ task, col: col(task), col2: PAL.colors.PAPER, drink: task === 'layer' ? 'orange_bumble' : drink });
+/** цвета слоёв — данные напитка (спецификация), не палитра */
+const specColors = new Set(layerView('orange_bumble', 1).map((l) => l.color.toLowerCase()));
 
 /** Строка без вложенных групп с масштабом (data-k): толщины внутри них проверяются отдельно (значение × k). */
 function split(svg: string): { flat: string; scaled: { k: number; body: string }[] } {
@@ -31,7 +34,7 @@ describe('окна станций: предметы бара', () => {
   for (const task of TASKS) {
     test(`${task}: цвета только из палитры, толщины только L/M/D`, () => {
       const svg = art(task, 'cocoa');
-      for (const m of svg.matchAll(/(?:fill|stroke)="(#[0-9a-fA-F]{6})"/g)) expect(colors.has((m[1] as string).toLowerCase()), `цвет ${m[1]}`).toBe(true);
+      for (const m of svg.matchAll(/(?:fill|stroke)="(#[0-9a-fA-F]{6})"/g)) expect(colors.has((m[1] as string).toLowerCase()) || (task === 'layer' && specColors.has((m[1] as string).toLowerCase())), `цвет ${m[1]}`).toBe(true);
       const { flat, scaled } = split(svg);
       for (const m of flat.matchAll(/stroke-width="([\d.]+)"/g)) expect(TOKENS, `толщина ${m[1]}`).toContain(Number(m[1]));
       for (const g of scaled) for (const m of g.body.matchAll(/stroke-width="([\d.]+)"/g)) {
@@ -55,7 +58,8 @@ describe('окна станций: предметы бара', () => {
   test('налив: у каждого окна есть #xpLiq с data-top и data-full; у окон «залить» есть #xpMark', () => {
     for (const t of TASKS) {
       const svg = art(t);
-      if (t !== 'whip') expect(svg, t).toMatch(/id="xpLiq" data-top="[\d.]+" data-full="[\d.]+"/);
+      if (t === 'layer') expect(svg, t).toMatch(/id="xpLayer" data-top="[\d.]+" data-full="[\d.]+"/);
+      else if (t !== 'whip') expect(svg, t).toMatch(/id="xpLiq" data-top="[\d.]+" data-full="[\d.]+"/);
     }
     for (const t of ['juice', 'tonic', 'powder', 'boba', 'topping']) expect(art(t), t).toMatch(/id="xpMark" data-top=/);
   });

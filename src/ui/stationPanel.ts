@@ -3,13 +3,16 @@
  * HTML-панель в стиле игры с живой SVG-иллюстрацией; логика — в src/game/stations.
  */
 import { BREW_TEMPS } from '../game/stations/brew';
-import { panelArt } from './panelArt';
+import { panelArt, streamD } from './panelArt';
 
 export type PanelKind = 'fill' | 'timed' | 'brew';
 export interface PanelView {
   task: string;
   /** напиток заказа: выбирает банку порошков и т. п. */
   drink?: string;
+  /** размер и холодность заказа (окно «слои» берёт слои из спецификации напитка) */
+  size?: string;
+  cold?: boolean;
   kind: PanelKind;
   title: string;
   hint: string;
@@ -32,8 +35,8 @@ export interface PanelLive {
 }
 
 /** Иллюстрация к шагу: предметы бара (31-2), см. panelArt.ts. Налив растёт через #xpLiq (data-top / data-full ставит panelUpdate). */
-export function artFor(v: Pick<PanelView, 'task' | 'col' | 'col2' | 'drink'>): string {
-  return panelArt({ task: v.task, col: v.col, col2: v.col2, drink: v.drink });
+export function artFor(v: Pick<PanelView, 'task' | 'col' | 'col2' | 'drink' | 'size' | 'cold'>): string {
+  return panelArt({ task: v.task, col: v.col, col2: v.col2, drink: v.drink, size: v.size, cold: v.cold });
 }
 
 const f1 = (n: number) => n.toFixed(1).replace('.', ',');
@@ -78,6 +81,17 @@ export function panelUpdate(root: HTMLElement, v: PanelView, l: PanelLive): void
     const h = Math.min(full, frac * full);
     liq.setAttribute('y', (top - h).toFixed(1));
     liq.setAttribute('height', h.toFixed(1));
+  }
+  /* «Налить слоями»: верхний слой растёт за время цели, нижние налиты заранее; струя кончается на поверхности */
+  const lay = root.querySelector<SVGGraphicsElement>('#xpLayer');
+  if (lay) {
+    const p = Math.min(1, l.value / ((v.zone[0] + v.zone[1]) / 2));
+    const top = Number(lay.getAttribute('data-top'));
+    const full = Number(lay.getAttribute('data-full'));
+    lay.setAttribute('y', (top - full * p).toFixed(1));
+    lay.setAttribute('height', (full * p).toFixed(1));
+    const st = root.querySelector<SVGPathElement>('#xpStream');
+    if (st) st.setAttribute('d', streamD(Number(st.getAttribute('data-sx')), Number(st.getAttribute('data-sy')), Number(st.getAttribute('data-ex')), top - full * p));
   }
   const mark = root.querySelector<SVGPathElement>('#xpMark');
   if (mark && v.kind === 'fill') {

@@ -10,6 +10,7 @@ export * from './save';
 export * from './settings';
 export * from './tutorial';
 export * from './contrast';
+export * from './layers';
 export * from './lessons';
 export * from './why';
 export * from './content';

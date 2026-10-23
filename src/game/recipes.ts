@@ -1,4 +1,5 @@
 import { MILKY_OLD, drinkById, drinkOfKey } from './menu';
+import { layerLabel } from './layers';
 import type { Drink, Size } from './types';
 import { SAUCE_G, SPICE_G, cupScale, recipeNumbers } from './volumes';
 
@@ -244,7 +245,7 @@ export function stepLabels(tasks: readonly string[], drinkId = ''): string[] {
   const raf = drinkById[drinkOfKey(drinkId).id]?.family === 'raf';
   return tasks.map((t) => {
     seen[t] = (seen[t] ?? 0) + 1;
-    const name = t === 'milk' && raf ? 'Сливки' : (TASK_NAME[t] ?? t);
+    const name = t === 'milk' && raf ? 'Сливки' : t === 'layer' ? layerLabel(drinkId) : (TASK_NAME[t] ?? t);
     return (total[t] ?? 1) > 1 ? `${name} ${seen[t]}/${total[t]}` : name;
   });
 }
