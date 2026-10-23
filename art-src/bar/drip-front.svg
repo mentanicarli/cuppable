@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="292 330 50 66" data-part="dripFront" data-after="corkBoard" data-scale="1">
+<!--
+  Капельная кофеварка, передний слой колбы (блок 31-8Б): блики стекла поверх уровня кофе. Кофе рисует код между частями drip и dripFront. Подписей нет.
+-->
+<g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
+<path d="M300 338L303 386" fill="none" stroke="{{HILITE}}" stroke-opacity=".8" stroke-width="{{L}}"/>
+<path d="M332 346L331 372" fill="none" stroke="{{HILITE}}" stroke-opacity=".55" stroke-width="{{D}}"/>
+</g>
+</svg>

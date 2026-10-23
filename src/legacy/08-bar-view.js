@@ -76,7 +76,7 @@ function barPaint(dt) {
     stream: run ? { y: 354, h: Math.max(8, (pitUnder ? 470 : 478 + topY * k) - 354), col: mixC('#4A2E20', '#C99B6E', clamp((B.shot.t - 14) / 24, 0, 1)) } : null,
     gaugeDeg: run ? 70 + Math.sin(now / 120) * 4 : B.inset === 'steam' ? 40 : -30,
     steam: B.inset === 'steam' && !!B.hold,
-    bell: B.ready ? .06 * Math.sin(now / 140) : 0,
+    bell: B.ready ? .06 * Math.sin(now / 140) : 0, dripLevel: D.carafe ? MENUAPI.levelMl(D.carafe) / MENUAPI.CARAFE_ML : 0,
     ring: ring && (G.hints || tutKey()) ? { x: ring[0], y: ring[1], a: .7 + .3 * Math.sin(now / 260), s: 1 + .05 * Math.sin(now / 260) } : null
   });
 }

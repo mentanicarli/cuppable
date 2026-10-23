@@ -3,7 +3,7 @@
 const { chromium } = require('playwright'); const path = require('path'); const fs = require('fs');
 const PW = require('./pw');
 const out = path.resolve(process.argv[3] || 'out/bi'); fs.mkdirSync(out, { recursive: true });
-const HOOK = 'newGame(); updateHud(); showTitle(); window.__dbg = { get G() { return G; }, get D() { return D; }, get BR() { return BR; }, WORLD, spawn, barOpen, applyUpgrades };';
+const HOOK = 'newGame(); updateHud(); showTitle(); window.__dbg = { get G() { return G; }, get D() { return D; }, get BR() { return BR; }, WORLD, spawn, barOpen, applyUpgrades, MENUAPI: window.__MENUAPI };';
 (async () => {
   const src = fs.readFileSync(path.resolve(process.argv[2]), 'utf8').replace('newGame(); updateHud(); showTitle();', HOOK);
   const tmp = path.resolve(process.argv[2]).replace('.html', '.bi.html'); fs.writeFileSync(tmp, src);
@@ -23,6 +23,13 @@ const HOOK = 'newGame(); updateHud(); showTitle(); window.__dbg = { get G() { re
   await shot('s5_day1_before');
   await p.evaluate(() => { const G = __dbg.G; G.rank = 2; G.milk = true; __dbg.applyUpgrades(); });
   await shot('s5_rank2_milk');
+  /* 31-8Б: кофеварка куплена, колба пустая / наполовину / полная; затем молоко и сливки вместе с кофеваркой */
+  await p.evaluate(() => { const G = __dbg.G; G.rank = 3; G.eq_drip = true; __dbg.applyUpgrades(); });
+  await shot('s2_drip_empty');
+  await p.evaluate(() => { __dbg.D.carafe.ml = 600; });
+  await shot('s2_drip_half');
+  await p.evaluate(() => { __dbg.D.carafe.ml = 1200; });
+  await shot('s2_drip_full');
   await b.close();
   console.log(errs.length ? 'ОШИБКИ:\n' + errs.join('\n') : 'NO_ERRORS');
 })();

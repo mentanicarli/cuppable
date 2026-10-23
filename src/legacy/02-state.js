@@ -32,7 +32,7 @@ function applyUpgrades() {
   menuBoard(); zonesSync(); camSync();
   WORLD.setUpgrades({ milk: !!G.milk, machine: !!G.machine, cozy: !!G.cozy });
   const bi = MENUAPI.barItems({ rank: G.rank, milk: !!G.milk, cream: !!G.eq_cream }); /* что стоит на баре по покупкам и рангу (31-7) */
-  WORLD.setBarUpgrades({ milk: !!G.milk, ice: !!G.eq_ice, eq: Object.fromEntries(['tea', 'matcha', 'powders', 'juice', 'whipper', 'blender', 'boba', 'shaker'].map(k => [k, !!G['eq_' + k]])), snacks: !!G.eq_case_snacks, pastry: !!G.eq_case_pastry, dessert: !!G.eq_case_dessert, deli: !!G.eq_fridge_deli, micro: !!G.eq_microwave, pitcher: bi.pitcher, syrups: bi.syrupShelf });
+  WORLD.setBarUpgrades({ milk: !!G.milk, ice: !!G.eq_ice, eq: Object.fromEntries(['tea', 'matcha', 'powders', 'juice', 'whipper', 'blender', 'boba', 'shaker'].map(k => [k, !!G['eq_' + k]])), snacks: !!G.eq_case_snacks, pastry: !!G.eq_case_pastry, dessert: !!G.eq_case_dessert, deli: !!G.eq_fridge_deli, micro: !!G.eq_microwave, pitcher: bi.pitcher, syrups: bi.syrupShelf, drip: !!G.eq_drip });
 }
 /* ---------- HUD ---------- */
 function starSVG(fill) { return `<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,2 15,9 22,9.5 16.5,14.5 18.5,22 12,18 5.5,22 7.5,14.5 2,9.5 9,9" fill="${fill}" stroke="#4A2F25" stroke-width="2" stroke-linejoin="round"/></svg>`; }

@@ -53,6 +53,8 @@ export interface BarFrame {
   gaugeDeg: number;
   steam: boolean;
   bell: number;
+  /** уровень кофе в колбе капельной кофеварки 0..1 (31-8Б) */
+  dripLevel: number;
   ring: { x: number; y: number; a: number; s: number } | null;
 }
 
@@ -70,6 +72,8 @@ export interface BarUpgrades {
   pitcher: boolean;
   /** полка сиропов: сиропы открываются рангом (31-7) */
   syrups: boolean;
+  /** капельная кофеварка на стенной полке: покупка eq_drip (31-8Б) */
+  drip: boolean;
 }
 
 const hexNum = (c: string): number => {
@@ -167,6 +171,10 @@ export class BarScene {
   private pitUnderG = new Container();
   /** питчер на столешнице (молоко или сливочный кувшин) и полка сиропов (ранг) — 31-7 */
   private pitcher = new Container();
+  /** капельная кофеварка (31-8Б): часть drip, уровень кофе, передний слой колбы */
+  private drip = new Container();
+  private dripLiq = new Graphics();
+  private lastDrip = -1;
   private syrupShelf!: Sprite;
   private steam!: Sprite;
   private ring = new Container();
@@ -233,6 +241,9 @@ export class BarScene {
     /* стена и столешница (29-4) вырезаны из static; вывеска, доска, полка с растением и стойка сиропов (29-3) тоже; вордмарк бренда отдельной частью поверх плашки; в static остались только подписи (Pixi-текст), рисуются выше */
     for (const id of ['wall', 'counterTop', 'plantShelf', 'corkBoard', 'sign', 'wordmark']) spr(id);
     this.syrupShelf = spr('syrupShelf');
+    /* капельная кофеварка на стене над матом темпера: полка и корпус, под ними не рисуем ничего; кофе в колбе — между drip и dripFront */
+    this.drip.addChild(spr('drip', this.drip), this.dripLiq, spr('dripFront', this.drip));
+    R.addChild(this.drip);
     txt('static', R);
     /* кофемашина: отдельная часть art-src (блок 29-1), раньше была в статике; подвижные детали (портафильтр, стрелка, чашка, пар) лежат выше */
     spr('machine');
@@ -360,7 +371,7 @@ export class BarScene {
     R.addChild(micro);
     /* кромка столешницы с тенью: поверх блоков, под плитками оборудования, чтобы блоки уходили под неё */
     spr('counterNose');
-    this.setUpgrades({ milk: false, ice: false, eq: {}, snacks: false, pastry: false, dessert: false, deli: false, micro: false, pitcher: false, syrups: false });
+    this.setUpgrades({ milk: false, ice: false, eq: {}, snacks: false, pastry: false, dessert: false, deli: false, micro: false, pitcher: false, syrups: false, drip: false });
     this.root.visible = false;
   }
 
@@ -462,6 +473,7 @@ export class BarScene {
     this.fridge.visible = u.milk;
     this.pitcher.visible = u.pitcher;
     this.syrupShelf.visible = u.syrups;
+    this.drip.visible = u.drip;
     this.iceMaker.visible = u.ice;
     this.showcase.visible = u.snacks || u.pastry || u.dessert || u.deli;
     this.subs.get('scSnacks')!.visible = u.snacks;
@@ -621,6 +633,12 @@ export class BarScene {
     this.tamper.y = f.tamperUp ? -6 : 0;
     this.needle.rotation = (f.gaugeDeg * Math.PI) / 180;
     this.pitLvl.set(f.pitH / 74, hexNum(PAL.colors.PAPER), null);
+    if (f.dripLevel !== this.lastDrip) {
+      this.lastDrip = f.dripLevel;
+      const h = Math.round(52 * Math.min(1, Math.max(0, f.dripLevel)));
+      this.dripLiq.clear();
+      if (h > 0) this.dripLiq.roundRect(298, 392 - h, 38, h, 3).fill(hexNum(PAL.colors.CHOC));
+    }
     const bs = f.bell ? 1 + f.bell : 1;
     this.bell.scale.set(bs);
     const spec = f.model ? this.modelSpec(f.model) : null;

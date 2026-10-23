@@ -11,6 +11,8 @@ import { CUP_TOP_PX, cupUnit } from '../src/render/world/cupPlan';
 import { cupScale } from '../src/game/volumes';
 import PARTS_L from '../src/assets/art/bar-parts-left.json';
 import PARTS_R from '../src/assets/art/bar-parts-right.json';
+import PARTS_C from '../src/assets/art/bar-parts.json';
+const CENTER_PARTS = PARTS_C as unknown as Record<string, { svg: string }>;
 import { parseItems, union } from './helpers/sideArt';
 
 /* Этап 12.3(2): соотношения размеров по шкале docs/art/scale.md. Бар: 4,64 px/см (кофемашина 75 см = 348 px). Допуск у фона 0,75–1,25. */
@@ -242,5 +244,18 @@ describe('шкала: станции боковых секций (×1,10)', () =
     expect(Math.abs(f.w - 86.9)).toBeLessThanOrEqual(0.5);
     expect(Math.abs(f.h - 89.1)).toBeLessThanOrEqual(0.5);
     for (const v of [f.w, f.h]) { expect(v / (19 * S_BAR)).toBeGreaterThanOrEqual(0.75); expect(v / (19 * S_BAR)).toBeLessThanOrEqual(1.5); }
+  });
+});
+
+/* Блок 31-8Б: капельная кофеварка в центре бара (×1,0), реальные 24 × 20 × 34 см */
+describe('шкала: капельная кофеварка (31-8Б)', () => {
+  test('112 × 158 px против 111 × 158 px: отношение 1,01 / 1,00, в допуске 0,75–1,5', () => {
+    const m = /data-item="drip" data-box="([\d. ]+)"/.exec((CENTER_PARTS['drip'] as { svg: string }).svg);
+    const [, , w, h] = (m?.[1] ?? '').split(' ').map(Number) as [number, number, number, number];
+    expect([w, h]).toEqual([112, 158]);
+    expect(w / (24 * S_BAR)).toBeGreaterThanOrEqual(0.75);
+    expect(w / (24 * S_BAR)).toBeLessThanOrEqual(1.5);
+    expect(h / (34 * S_BAR)).toBeGreaterThanOrEqual(0.75);
+    expect(h / (34 * S_BAR)).toBeLessThanOrEqual(1.5);
   });
 });
