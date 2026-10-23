@@ -9,6 +9,7 @@ const { chromium } = require('playwright'); const path = require('path'); const 
   await p.evaluate(() => { window.__dbg.G.rank = 5; window.__dbg.G.day = 9; }); await p.evaluate(() => window.__dbg.endDay());
   await p.waitForSelector('.evening', { timeout: 15000 }); await p.waitForTimeout(1500);
   await p.click('[data-book=evening]'); await p.waitForTimeout(800);
+  ok('в книге три вкладки и нет «Справочника»', await p.evaluate(() => [...document.querySelectorAll('[data-booktab]')].map(b => b.dataset.booktab).join() === 'drinks,food,extra'));
   const need = await p.locator('.bkNeed').allTextContents(); console.log(need.slice(0, 3));
   ok('«Нужно купить» с ценой', need.some(t => /— ₽ [\d\s\u00a0]+/.test(t)));
   await p.click('[data-bookfam=matcha]'); await p.waitForTimeout(400);

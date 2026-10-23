@@ -17,12 +17,11 @@ const FAM: Record<Family, string> = {
   bumble: 'Бамблы', tonic: 'Тоники', aero: 'Аэрокано', foamlatte: 'Латте с пенкой', shake: 'Шейки и фраппе',
   boba: 'Бабл ти', protein: 'Протеин'
 };
-export type BookTab = 'drinks' | 'food' | 'extra' | 'guide';
+export type BookTab = 'drinks' | 'food' | 'extra';
 const BOOK_TABS: readonly (readonly [BookTab, string])[] = [
   ['drinks', 'Напитки'],
   ['food', 'Еда'],
-  ['extra', 'Добавки'],
-  ['guide', 'Справочник']
+  ['extra', 'Добавки']
 ];
 
 const EQ_NAME: Record<string, string> = { milk: 'Молоко и капучино', ...Object.fromEntries(EQUIPMENT.map((e) => [e.id, e.name])) };
@@ -157,8 +156,8 @@ function tabDrinks(
   return `<div class="bkChips">${chips}</div><div class="bkGrid">${cards}</div>`;
 }
 
-/** Справочник: термины по группам, каждый раскрывается по клику. Поиск по названию фильтрует их на месте (обработчик input в старом ядре). */
-function tabGuide(): string {
+/** Справочник (отдельный экран): термины по группам, каждый раскрывается по клику. Поиск по названию фильтрует их на месте (обработчик input в старом ядре). */
+export function guideHTML(): string {
   const groups = glossaryGroups()
     .map(
       (g) =>
@@ -170,7 +169,9 @@ function tabGuide(): string {
           .join('')}</div></section>`
     )
     .join('');
-  return `<div class="gSearch"><label for="gQ">Найти термин</label><input id="gQ" type="search" placeholder="Например, питчер" autocomplete="off" data-guideq="1"></div><p class="gEmpty" hidden>Такого термина нет в справочнике.</p><div class="gBody">${groups}</div>`;
+  const body = `<div class="gSearch"><label for="gQ">Найти термин</label><input id="gQ" type="search" placeholder="Например, питчер" autocomplete="off" data-guideq="1"></div><p class="gEmpty" hidden>Такого термина нет в справочнике.</p><div class="gBody">${groups}</div>`;
+  return `<div class="book guide" data-screen="guide"><div class="bookHead"><div><h2>Справочник</h2><span>Что значит каждое слово в рецептах</span></div>
+<button type="button" class="ghost" data-guideclose="1">Закрыть</button></div><div class="bookBody">${body}</div></div>`;
 }
 
 function tabFood(rank: number): string {
@@ -229,10 +230,9 @@ export function bookHTML(state: BookState): string {
   const body =
     tab === 'food' ? tabFood(rank)
     : tab === 'extra' ? tabExtra(rank)
-    : tab === 'guide' ? tabGuide()
     : tabDrinks(rank, eq, state.fam ?? 'all', state.costs ?? {}, state.avail ?? {}, state.tut ?? '', state.sel ?? {}, state.exact ?? [], state.art);
   const total = DRINKS.length;
   const open = DRINKS.filter((d) => d.rank <= rank).length;
   return `<div class="book"><div class="bookHead"><div><h2>Книга рецептов</h2><span>Ранг ${rank} из ${MAX_RANK}: ${esc(rankInfo(rank).title)} · напитков открыто ${open} из ${total}</span></div>
-<button type="button" class="ghost" data-bookclose="1">Закрыть</button></div><div class="tabs">${tabs}</div><div class="bookBody">${body}</div></div>`;
+<div class="bookBtns"><button type="button" class="ghost" data-guide="book">Справочник</button><button type="button" class="ghost" data-bookclose="1">Закрыть</button></div></div><div class="tabs">${tabs}</div><div class="bookBody">${body}</div></div>`;
 }

@@ -66,7 +66,7 @@ ${row('Подано', s.served)}${row('Идеальных', s.perfect)}${row('У
 <div class="rcTot"><span>Итого за день</span><b class="${s.profit < 0 ? 'neg' : 'pos'}" data-count="${s.profit}" data-kind="plus">${keep ? (s.profit > 0 ? '+' : '') + money(s.profit) : 0}</b></div>
 <div class="rw bal"><span>На счёте</span><b>${money(G.money)}</b></div></div>
 <div class="shop"><div class="tabs">${tabs}</div><div class="grid">${items}</div></div></div>${rankCard}${note}
-<div class="foot"><button type="button" class="ghost" data-book="evening">Книга рецептов</button><button type="button" class="big" data-next="1">День ${G.day + 1}</button></div></div>`;
+<div class="foot"><button type="button" class="ghost" data-book="evening">Книга рецептов</button><button type="button" class="ghost" data-guide="evening">Справочник</button><button type="button" class="big" data-next="1">День ${G.day + 1}</button></div></div>`;
   scr.hidden = false; if (!keep) countUp();
 }
 function showOver() {
@@ -84,6 +84,13 @@ function showBook(back) {
 }
 /* перерисовать книгу, не сбросив прокрутку списка (переключатели размера, «Точные цифры») */
 function bookRefresh() { const bb = scr.querySelector('.bookBody'), y = bb ? bb.scrollTop : 0; showBook(); const nb = scr.querySelector('.bookBody'); if (nb) nb.scrollTop = y; }
+/* справочник — отдельный экран: открывается из книги, вечера, паузы и «Как играть», «Закрыть» возвращает туда, откуда открыт */
+let guideBack = null;
+function showGuide(back) { if (back) guideBack = back; scr.innerHTML = guideHTML(); scr.hidden = false; }
+function closeGuide() {
+  const b = guideBack; guideBack = null;
+  if (b === 'book') showBook(); else if (b === 'pause') setPause(true); else if (b === 'evening') showEvening(true); else if (b === 'howto') showHowto(); else scr.hidden = true;
+}
 /* справочник: поиск по названию прячет остальные термины на месте */
 scr.addEventListener('input', e => {
   const q = e.target.closest('[data-guideq]'); if (!q) return; const v = q.value.trim().toLowerCase();
@@ -111,6 +118,8 @@ scr.addEventListener('click', e => {
   else if (t.dataset.bookfam) { bookFam = t.dataset.bookfam; showBook(); sndTap(); }
   else if (t.dataset.booktab) { bookTab = t.dataset.booktab; showBook(); sndTap(); }
   else if (t.dataset.bookclose) { closeBook(); sndTap(); }
+  else if (t.dataset.guide) { showGuide(t.dataset.guide); sndTap(); }
+  else if (t.dataset.guideclose) { closeGuide(); sndTap(); }
 });
 
 /* ---------- ввод ---------- */

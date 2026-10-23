@@ -48,7 +48,7 @@ const out = process.argv[3] || 'out/content';
   ok('у флэт уайт нет переключателя холодного', await p.evaluate(() => { p = document.querySelector('[data-drink=flat_white]'); return !!p && !p.querySelector('[data-bookcold]'); }));
 
   /* ---------- 2. справочник ---------- */
-  await p.click('[data-booktab=guide]'); await p.waitForTimeout(400);
+  ok('в книге нет вкладки «Справочник»', await p.evaluate(() => !document.querySelector('[data-booktab=guide]'))); await p.click('[data-guide=book]'); await p.waitForTimeout(400);
   ok('справочник: термины по группам, все свёрнуты', await p.evaluate(() => document.querySelectorAll('.gTerm').length >= 35 && document.querySelectorAll('.gTerm[open]').length === 0 && document.querySelectorAll('.gGroup').length === 4));
   await shot('3guide');
   await p.fill('#gQ', 'пит'); await p.waitForTimeout(300);
@@ -58,6 +58,8 @@ const out = process.argv[3] || 'out/content';
   await shot('4guide_open');
   await p.fill('#gQ', 'ъъъ'); await p.waitForTimeout(200);
   ok('ничего не найдено: сообщение', await p.evaluate(() => !document.querySelector('.gEmpty').hidden));
+  await p.click('[data-guideclose]'); await p.waitForTimeout(300);
+  ok('«Закрыть» справочника возвращает в книгу', await p.evaluate(() => !!document.querySelector('.book:not(.guide)')));
   await p.click('[data-bookclose]'); await p.waitForTimeout(500);
 
   /* ---------- 3. «Зачем это нужно»: станция один раз ---------- */

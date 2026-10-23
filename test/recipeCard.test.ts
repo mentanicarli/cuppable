@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { DRINKS, EQUIPMENT, buildTasks, cardVariants, legacyRecipe, partsVolume, recipeCard, stepLabels, taskTarget, FORCED_SYRUP } from '../src/game/api';
-import { bookHTML } from '../src/ui/book';
+import { bookHTML, guideHTML } from '../src/ui/book';
+import BOOK_SRC from '../src/ui/book.ts?raw';
 import type { Size } from '../src/game/types';
 
 const allEq = Object.fromEntries(['milk', ...EQUIPMENT.map((e) => e.id)].map((k) => [k, true]));
@@ -55,8 +56,13 @@ describe('книга рецептов строится из тех же данн
       expect(text, d.id).not.toMatch(/\d+\s?(г|мл|°|кг)(\s|[.,:;)]|$)/);
     }
   });
-  test('справочник открывается отдельной вкладкой', () => {
-    const g = bookHTML({ rank: 1, tab: 'guide' });
+  test('справочник — отдельный экран, в книге вкладки «Справочник» нет', () => {
+    const b = bookHTML({ rank: 1, tab: 'drinks' });
+    expect(b).not.toContain('data-booktab="guide"');
+    expect(BOOK_SRC).not.toMatch(/'guide'/);
+    expect(b).toContain('data-guide="book"');
+    expect(guideHTML()).toContain('data-guideclose');
+    const g = guideHTML();
     expect(g).toContain('data-guideq');
     expect((g.match(/class="gTerm"/g) ?? []).length).toBeGreaterThanOrEqual(35);
     expect(g).toContain('Питчер');

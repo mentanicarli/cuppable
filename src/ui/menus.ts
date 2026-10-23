@@ -53,7 +53,7 @@ export function howtoHTML(msg = ''): string {
 </ul>
 <p class="hnote">Вечером тратьте выручку на улучшения. Хорошие напитки поднимают рейтинг и ранг.</p>
 <p class="smsg hmsg" role="status">${esc(msg)}</p>
-<div class="foot"><button type="button" class="ghost" data-tutreset="1">Показать подсказки заново</button><button type="button" class="big" data-menuback="1">Назад</button></div></div>`;
+<div class="foot"><button type="button" class="ghost" data-guide="howto">Справочник</button><button type="button" class="ghost" data-tutreset="1">Показать подсказки заново</button><button type="button" class="big" data-menuback="1">Назад</button></div></div>`;
 }
 
 export interface SettingsOpts {
@@ -99,6 +99,6 @@ export function confirmHTML(o: ConfirmOpts): string {
 
 export function pauseHTML(logo: string, np: string): string {
   return `<div class="paper pausecard" data-menu="pause">${logo}<h2>Пауза</h2>
-<div class="mbtns"><button type="button" class="mbtn main" data-resume="1"><b>Продолжить</b></button><button type="button" class="mbtn" data-settings="pause"><b>Настройки</b></button><button type="button" class="mbtn" data-book="pause"><b>Книга рецептов</b></button><button type="button" class="mbtn" data-tomenu="1"><b>В главное меню</b></button></div>
+<div class="mbtns"><button type="button" class="mbtn main" data-resume="1"><b>Продолжить</b></button><button type="button" class="mbtn" data-settings="pause"><b>Настройки</b></button><button type="button" class="mbtn" data-book="pause"><b>Книга рецептов</b></button><button type="button" class="mbtn" data-guide="pause"><b>Справочник</b></button><button type="button" class="mbtn" data-tomenu="1"><b>В главное меню</b></button></div>
 ${nowPlayingHTML(np)}</div>`;
 }
