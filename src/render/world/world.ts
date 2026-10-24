@@ -21,6 +21,8 @@ import { BarScene, type BarFrame, type BarUpgrades } from './bar';
 import type { SectionsOpen } from '../../game/sections';
 import { drinkArtSvg, drinkIconSvg } from './drinkModel';
 import { allSpecs, specOf, type ModelRef } from '../../game/drinkModel';
+import { between, hallSeed, mulberry32, SIT_FIRST_DELAY, SIT_PAUSE, SIT_STAY } from '../../game/hall';
+import type { Rng } from '../../game/types';
 import { BARISTA_ARM_LEN, BARISTA_K, BARISTA_PIVOT, GUEST_K, SEAT_PIVOT, baristaCells, baristaParts, lookFor, wrapCell, wrapPart, type BaristaFace, type Box, type Look } from './art';
 import { Spring, Spring2, damp, ik2 } from './anim';
 import { Fx } from './fx';
@@ -105,7 +107,10 @@ export class World {
   private readonly seatMaskB = new Graphics();
   private seatMaskState = '';
   private sitSt: 'empty' | 'in' | 'sit' | 'seated' | 'rise' | 'out' = 'empty';
-  private sitT = 2;
+  private sitT = 8;
+  /* отдельный генератор зала: внешность и тайминги сидящего не трогают Math.random игры (32-Д) */
+  private hallRng: Rng = mulberry32(hallSeed(0, Date.now()));
+  private hallCount = 0;
   private sitX = -100;
   private sitV = 0;
   private lidSy = 1;
@@ -680,6 +685,25 @@ export class World {
     this.actors.forEach((a) => a.destroy());
     this.actors.clear();
     this.fx.clear();
+    this.resetHall();
+  }
+
+  /** Сброс зала (старт дня, «Играть», «Продолжить», новая игра, возврат в меню): сидящего нет, новый поток случайности, первый придёт через 6–15 с и будет другим человеком. */
+  resetHall(): void {
+    if (this.sitter) {
+      this.sitter.destroy();
+      this.sitter = null;
+    }
+    this.sitSt = 'empty';
+    this.deskShow(null);
+    this.hallCount++;
+    this.hallRng = mulberry32(hallSeed(this.hallCount, Date.now()));
+    this.sitT = between(this.hallRng, SIT_FIRST_DELAY);
+  }
+
+  /** Для проверок: зерно зала и состояние сидящего. */
+  hallState(): { seated: boolean; sitSt: string; sitT: number; look: unknown } {
+    return { seated: !!this.sitter, sitSt: this.sitSt, sitT: this.sitT, look: this.sitter ? this.sitter.look : null };
   }
 
   /** Лёгкая графика: без частиц, ореолов ламп, пятен света и луча. Вызывать можно в любой момент. */
@@ -775,9 +799,9 @@ export class World {
     this.sitT -= dt;
     if (this.sitSt === 'empty') {
       if (this.sitT > 0) return;
-      const kind = ['student', 'student', 'regular', 'hurry'][Math.floor(Math.random() * 4)] as string;
+      const kind = ['student', 'student', 'regular', 'hurry'][Math.floor(this.hallRng() * 4)] as string;
       const a = new Actor({
-        look: lookFor(kind),
+        look: lookFor(kind, this.hallRng),
         id: ++this.sitSeq,
         title: '',
         tags: [],
@@ -786,11 +810,11 @@ export class World {
         shadow: this.shadow,
         onTap: () => undefined,
         seat: { front: this.sitFront, tableCup: { x: TABLE_CUP.x, y: TABLE_CUP.y } },
-        steam: (x, y) => this.fx.add({ x, y: y - 9, vx: (Math.random() - 0.5) * 6, vy: -(16 + Math.random() * 8), r: 2.5, grow: 8, a: 0.5, life: 2.2 })
+        steam: (x, y) => this.fx.add({ x, y: y - 9, vx: (this.hallRng() - 0.5) * 6, vy: -(16 + this.hallRng() * 8), r: 2.5, grow: 8, a: 0.5, life: 2.2 })
       });
       a.root.eventMode = 'none';
       /* у каждого сидящего свой напиток (Н2-4): любой из 56 видов и размеров, от эспрессо (демитас) до 0,6 л; k модели нужен маске стола */
-      const pick = this.decor[Math.floor(Math.random() * this.decor.length)];
+      const pick = this.decor[Math.floor(this.hallRng() * this.decor.length)];
       if (pick) a.holdCup('#5A3A2A', pick.vessel.k, { id: pick.id, size: pick.size, cold: pick.cold });
       else a.holdCup('#5A3A2A', 1);
       this.sitC.addChild(a.root);
@@ -814,7 +838,7 @@ export class World {
       }
     } else if (this.sitSt === 'sit' && a.phase === 'seated') {
       this.sitSt = 'seated';
-      this.sitT = 28 + Math.random() * 32;
+      this.sitT = between(this.hallRng, SIT_STAY);
     } else if (this.sitSt === 'seated' && this.sitT <= 0) {
       this.sitSt = 'rise';
       a.standUp();
@@ -828,7 +852,7 @@ export class World {
         a.destroy();
         this.sitter = null;
         this.sitSt = 'empty';
-        this.sitT = 4 + Math.random() * 8;
+        this.sitT = between(this.hallRng, SIT_PAUSE);
         this.deskShow(null);
         return;
       }

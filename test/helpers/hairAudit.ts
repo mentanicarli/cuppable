@@ -240,3 +240,44 @@ export function hairlineProfile(svg: string, xa: number, xb: number): number[] {
 }
 /** Закрашена ли точка. */
 export const covered = (svg: string, x: number, y: number): boolean => px(rasterOf(svg), x, y) === 1;
+
+/** Растр штрихов (path без заливки: линии бровей, морщин, носа, рта) и цветных пятен румянца; толщина из stroke-width (по умолчанию 3). */
+export function marksRaster(svg: string): Uint8Array {
+  const g = new Uint8Array(W * H);
+  const disc = (cx: number, cy: number, r: number): void => {
+    const ya = Math.max(0, Math.floor((cy - r - Y0) * RES));
+    const yb = Math.min(H - 1, Math.ceil((cy + r - Y0) * RES));
+    for (let iy = ya; iy <= yb; iy++) for (let ix = Math.max(0, Math.floor((cx - r - X0) * RES)); ix <= Math.min(W - 1, Math.ceil((cx + r - X0) * RES)); ix++) {
+      const x = X0 + (ix + 0.5) / RES;
+      const y = Y0 + (iy + 0.5) / RES;
+      if ((x - cx) ** 2 + (y - cy) ** 2 <= r * r) g[iy * W + ix] = 1;
+    }
+  };
+  for (const m of svg.matchAll(/<path\b[^>]*fill="none"[^>]*>/g)) {
+    const d = attr(m[0], 'd') ?? '';
+    const w = Number(attr(m[0], 'stroke-width') ?? 3);
+    for (const sub of d.split(/(?=M)/).filter(Boolean)) {
+      const pts = pathPoints(sub);
+      for (let i = 0; i < pts.length; i++) {
+        const a = pts[i] as Pt;
+        disc(a.x, a.y, w / 2);
+        const n = pts[i + 1];
+        if (n) {
+          const steps = Math.ceil(Math.hypot(n.x - a.x, n.y - a.y) / 0.4);
+          for (let k = 1; k < steps; k++) disc(a.x + ((n.x - a.x) * k) / steps, a.y + ((n.y - a.y) * k) / steps, w / 2);
+        }
+      }
+    }
+  }
+  const blush = fillShapes([...svg.matchAll(/<ellipse\b[^>]*fill="#E3806C"[^>]*>/g)].map((m) => m[0]).join(''));
+  const br = raster(blush.map((b) => b.poly));
+  for (let k = 0; k < g.length; k++) if (br[k]) g[k] = 1;
+  return g;
+}
+/** Доля площади (в единицах рисунка², от круга лица r 28) отличающихся пикселей двух растров. */
+export function maskDiff(a: Uint8Array, b: Uint8Array, region?: Uint8Array): number {
+  let d = 0;
+  for (let k = 0; k < a.length; k++) if (a[k] !== b[k] && (!region || region[k])) d++;
+  return d / (RES * RES) / (Math.PI * 28 * 28);
+}
+export const polyRaster = (poly: Pt[]): Uint8Array => raster([poly]);

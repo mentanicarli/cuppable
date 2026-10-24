@@ -1,5 +1,5 @@
 import { CanvasTextMetrics, Container, Graphics, Rectangle, Sprite, Text, TextStyle, Texture } from 'pixi.js';
-import { BONE, GUEST_K, HAIR_PIVOT, HEAD_BOX, JOINT, SWING, headTopOf, personParts, swingAngle, wrapCell, wrapPart, type Gaze, type Look, type MoodId, type PersonParts } from './art';
+import { BONE, GUEST_K, HAIR_PIVOT, HEAD_BOX, JOINT, SWING, TURN_TORSO, headTopOf, personParts, swingAngle, wrapCell, wrapPart, type Gaze, type Look, type MoodId, type PersonParts } from './art';
 import { Seq, Spring, Spring2, clamp, damp, ease, ik2 } from './anim';
 import { Ribbon, frameSprite } from './ribbon';
 import { rasterAtlas, raster, type Atlas } from './svg';
@@ -157,6 +157,12 @@ export class Actor {
   private readonly pending = new Set<string>();
   private atlas: Atlas | null = null;
   private headSp = new Sprite();
+  /* поворот при ходьбе вбок (32-Д): голова с чертами, сдвинутыми в сторону движения, поверх анфас; turn 0..1 */
+  private headSide = new Sprite();
+  private turn = 0;
+  private viewDir = 1;
+  private torsoSp: Sprite | null = null;
+  private torsoBase = { x: 0, sx: 1 };
   private readonly headC = new Container();
   private hairC: Container | null = null;
   private legs: Limb[] = [];
@@ -254,6 +260,11 @@ export class Actor {
   private wantFront = false;
   private kneeT = 0;
   private headDown = new Spring(0, 8, 0.6);
+
+  /** Внешность (для проверок и отладки). */
+  get look(): Look {
+    return this.o.look;
+  }
 
   constructor(private readonly o: ActorOpts) {
     this.parts = personParts(o.look, !!o.seat);
@@ -354,11 +365,18 @@ export class Actor {
     this.headSp.width = HEAD_BOX.w;
     this.headSp.height = HEAD_BOX.h;
     this.headC.addChild(this.headSp);
+    this.headSide.position.set(HEAD_BOX.x, HEAD_BOX.y);
+    this.headSide.width = HEAD_BOX.w;
+    this.headSide.height = HEAD_BOX.h;
+    this.headSide.visible = false;
+    this.headC.addChild(this.headSide);
     /* торс */
     const fr = atlas.frames.get('torso');
     const ts = frameSprite(atlas, 'torso', 0, 0);
     ts.position.set(fr?.box.x ?? 0, fr?.box.y ?? 0);
     ts.pivot.set(0, 0);
+    this.torsoSp = ts;
+    this.torsoBase = { x: ts.position.x, sx: ts.scale.x };
     this.back.up.addChild(ts, this.headC);
     /* руки: ленты и кисти (над торсом и над головой) */
     for (let i = 0; i < 2; i++) {
@@ -376,11 +394,11 @@ export class Actor {
   }
 
   /** Лицо: настроение + мигание + взгляд. Если нужной картинки ещё нет, остаётся прежняя. */
-  private async want(m: MoodId, blink: boolean | 'half', g: GazeKey): Promise<void> {
-    const key = `${m}${blink === 'half' ? '~' : blink ? '*' : ''}|${g}`;
+  private async want(m: MoodId, blink: boolean | 'half', g: GazeKey, view = 0): Promise<void> {
+    const key = `${m}${blink === 'half' ? '~' : blink ? '*' : ''}|${g}${view ? '|v' + view : ''}`;
     if (this.heads.has(key) || this.pending.has(key) || !this.alive) return;
     this.pending.add(key);
-    const t = await raster(wrapPart(this.parts.head(m, blink, GAZES[g]), HEAD_BOX), HEAD_BOX, this.o.res * this.k);
+    const t = await raster(wrapPart(this.parts.head(m, blink, GAZES[g], view), HEAD_BOX), HEAD_BOX, this.o.res * this.k);
     this.pending.delete(key);
     if (!this.alive) {
       t.destroy(true);
@@ -395,6 +413,21 @@ export class Actor {
     const key = this.eyesShut || this.blinkPh === 2 ? '*' : this.blinkPh === 1 ? '~' : '';
     const t = this.heads.get(`${this.mood}${key}|${this.gaze}`) ?? (key === '~' ? this.heads.get(`${this.mood}*|${this.gaze}`) : undefined) ?? this.heads.get(`${this.mood}|${this.gaze}`) ?? this.heads.get(`${this.mood}|c`) ?? this.heads.get('neutral|c');
     if (t && this.headSp.texture !== t) this.headSp.texture = t;
+    if (this.turn > 0.01) {
+      const vk = `|c|v${this.viewDir}`;
+      const t2 = this.heads.get(`${this.mood}${key}${vk}`) ?? (key === '~' ? this.heads.get(`${this.mood}*${vk}`) : undefined) ?? this.heads.get(`${this.mood}${vk}`);
+      if (t2 && this.headSide.texture !== t2) this.headSide.texture = t2;
+    }
+  }
+
+  /** Заказывает картинки головы «вбок» для текущего настроения (открыто, полузакрыто, закрыто). */
+  private wantSide(): void {
+    const v = this.viewDir;
+    void this.want(this.mood, false, 'c', v);
+    if (this.mood === 'neutral' || this.mood === 'wait') {
+      void this.want(this.mood, 'half', 'c', v);
+      void this.want(this.mood, true, 'c', v);
+    }
   }
 
   setMood(m: MoodId): void {
@@ -813,6 +846,27 @@ export class Actor {
     this.wk = damp(this.wk, clamp((sp - 8) / 40, 0, 1), 10, dt);
     this.ph += dt * clamp(sp / 12, 0, 16);
     const wk = this.wk;
+    /* поворот вбок: идёт по залу (гости всегда движутся вдоль стойки, влево или вправо), сидя и стоя на месте лицом к нам; смена за 0,15–0,25 с */
+    const sideT = !seated && wk > 0.5 ? 1 : 0;
+    const wasTurn = this.turn;
+    this.turn = damp(this.turn, sideT, 12, dt);
+    if (this.turn < 0.005) this.turn = 0;
+    const vd = this.dir >= 0 ? 1 : -1;
+    if (sideT && (vd !== this.viewDir || this.turn < 0.5)) {
+      this.viewDir = vd;
+      this.wantSide();
+    }
+    if (this.turn !== wasTurn || sideT) {
+      this.headSide.visible = this.turn > 0.01;
+      this.headSide.alpha = Math.min(1, this.turn);
+      this.headSp.visible = this.turn < 0.98;
+      if (this.turn > 0.01) this.setHead();
+      if (this.torsoSp) {
+        const sx = 1 - TURN_TORSO * this.turn;
+        this.torsoSp.scale.x = this.torsoBase.sx * sx;
+        this.torsoSp.position.x = this.torsoBase.x * sx;
+      }
+    }
     this.sway.step(dt, 0);
     if (this.seq && this.seq.update(dt)) this.seq = null;
     if (this.phase === 'seated') this.seatedLife(dt);
@@ -905,6 +959,13 @@ export class Actor {
       const swing = this.hairRot.step(dt, clamp(-this.vx * 0.0011 + -this.ax * 0.0002 - (hr - 0) * 0.5, -0.5, 0.5));
       /* SWING (art.ts): у каждой причёски свой размах, у косы тяжелее и с отставанием */
       this.hairC.rotation = swingAngle(this.parts.hairBack ?? 'long', swing, this.ph, wk);
+      /* хвост при ходьбе вбок тянется назад по движению */
+      if (this.parts.hairBack === 'pony') {
+        const fl = this.viewDir > 0 ? 1 - 2 * this.turn : 1;
+        const flip = Math.abs(fl) < 0.05 ? 0.05 : fl;
+        this.hairC.scale.x = flip;
+        this.hairC.position.x = HAIR_PIVOT.pony.x * flip;
+      }
     }
 
     this.faceLife(dt, seated);

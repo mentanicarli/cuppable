@@ -113,6 +113,7 @@ describe('борода: вокруг рта, рот виден при любом
 
 describe('слои головы: порядок снизу вверх закреплён таблицей', () => {
   const MARK: Record<string, (l: Look) => string> = {
+    neck: () => ' 450L',
     ears: () => '<circle cx="-27" cy="438" r="5.5"',
     face: () => '<circle cx="0" cy="432" r="28"',
     beard: () => BEARD_D,
@@ -126,7 +127,7 @@ describe('слои головы: порядок снизу вверх закре
     const hp = l.acc === 'headphones';
     return [
       ...(hairBackKind(l.hair) ? ['hairBack'] : []),
-      'ears', 'face',
+      'neck', 'ears', 'face',
       ...(l.facial === 'beard' ? ['beard'] : []),
       'features', 'hair',
       ...(hp ? ['band'] : []),
