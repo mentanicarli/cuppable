@@ -10,7 +10,7 @@ import { TASK_ZONE } from '../src/game/recipes';
 import { barItems } from '../src/game/barItems';
 
 /* Блок 31-8В: капельная кофеварка на столешнице справа от кофемашины (раскладка Ц2 docs/design/filter-coffee.md, раздел 4; стенная полка Ц1 убрана).
-   Предмет 130 × 160 в x 859–989, y 346–506 (база заднего ряда), зона drip 859, 336, 130 × 184, масштаб ×1,0 (центр бара без ×1,10). Питчер ×0,7 на переднем крае (880, 530, 91 × 77). */
+   Предмет 130 × 160 в x 859–989, y 346–506 (база заднего ряда), зона drip 859, 336, 130 × 184, масштаб ×1,0 (центр бара без ×1,10). Питчер (31-8Г: ×0,78 перед холодильником молока, 1110, 526, 101 × 86). */
 type Part = { svg: string; box: { x: number; y: number; w: number; h: number } };
 const P = CENTER as unknown as Record<string, Part>;
 const drip = P['drip'] as Part;
@@ -21,8 +21,8 @@ const gap = (a: R, b: R): number => Math.max(a.x - (b.x + b.w), b.x - (a.x + a.w
 const ITEM: R = { x: 859, y: 346, w: 130, h: 160 };
 const ZONE: R = { x: 859, y: 336, w: 130, h: 184 };
 const box = (id: string): R => (P[id] as Part).box;
-/* питчер: части лежат в рамке 880, 420, 130 × 110 от якоря (940, 514); контейнер в (922, 595,8), масштаб 0,7 (bar.ts) */
-const PIT_POS = { x: 922, y: 595.8, k: 0.7 };
+/* питчер: части лежат в рамке 880, 420, 130 × 110 от якоря (940, 514); контейнер в (1156,8; 599,32), масштаб 0,78 (bar.ts, 31-8Г) */
+const PIT_POS = { x: 1156.8, y: 599.32, k: 0.78 };
 const pitcher = (): R => ({ x: PIT_POS.x + PIT_POS.k * (box('pitFront').x - 940), y: PIT_POS.y + PIT_POS.k * (box('pitFront').y - 514), w: PIT_POS.k * box('pitFront').w, h: PIT_POS.k * box('pitFront').h });
 const zones = (): Record<string, R> => Object.fromEntries([...INDEX.matchAll(/<rect data-z="(\w+)" x="(\d+)" y="(\d+)" width="(\d+)" height="(\d+)"/g)].map((m) => [m[1] as string, { x: +(m[2] as string), y: +(m[3] as string), w: +(m[4] as string), h: +(m[5] as string) }]));
 
@@ -85,14 +85,19 @@ describe('кофеварка: зазоры и зона drip', () => {
   test('зазоры ≥ 12 px до кофемашины, звонка, полки сиропов, вывески, питчера, кофемолки, доски, мата и темпера (рамки частей)', () => {
     for (const id of ['machine', 'bell', 'syrupShelf', 'grinderFront', 'corkBoard', 'tamperMat', 'tamper', 'sign']) expect(gap(ITEM, box(id)), id).toBeGreaterThanOrEqual(12);
     expect(gap(ITEM, pitcher())).toBeGreaterThanOrEqual(12);
+    expect(gap(ITEM, pitcher())).toBeGreaterThan(100); /* питчер далеко от кофеварки и её тени */
   });
-  test('питчер ×0,7 на переднем крае столешницы: 880, 530, 91 × 77, ниже носа столешницы (607) не уходит', () => {
+  test('питчер ×0,78 перед холодильником молока: 1110, 526, 101 × 86, зазор 12 до низа холодильника, низ на краю столешницы (≤ 612)', () => {
     const p = pitcher();
-    expect([p.x, p.y, Math.round(p.w), Math.round(p.h)]).toEqual([880, 530, 91, 77]);
-    expect(p.y + p.h).toBeLessThanOrEqual(607.1);
+    expect([p.x, p.y, Math.round(p.w), Math.round(p.h)]).toEqual([1110, 526, 101, 86]);
+    expect(p.y + p.h).toBeLessThanOrEqual(612);
+    expect(gap(p, box('milk'))).toBeGreaterThanOrEqual(12 - 1e-6);
+    expect(gap(p, box('bell'))).toBeGreaterThanOrEqual(12);
+    expect(p.x + p.w).toBeLessThanOrEqual(1264); /* под корпусом холодильника, не выходит за кадр */
+    expect(PIT_POS.k).toBeLessThanOrEqual(0.9);
     expect(BAR_TS).toContain('this.pitcher.pivot.set(940, 514)');
-    expect(BAR_TS).toContain('this.pitcher.position.set(922, 595.8)');
-    expect(BAR_TS).toContain('this.pitcher.scale.set(0.7)');
+    expect(BAR_TS).toContain('this.pitcher.position.set(1156.8, 599.32)');
+    expect(BAR_TS).toContain('this.pitcher.scale.set(0.78)');
   });
   test('зона drip в index.html: 859, 336, 130 × 184; охватывает предмет; ZONE_POS по центру зоны', () => {
     const z = zones()['drip'] as R;
@@ -141,6 +146,10 @@ describe('кофеварка: раскладка при четырёх комб�
     for (const [id, r] of Object.entries(items)) expect(gap(ITEM, r), `предмет «${id}»`).toBeGreaterThanOrEqual(12);
     for (const [id, r] of Object.entries(zs)) expect(gap(ZONE, r), `зона «${id}»`).toBeGreaterThanOrEqual(12);
     for (const [id, r] of Object.entries(zs)) expect(gap(ITEM, r), `предмет × зона «${id}»`).toBeGreaterThanOrEqual(12);
-    if (vis.pitcher) expect(gap(pitcher(), z['steam'] as R)).toBeGreaterThanOrEqual(12);
+    if (vis.pitcher) {
+      expect(gap(pitcher(), z['steam'] as R)).toBeGreaterThanOrEqual(12);
+      for (const [id, r] of Object.entries(items)) if (id !== 'pitcher') expect(gap(pitcher(), r), `питчер × «${id}»`).toBeGreaterThanOrEqual(12 - 1e-6);
+      for (const [id, r] of Object.entries(zs)) expect(gap(pitcher(), r), `питчер × зона «${id}»`).toBeGreaterThanOrEqual(12 - 1e-6);
+    }
   });
 });

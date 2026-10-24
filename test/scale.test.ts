@@ -196,6 +196,11 @@ describe('шкала: темпер, питчер и звонок после 29-2
     expect(68 / (10 * S_BAR)).toBeLessThanOrEqual(1.5);
     expect(82 / (14 * S_BAR)).toBeLessThanOrEqual(1.5);
   });
+  test('питчер на переднем крае (31-8Г) ×0,78: корпус 53 × 64 против 46 × 65, отношение 1,15 / 0,98, в допуске 0,75–1,5 (ориентир 0,85, потолок 0,9)', () => {
+    const k = 0.78;
+    expect(k).toBeLessThanOrEqual(0.9);
+    for (const v of [(68 * k) / (10 * S_BAR), (82 * k) / (14 * S_BAR)]) { expect(v).toBeGreaterThanOrEqual(0.75); expect(v).toBeLessThanOrEqual(1.5); }
+  });
   test('звонок 54 × 46 против 37 × 32 (8 × 7 см): ×1,46 / ×1,44, не больше 56 × 48', () => {
     expect(54 / (8 * S_BAR)).toBeLessThanOrEqual(1.5);
     expect(46 / (7 * S_BAR)).toBeLessThanOrEqual(1.5);

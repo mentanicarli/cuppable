@@ -10,7 +10,7 @@ const HOOK = 'newGame(); updateHud(); showTitle(); window.__dbg = { get G() { re
   const tmp = path.resolve(process.argv[2]).replace('.html', '.bi.html'); fs.writeFileSync(tmp, src);
   const b = await chromium.launch({ ...(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}), args: ['--mute-audio'] });
   const errs = [];
-  const ctx = await b.newContext({ viewport: { width: 1312, height: 752 }, deviceScaleFactor: 1 }); const p = await ctx.newPage();
+  const ctx = await b.newContext({ viewport: { width: 1312, height: 752 }, deviceScaleFactor: +(process.env.DSF || 1) }); const p = await ctx.newPage();
   await p.route(/fonts\.googleapis\.com/, r => r.fulfill({ status: 200, contentType: 'text/css', body: PW.css })); PW.watch(p, errs);
   await p.goto(PW.url(tmp)); await PW.startNew(p);
   await p.waitForFunction(() => window.__dbg && __dbg.D && __dbg.G.phase === 'day', null, { timeout: 60000 });
