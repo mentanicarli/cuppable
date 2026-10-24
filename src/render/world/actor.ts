@@ -1,5 +1,5 @@
 import { CanvasTextMetrics, Container, Graphics, Rectangle, Sprite, Text, TextStyle, Texture } from 'pixi.js';
-import { BONE, GUEST_K, HEAD_BOX, JOINT, headTopOf, personParts, wrapCell, wrapPart, type Gaze, type Look, type MoodId, type PersonParts } from './art';
+import { BONE, GUEST_K, HAIR_PIVOT, HEAD_BOX, JOINT, SWING, headTopOf, personParts, swingAngle, wrapCell, wrapPart, type Gaze, type Look, type MoodId, type PersonParts } from './art';
 import { Seq, Spring, Spring2, clamp, damp, ease, ik2 } from './anim';
 import { Ribbon, frameSprite } from './ribbon';
 import { rasterAtlas, raster, type Atlas } from './svg';
@@ -10,6 +10,7 @@ import { cupTexture } from './cupTex';
 import { tableCupDy } from './cupPlan';
 import { hasSteam, specOf, type ModelRef } from '../../game/drinkModel';
 import { readableOn } from '../../game/contrast';
+import { actorRng, blinkPhase, nextBlink, type BlinkPhase } from '../../game/blink';
 
 const INK = 0x4a2f25;
 const RAD = Math.PI / 180;
@@ -28,6 +29,8 @@ type GazeKey = keyof typeof GAZES;
 type Pt = { x: number; y: number };
 
 export interface ActorOpts {
+  /** Номер актёра: от него зерно моргания (не Math.random, чтобы не двигать поток игры). */
+  id?: number;
   look: Look;
   /** модель напитка: в слоте пузыря рисуется компактный уровень (Н2-4: все 56 видов, иконок ICON больше нет) */
   model?: ModelRef | null;
@@ -177,8 +180,11 @@ export class Actor {
   private steamT = 0;
   private mood: MoodId = 'neutral';
   private gaze: GazeKey = 'c';
-  private blinkT = 1.5 + vr() * 3;
-  private blinking = 0;
+  private readonly rngB = actorRng(0);
+  private blinkT = 3;
+  private blinkE = -1;
+  private blinkD = 0.15;
+  private blinkPh: BlinkPhase = 0;
   private eyesShut = false;
   private shakeT = 0;
   private readonly bubble = new Container();
@@ -207,7 +213,7 @@ export class Actor {
   private readonly sq = new Spring(0, 15, 0.32);
   private readonly lean = new Spring(0, 9, 0.38);
   private readonly headRot = new Spring(0, 11, 0.3);
-  private readonly hairRot = new Spring(0, 8, 0.25);
+  private hairRot = new Spring(0, 8, 0.25);
   private readonly sway = new Spring(0, 7, 0.6);
   private hopY = 0;
   /** Множитель роста: скорости и прыжки считаются в «базовых» пикселях, на экране умножаются обратно. */
@@ -251,6 +257,10 @@ export class Actor {
 
   constructor(private readonly o: ActorOpts) {
     this.parts = personParts(o.look, !!o.seat);
+    /* моргание: своё зерно от номера актёра, первая пауза из него же */
+    this.rngB = actorRng(o.id ?? 0);
+    this.blinkT = nextBlink(this.rngB).gap;
+    if (this.parts.hairBack) this.hairRot = new Spring(0, SWING[this.parts.hairBack].freq, 0.25);
     this.lastX = o.x;
     const sh = new Sprite(o.shadow);
     sh.anchor.set(0.5);
@@ -329,8 +339,10 @@ export class Actor {
       const fr = atlas.frames.get('hairBack');
       const sp = frameSprite(atlas, 'hairBack', 0, 0);
       /* точка подвеса: хвост — у виска, длинные и каре — на макушке */
-      const px = p.hairBack === 'pony' ? 22 : 0;
-      const py = p.hairBack === 'pony' ? 410 : 404;
+      const px = HAIR_PIVOT[p.hairBack].x;
+      const py = HAIR_PIVOT[p.hairBack].y;
+      /* frameSprite ставит точку привязки в угол клетки: как у торса, сбрасываем её, иначе задний слой уезжает на 392 ед. вниз и не виден (так было с первой версии) */
+      sp.pivot.set(0, 0);
       sp.position.set((fr?.box.x ?? 0) - px, (fr?.box.y ?? 0) - py);
       hc.position.set(px, py);
       hc.addChild(sp);
@@ -364,8 +376,8 @@ export class Actor {
   }
 
   /** Лицо: настроение + мигание + взгляд. Если нужной картинки ещё нет, остаётся прежняя. */
-  private async want(m: MoodId, blink: boolean, g: GazeKey): Promise<void> {
-    const key = `${m}${blink ? '*' : ''}|${g}`;
+  private async want(m: MoodId, blink: boolean | 'half', g: GazeKey): Promise<void> {
+    const key = `${m}${blink === 'half' ? '~' : blink ? '*' : ''}|${g}`;
     if (this.heads.has(key) || this.pending.has(key) || !this.alive) return;
     this.pending.add(key);
     const t = await raster(wrapPart(this.parts.head(m, blink, GAZES[g]), HEAD_BOX), HEAD_BOX, this.o.res * this.k);
@@ -380,15 +392,18 @@ export class Actor {
   }
 
   private setHead(): void {
-    const b = this.blinking > 0 || this.eyesShut;
-    const t = this.heads.get(`${this.mood}${b ? '*' : ''}|${this.gaze}`) ?? this.heads.get(`${this.mood}|${this.gaze}`) ?? this.heads.get(`${this.mood}|c`) ?? this.heads.get('neutral|c');
+    const key = this.eyesShut || this.blinkPh === 2 ? '*' : this.blinkPh === 1 ? '~' : '';
+    const t = this.heads.get(`${this.mood}${key}|${this.gaze}`) ?? (key === '~' ? this.heads.get(`${this.mood}*|${this.gaze}`) : undefined) ?? this.heads.get(`${this.mood}|${this.gaze}`) ?? this.heads.get(`${this.mood}|c`) ?? this.heads.get('neutral|c');
     if (t && this.headSp.texture !== t) this.headSp.texture = t;
   }
 
   setMood(m: MoodId): void {
     this.mood = m;
     void this.want(m, false, this.gaze);
-    if (m === 'neutral' || m === 'wait') void this.want(m, true, this.gaze);
+    if (m === 'neutral' || m === 'wait') {
+      void this.want(m, true, this.gaze);
+      void this.want(m, 'half', this.gaze);
+    }
     this.setHead();
     if (m === 'annoyed' || m === 'angry') this.sigh = 1;
   }
@@ -888,8 +903,8 @@ export class Actor {
     this.headC.scale.set(1, 1 - Math.max(0, hd) * 0.004);
     if (this.hairC) {
       const swing = this.hairRot.step(dt, clamp(-this.vx * 0.0011 + -this.ax * 0.0002 - (hr - 0) * 0.5, -0.5, 0.5));
-      const k = this.parts.hairBack === 'pony' ? 1 : 0.35;
-      this.hairC.rotation = swing * k;
+      /* SWING (art.ts): у каждой причёски свой размах, у косы тяжелее и с отставанием */
+      this.hairC.rotation = swingAngle(this.parts.hairBack ?? 'long', swing, this.ph, wk);
     }
 
     this.faceLife(dt, seated);
@@ -1095,15 +1110,26 @@ export class Actor {
 
   /** Лицо: мигание, закрытые глаза при глотке. */
   private faceLife(dt: number, seated: boolean): void {
-    if (this.blinking > 0) {
-      this.blinking -= dt;
-      if (this.blinking <= 0) this.setHead();
+    if (this.blinkE >= 0) {
+      this.blinkE += dt;
+      const ph = blinkPhase(this.blinkE, this.blinkD);
+      if (this.blinkE >= this.blinkD) this.blinkE = -1;
+      if (ph !== this.blinkPh) {
+        this.blinkPh = ph;
+        this.setHead();
+      }
     } else {
       this.blinkT -= dt;
       if (this.blinkT <= 0) {
-        this.blinkT = 2.2 + vr() * 3.5;
-        if (this.mood === 'neutral' || this.mood === 'wait' || seated) {
-          this.blinking = 0.12;
+        const nb = nextBlink(this.rngB);
+        this.blinkT = nb.gap;
+        /* при joy глаза уже закрыты дугами */
+        if ((this.mood === 'neutral' || this.mood === 'wait' || seated) && this.mood !== 'joy') {
+          this.blinkE = 0;
+          this.blinkD = nb.dur;
+          void this.want(this.mood, true, this.gaze);
+          void this.want(this.mood, 'half', this.gaze);
+          this.blinkPh = blinkPhase(0, nb.dur);
           this.setHead();
         }
       }

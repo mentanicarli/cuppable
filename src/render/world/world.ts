@@ -660,8 +660,12 @@ export class World {
     this.cupSpr.height = t.box.h;
   }
 
+  /** Номера актёров: от них зерно моргания (гости 1…, сидящие с 100000). */
+  private actorSeq = 0;
+  private sitSeq = 100000;
+
   addActor(o: Omit<ActorOpts, 'res' | 'shadow'>): Actor {
-    const a = new Actor({ ...o, res: this.texRes, shadow: this.shadow, scale: GUEST_K });
+    const a = new Actor({ ...o, id: ++this.actorSeq, res: this.texRes, shadow: this.shadow, scale: GUEST_K });
     this.cust.addChild(a.root);
     this.actors.add(a);
     return a;
@@ -774,6 +778,7 @@ export class World {
       const kind = ['student', 'student', 'regular', 'hurry'][Math.floor(Math.random() * 4)] as string;
       const a = new Actor({
         look: lookFor(kind),
+        id: ++this.sitSeq,
         title: '',
         tags: [],
         x: -100,
