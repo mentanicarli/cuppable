@@ -19,16 +19,12 @@ const share = (xs: Look[], f: (l: Look) => boolean): number => (xs.filter(f).len
 const near = (got: number, want: number, tol = 2): void => expect(Math.abs(got - want), `${got.toFixed(2)} vs ${want}`).toBeLessThanOrEqual(tol);
 
 describe('картинка не изменилась (эталон из кода до 32-Б)', () => {
-  test('руки, ноги, ступни, кисти старых внешностей побитово прежние; торс прежний, кроме свитера и шарфа (32-Д: шея и воротник)', () => {
+  test('руки, ноги, ступни, кисти старых внешностей побитово прежние; торс пересчитан в 32-Е намеренно (наряды по полу, торс-эталон torso)', () => {
     const looks = fixedLooks('headphones').map((l) => ({ ...l, sex: 'f', age: 'adult', facial: l.mustache ? 'mustache' : 'none' } as Record<string, unknown>));
     expect(looks.map((l) => cellsHash(l as never))).toEqual(BASE.cells);
-    looks.forEach((l, i) => {
-      const changed = l.outfit === 'sweater' || l.acc === 'scarf';
-      if (changed) expect(torsoHash(l as never)).not.toBe(BASE.torso[i]);
-      else expect(torsoHash(l as never)).toBe(BASE.torso[i]);
-    });
+    expect(looks.map((l) => torsoHash(l as never))).toEqual(BASE.torso);
   });
-  test('внешности по сиду 32 (по 300 на тип) совпадают с эталоном look-baseline.json (пересоздан в 32-Д намеренно: пол, лицо, наушники, очки)', () => {
+  test('внешности по сиду 32 (по 300 на тип) совпадают с эталоном look-baseline.json (пересоздан в 32-Е намеренно: наряды по полу, ступени бороды, серьги)', () => {
     for (const t of TYPES) {
       const r = mulberry(32);
       expect(sha(JSON.stringify(Array.from({ length: 300 }, () => lookFor(t, r))))).toBe(LOOKS[t]);
@@ -112,19 +108,14 @@ describe('lookFor: правила генератора (20 000 гостей на
     expect(hats.length).toBeGreaterThan(500);
     expect(share(hats, (l) => l.hat === FALLBACK_HAT)).toBeLessThan(1);
   });
-  test('наушники: student 35 %, иначе по возрасту (young 20 / adult 5 / senior 1); очки по возрасту (8 / 12 / 35); одежда не зависит от пола; у hurry костюм 60 % / пальто 40 %', () => {
+  test('наушники: student 35 %, иначе по возрасту (young 20 / adult 5 / senior 1); очки по возрасту (8 / 12 / 35); у hurry-мужчин костюм 60 % / пальто 40 %', () => {
     for (const t of TYPES) for (const a of ['young', 'adult', 'senior'] as Age[]) {
       const g = data[t].filter((l) => l.age === a);
       if (g.length < 800) continue;
       near(share(g, (l) => l.acc === 'headphones'), headphonesShare(t, a) * 100, 2.5);
       near(share(g.filter((l) => l.acc !== 'headphones'), (l) => l.acc === 'glasses'), GLASSES_BY_AGE[a] * 100, 3);
     }
-    near(share(data.hurry, (l) => l.outfit === 'suit'), HURRY_SUIT_SHARE * 100);
-    for (const t of ['regular', 'student'] as PersonType[]) {
-      const m = data[t].filter((l) => l.sex === 'm');
-      const f = data[t].filter((l) => l.sex === 'f');
-      for (const o of new Set(data[t].map((l) => l.outfit))) near(share(m, (l) => l.outfit === o), share(f, (l) => l.outfit === o), 3);
-    }
+    near(share(data.hurry.filter((l) => l.sex === 'm'), (l) => l.outfit === 'suit'), HURRY_SUIT_SHARE * 100, 3);
   });
   test('все причёски типа встречаются, нулевых долей нет', () => {
     for (const t of TYPES) {

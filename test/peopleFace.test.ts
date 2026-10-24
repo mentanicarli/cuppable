@@ -4,7 +4,7 @@ import WORLD from '../src/render/world/world.ts?raw';
 import DAY from '../src/legacy/05-day.js?raw';
 import STATE from '../src/legacy/02-state.js?raw';
 import { SIT_FIRST_DELAY, between, hallSeed, mulberry32 } from '../src/game/hall';
-import { BLUSH_MIN, BLUSH_MOOD, SKIN, lookFor, type Age, type FaceSpec, type Look, type PersonType, type Sex } from '../src/game/look';
+import { BLUSH_MIN, BLUSH_MOOD, SKIN, hasBeard, lookFor, type Age, type FaceSpec, type Look, type PersonType, type Sex } from '../src/game/look';
 import {
   BLUSH_X, BLUSH_Y, FACE_DIM, FACE_SQUARE_D, HEAD_TOP, MOODS_FOR_TEST, MOUTH_PATHS, NECK_BASE, NECK_FACE_W, NECK_SEX, NECK_VISIBLE, TURN_FAR_EYE, TURN_SHIFT, TURN_TORSO,
   blushOf, chinY, hairLayers, personParts
@@ -55,12 +55,12 @@ describe('FaceSpec: правила по полу и возрасту (20 000 г�
     near(share(all.filter((l) => l.age === 'senior'), (l) => faceOf(l).wrinkles === 2), 50, 2);
   });
   test('румянец: young ж 0,6±0,3, young м 0,2, adult ж 0,4, adult м 0,1, senior 0,1; с бородой 0', () => {
-    const g = (s: Sex, a: Age): number[] => all.filter((l) => l.sex === s && l.age === a && l.facial !== 'beard').map((l) => faceOf(l).blush);
+    const g = (s: Sex, a: Age): number[] => all.filter((l) => l.sex === s && l.age === a && !hasBeard(l.facial)).map((l) => faceOf(l).blush);
     near(mean(g('f', 'young')), 0.6, 0.02);
     expect(Math.min(...g('f', 'young'))).toBeGreaterThanOrEqual(0.3 - 1e-9);
     expect(Math.max(...g('f', 'young'))).toBeLessThanOrEqual(0.9 + 1e-9);
     for (const [s, a, v] of [['m', 'young', 0.2], ['f', 'adult', 0.4], ['m', 'adult', 0.1], ['f', 'senior', 0.1], ['m', 'senior', 0.1]] as [Sex, Age, number][]) for (const b of g(s, a)) expect(b).toBe(v);
-    for (const l of all.filter((x) => x.facial === 'beard')) expect(faceOf(l).blush).toBe(0);
+    for (const l of all.filter((x) => hasBeard(x.facial))) expect(faceOf(l).blush).toBe(0);
   });
   test('Н14: единообразия нет: в neutral румянец видят не больше 45 % гостей (по типам и в выборке из 200)', () => {
     const vis = (l: Look): boolean => blushOf(faceOf(l), 'neutral', l.facial).visible;
@@ -203,9 +203,9 @@ describe('Н13: лица различаются по полу и возраст�
   test.each([['young', 0], ['adult', 1], ['senior', 2]] as [Age, 0 | 1 | 2][])('м против ж (%s): не менее 4 %% площади лица', (age, wr) => {
     expect(diff(proto('m', age, wr), proto('f', age, wr))).toBeGreaterThanOrEqual(0.04);
   });
-  test.each(['m', 'f'] as Sex[])('young против senior (%s, самые мягкие морщины senior = 1): не менее 4 %% площади лица', (sex) => {
-    expect(diff(proto(sex, 'young', 0), proto(sex, 'senior', 1))).toBeGreaterThanOrEqual(0.04);
-    expect(diff(proto(sex, 'young', 0), proto(sex, 'senior', 2))).toBeGreaterThanOrEqual(0.04);
+  test.each(['m', 'f'] as Sex[])('young против senior (%s, самые мягкие морщины senior = 1): не менее 4,1 %% площади лица (как в 32-Д)', (sex) => {
+    expect(diff(proto(sex, 'young', 0), proto(sex, 'senior', 1))).toBeGreaterThanOrEqual(0.041);
+    expect(diff(proto(sex, 'young', 0), proto(sex, 'senior', 2))).toBeGreaterThanOrEqual(0.041);
   });
   test('maskDiff считает разницу двух одинаковых лиц нулём', () => {
     const a = faceMark(proto('f', 'adult', 1));

@@ -29,5 +29,7 @@ import { panelHTML, panelUpdate, readoutFill, readoutTime, readoutBrew } from '/
 export default defineConfig({
   base: './',
   plugins: [legacyPlugin(), viteSingleFile()],
+  /* тесты людей перебирают десятки тысяч внешностей: 5 секунд по умолчанию мало при загруженной машине */
+  test: { testTimeout: 30000 },
   build: { target: 'es2020', assetsInlineLimit: 100000000, chunkSizeWarningLimit: 4000, minify: process.env.CUPPABLE_DEBUG ? false : 'esbuild' }
 });

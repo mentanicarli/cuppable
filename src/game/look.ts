@@ -9,7 +9,11 @@ import { deltaE } from './drinkModel';
 
 export type Sex = 'm' | 'f';
 export type Age = 'young' | 'adult' | 'senior';
-export type Facial = 'none' | 'mustache' | 'beard';
+/** Растительность на лице (32-Е, ступени): щетина, короткая борода, усы, полная борода. */
+export type Facial = 'none' | 'stubble' | 'short' | 'mustache' | 'beard';
+/** Виды с бородой на щеках и челюсти (румянца нет, рот лежит внутри): щетина, короткая и полная. */
+export const BEARD_KINDS: readonly Facial[] = ['stubble', 'short', 'beard'];
+export const hasBeard = (f: Facial): boolean => BEARD_KINDS.includes(f);
 export type PersonType = 'regular' | 'student' | 'hurry';
 
 /** Причёски по смыслу; у каждой свой рисунок в art.ts (hairLayers). */
@@ -47,6 +51,8 @@ export interface Look {
   age: Age;
   facial: Facial;
   face?: FaceSpec;
+  /** Серьги (женщины, 32-Е). */
+  earrings?: boolean;
 }
 
 export const SKIN: readonly string[] = ['#F5D0AE', '#EBC09A', '#D9A67E', '#B98160', '#A26C49'];
@@ -80,8 +86,9 @@ export const AGE_SHARE: Readonly<Record<PersonType, readonly (readonly [Age, num
 };
 export const FACIAL_SHARE: Readonly<Record<Age, readonly (readonly [Facial, number])[]>> = {
   young: [['none', 1]],
-  adult: [['none', 0.7], ['mustache', 0.15], ['beard', 0.15]],
-  senior: [['none', 0.55], ['mustache', 0.2], ['beard', 0.25]]
+  /* 32-Е: от всех мужчин этих возрастов: без растительности 45 %, щетина 15, короткая борода 15, усы 10, полная 15 */
+  adult: [['none', 0.45], ['stubble', 0.15], ['short', 0.15], ['mustache', 0.1], ['beard', 0.15]],
+  senior: [['none', 0.45], ['stubble', 0.15], ['short', 0.15], ['mustache', 0.1], ['beard', 0.15]]
 };
 export const SENIOR_GREY_SHARE = 0.75;
 /** Наушники: у студентов 35 %, иначе по возрасту (молодые 20 %, взрослые 5 %, пожилые 1 %). */
@@ -96,13 +103,41 @@ const PANTS: Readonly<Record<PersonType, readonly string[]>> = {
   student: ['#4F4A5A', '#6A5B4E', '#3E4A55'],
   hurry: ['#3A3440']
 };
-const OUTFITS: Readonly<Record<PersonType, readonly string[]>> = { regular: ['coat', 'sweater', 'jacket'], student: ['hoodie'], hurry: ['suit', 'coat'] };
+/** Колготки у женщин (из-под платья и юбки видна только нижняя часть ног). */
+export const TIGHTS: readonly string[] = ['#3A3440', '#4A3F4F', '#2F2B3A', '#5A4A5E'];
+export const BOOTS = '#3A2A22';
+/**
+ * Наряды строго по полу (32-Е); общий только hoodie (и шарф как аксессуар).
+ * Мужчины: coat (прямое пальто), jacket, vest (рубашка с жилетом), suit (костюм с галстуком), hoodie.
+ * Женщины: dress (платье-трапеция), cardigan (кардиган поверх платья), blouse (блузка с юбкой), beltcoat (пальто с поясом), sweaterdress (свитер-платье), hoodie.
+ * Прежний sweater остаётся в арте для совместимости и генератором не выбирается.
+ */
+export const OUTFITS_BY_SEX: Readonly<Record<Sex, Readonly<Record<PersonType, readonly (readonly [string, number])[]>>>> = {
+  m: {
+    regular: [['coat', 1], ['jacket', 1], ['vest', 1]],
+    student: [['hoodie', 0.7], ['jacket', 0.3]],
+    hurry: [['suit', HURRY_SUIT_SHARE], ['coat', 1 - HURRY_SUIT_SHARE]]
+  },
+  f: {
+    regular: [['beltcoat', 1], ['cardigan', 1], ['sweaterdress', 1], ['dress', 1]],
+    student: [['hoodie', 0.5], ['dress', 0.25], ['cardigan', 0.25]],
+    hurry: [['blouse', 0.5], ['beltcoat', 0.3], ['dress', 0.2]]
+  }
+};
+export const MALE_OUTFITS: readonly string[] = ['coat', 'jacket', 'vest', 'suit'];
+export const FEMALE_OUTFITS: readonly string[] = ['dress', 'cardigan', 'blouse', 'beltcoat', 'sweaterdress'];
+export const COMMON_OUTFITS: readonly string[] = ['hoodie'];
+export const EARRINGS_SHARE = 0.35;
 const ACC_WEIGHTS: Readonly<Record<PersonType, readonly (readonly [string, number])[]>> = {
   regular: [['scarf', 1], ['none', 1]],
   student: [['backpack', 1]],
   hurry: [['none', 1]]
 };
-const ITEMS: Readonly<Record<PersonType, readonly string[]>> = { regular: ['tote', 'none'], student: ['none'], hurry: ['briefcase', 'phone'] };
+const ITEMS: Readonly<Record<Sex, Readonly<Record<PersonType, readonly string[]>>>> = {
+  m: { regular: ['tote', 'none'], student: ['none'], hurry: ['briefcase', 'phone'] },
+  /* у женщин маленькая сумка вместо портфеля */
+  f: { regular: ['tote', 'purse', 'none'], student: ['none'], hurry: ['purse', 'phone'] }
+};
 const BUILDS: Readonly<Record<PersonType, readonly string[]>> = { regular: ['slim', 'mid', 'round'], student: ['slim', 'mid'], hurry: ['slim', 'mid'] };
 
 /** Сколько случайных чисел прежний lookFor брал у Math.random: spawn не должен сдвигать поток остальных бросков. */
@@ -153,7 +188,7 @@ export function faceFor(r: Rng, sex: Sex, age: Age, facial: Facial): FaceSpec {
   const jitter = (r() - 0.5) * 0.6;
   let blush = age === 'young' ? (f ? 0.6 + jitter : 0.2) : age === 'adult' ? (f ? 0.4 : 0.1) : 0.1;
   blush = Math.min(1, Math.max(0, blush));
-  if (facial === 'beard') blush = 0;
+  if (hasBeard(facial)) blush = 0;
   return { shape, lashes, brow, nose, wrinkles, blush: Math.round(blush * 100) / 100 };
 }
 
@@ -177,7 +212,7 @@ export function lookFor(type: string, rng: Rng = Math.random): Look {
   const hair = pickFrom(r, hairFor(t, sex, age));
   const hairCol = age === 'senior' && hair !== 'grey' ? (r() < SENIOR_GREY_SHARE ? GREY : pickFrom(r, HAIR_SENIOR_OTHER)) : pickFrom(r, hairColors(hair, age));
   const facial: Facial = sex === 'm' ? weighted(r, FACIAL_SHARE[age]) : 'none';
-  const outfit = t === 'hurry' ? (r() < HURRY_SUIT_SHARE ? 'suit' : 'coat') : pickFrom(r, OUTFITS[t]);
+  const outfit = weighted(r, OUTFITS_BY_SEX[sex][t]);
   const cloth = pickFrom(r, t === 'hurry' ? HURRY_CLOTH : CLOTH);
   const headphones = r() < headphonesShare(t, age);
   const glasses = r() < GLASSES_BY_AGE[age];
@@ -188,9 +223,9 @@ export function lookFor(type: string, rng: Rng = Math.random): Look {
     hairCol,
     outfit,
     cloth,
-    pants: pickFrom(r, PANTS[t]),
+    pants: sex === 'f' ? pickFrom(r, TIGHTS) : pickFrom(r, PANTS[t]),
     acc,
-    item: pickFrom(r, ITEMS[t]),
+    item: pickFrom(r, ITEMS[sex][t]),
     build: pickFrom(r, BUILDS[t]),
     sex,
     age,
@@ -199,6 +234,9 @@ export function lookFor(type: string, rng: Rng = Math.random): Look {
   };
   if (hair === 'beanie') look.hat = pickHat(r, cloth);
   if (t === 'student') look.shoe = '#FBF4E8';
+  else if (sex === 'f') look.shoe = BOOTS;
+  /* серьги: бросок в конце потока, остальные выборы не сдвигаются */
+  if (sex === 'f' && r() < EARRINGS_SHARE && acc !== 'headphones') look.earrings = true;
   return look;
 }
 

@@ -3,7 +3,7 @@
  * Здесь только SVG-разметка (векторный исходник); в игру части попадают как текстуры (см. rig.ts).
  */
 import { deltaE } from '../../game/drinkModel';
-import { BARISTA_LOOK, BLUSH_MIN, BLUSH_MOOD, DEFAULT_FACE, SKIN, type Age, type Facial, type FaceSpec, type HairStyle, type Look } from '../../game/look';
+import { BARISTA_LOOK, BLUSH_MIN, BLUSH_MOOD, DEFAULT_FACE, SKIN, hasBeard, type Age, type Facial, type FaceSpec, type HairStyle, type Look } from '../../game/look';
 export const INK = '#4A2F25';
 const S = `stroke="${INK}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"`;
 
@@ -138,6 +138,23 @@ export function browSpec(mood: MoodId, glasses: boolean, hairCol: string, beanie
 export const MOUTH_PATHS: Readonly<Record<MoodId, string>> = { neutral: MOOD.neutral.m, happy: MOOD.happy.m, joy: MOOD.joy.m, wait: MOOD.wait.m, annoyed: MOOD.annoyed.m, angry: MOOD.angry.m };
 export const BEARD_D = 'M-26.5 434Q-28 451 -21 461Q-12 472 0 472Q12 472 21 461Q28 451 26.5 434Q27 445.5 14 445.5Q0 439 -14 445.5Q-27 445.5 -26.5 434Z';
 export const BEARD_PATH = (c: string): string => `<path d="${BEARD_D}" fill="${c}"/>`;
+/**
+ * Короткая борода (32-Е): верх как у полной (рот внутри с тем же запасом), низ плотно по челюсти (до 2 px за контур лица), край неровный, контур тонкий;
+ * высота от верха (y 442,3) до низа (461,7) 19,4 ≤ 0,36 высоты лица.
+ */
+export const BEARD_SHORT_D = 'M-26.5 434Q-27.6 446 -21 452.6Q-16.2 457.4 -11 459.6Q-9 460.9 -7 460.6Q-3.4 462.2 0 461.7Q4 461.4 7.6 460.9Q9 459.8 12 459.2Q15.4 457.6 21.4 452.2Q27.8 446 26.5 434Q27 445.5 14 445.5Q0 439 -14 445.5Q-27 445.5 -26.5 434Z';
+export const BEARD_SHORT_PATH = (c: string): string => `<path d="${BEARD_SHORT_D}" fill="${c}" stroke-width="1.8"/>`;
+/** Щетина: две полупрозрачные тени (внешняя и плотнее у подбородка) без контура; рот внутри, граница не выходит за контур лица. */
+export const STUBBLE_OUT_D = 'M-25 437Q-24.5 447 -17.4 453.4Q-9 458.8 0 459.8Q9 458.8 17.4 453.4Q24.5 447 25 437Q24 446 14 445.5Q0 441.5 -14 445.5Q-24 446 -25 437Z';
+export const STUBBLE_IN_D = 'M-21 446Q-17 453 -9 457.4Q0 459 9 457.4Q17 453 21 446Q14 446 9 444.6Q0 443.4 -9 444.6Q-14 446 -21 446Z';
+/** Цвет щетины: у седых серый (не светлее кожи), у остальных цвет волос. */
+export const stubbleColor = (hairCol: string, age: Age): string => (age === 'senior' ? '#8F8A86' : hairCol);
+export const STUBBLE_ALPHA = [0.2, 0.2] as const;
+export const STUBBLE_PATH = (c: string): string => `<path d="${STUBBLE_OUT_D}" fill="${c}" fill-opacity="${STUBBLE_ALPHA[0]}" stroke="none"/><path d="${STUBBLE_IN_D}" fill="${c}" fill-opacity="${STUBBLE_ALPHA[1]}" stroke="none"/>`;
+/** Растительность по виду: слой beard. */
+export const beardLayer = (facial: Facial, hairCol: string, age: Age): string => (facial === 'beard' ? BEARD_PATH(hairCol) : facial === 'short' ? BEARD_SHORT_PATH(hairCol) : facial === 'stubble' ? STUBBLE_PATH(stubbleColor(hairCol, age)) : '');
+/** Усы рисуются у усатых, с короткой и полной бородой (срастаются с бородой), у щетины нет. */
+export const hasMustache = (f: Facial): boolean => f === 'mustache' || f === 'short' || f === 'beard';
 /** Ширина рта по настроению и светлая полоска губ: не толще 40 % ширины рта, без своего контура; у открытого рта (joy) губ нет. */
 export const MOUTH_WIDTH: Readonly<Record<MoodId, number>> = { neutral: 12, happy: 16, joy: 20, wait: 10, annoyed: 14, angry: 16 };
 export const LIPS_SHARE = 0.4;
@@ -150,18 +167,72 @@ export const MOODS_FOR_TEST: readonly MoodId[] = ['neutral', 'happy', 'joy', 'wa
 export const HEAD_LAYER_ORDER = ['neck', 'ears', 'face', 'beard', 'features', 'glasses', 'hair', 'band', 'bun', 'cups'] as const;
 export type HeadLayer = (typeof HEAD_LAYER_ORDER)[number];
 
+/**
+ * Силуэты нарядов (32-Е). Мужской торс прямой: плечи ±30·w на y 496, низ ±29·w (отношение плечи / низ около 1,0, не меньше 0,95).
+ * Женский торс «трапеция»: плечи ±22·w, талия ±17·w на y 526, низ ±34…38·w (отношение 0,6…0,65, не больше 0,8).
+ * Верх (шея, воротник на y 458–462) у всех один, поэтому шея и румянец работают как раньше.
+ */
+export const MALE_BODY = { shoulder: 30, hem: 29 } as const;
+export const FEMALE_BODY: Readonly<Record<string, { shoulder: number; hem: number; hemY: number }>> = {
+  dress: { shoulder: 22, hem: 36, hemY: 584 },
+  cardigan: { shoulder: 22, hem: 36, hemY: 584 },
+  blouse: { shoulder: 22, hem: 33, hemY: 580 },
+  beltcoat: { shoulder: 22, hem: 38, hemY: 588 },
+  sweaterdress: { shoulder: 22, hem: 34, hemY: 582 }
+};
+/** Высота низа торса мужских нарядов: пальто длиннее. */
+export const MALE_HEM_Y: Readonly<Record<string, number>> = { hoodie: 572, coat: 588, jacket: 572, suit: 572, vest: 572 };
+/** Контур мужского торса. */
+export function maleOutline(w: number, hemY: number): string {
+  const S = MALE_BODY.shoulder * w;
+  const H = MALE_BODY.hem * w;
+  return `M${-H} ${hemY}L${-H} 538L${-S} 496Q${-S} 468 -12 461Q0 458 12 461Q${S} 468 ${S} 496L${H} 538L${H} ${hemY}Q0 ${hemY + 10} ${-H} ${hemY}Z`;
+}
+/** Контур женского торса: платье-трапеция с талией. */
+export function femaleOutline(kind: string, w: number): string {
+  const f = FEMALE_BODY[kind] ?? (FEMALE_BODY['dress'] as { shoulder: number; hem: number; hemY: number });
+  const S = f.shoulder * w;
+  const W = 17 * w;
+  const H = f.hem * w;
+  return `M${-H} ${f.hemY}Q${-W - 8 * w} 556 ${-W} 526Q${-W} 506 ${-S} 492Q${-S - 0.5} 468 -12 461Q0 458 12 461Q${S + 0.5} 468 ${S} 492Q${W} 506 ${W} 526Q${W + 8 * w} 556 ${H} ${f.hemY}Q0 ${f.hemY + 10} ${-H} ${f.hemY}Z`;
+}
+
 function outfit(kind: string, c: string, w: number): { back: string; torso: string } {
   const cd = dk(c, 0.25);
   const cl = lt(c, 0.3);
   const torso = `M${-30 * w} 572Q${-34 * w} 464 0 458Q${34 * w} 464 ${30 * w} 572Q0 582 ${-30 * w} 572Z`;
-  const coatTorso = `M${-32 * w} 588Q${-36 * w} 466 0 458Q${36 * w} 466 ${32 * w} 588Q0 598 ${-32 * w} 588Z`;
   const shadeR = `<path d="M${30 * w} 570Q${34 * w} 466 0 458Q${24 * w} 470 ${20 * w} 574Z" fill="${cd}" fill-opacity=".38" stroke="none"/>`;
+  const male = (hemY: number): string => maleOutline(w, hemY);
+  const maleShade = (hemY: number): string => `<path d="M${29 * w} ${hemY - 2}L${30 * w} 498Q${30 * w} 470 14 463Q${21 * w} 490 ${21 * w} 540Z" fill="${cd}" fill-opacity=".34" stroke="none"/>`;
+  const fem = (k: string): string => femaleOutline(k, w);
+  const femShade = (k: string): string => {
+    const f = FEMALE_BODY[k] as { shoulder: number; hem: number; hemY: number };
+    return `<path d="M${f.hem * w} ${f.hemY - 2}Q${25 * w} 556 ${17 * w} 526Q${17 * w} 506 ${22 * w} 492Q${22 * w} 478 12 463Q${12 * w} 500 ${12 * w} 530Q${14 * w} 556 ${22 * w} ${f.hemY - 2}Z" fill="${cd}" fill-opacity=".3" stroke="none"/>`;
+  };
   switch (kind) {
-    case 'hoodie': return { back: `<ellipse cx="0" cy="464" rx="26" ry="11" fill="${cd}"/>`, torso: `<path d="${torso}" fill="${c}"/>${shadeR}<path d="M${-18 * w} 538Q0 548 ${18 * w} 538L${21 * w} 562Q0 570 ${-21 * w} 562Z" fill="${cd}" stroke-width="2.5"/><path d="M-6 470v18M6 470v18" stroke-width="2.5" fill="none"/>` };
-    case 'coat': return { back: '', torso: `<path d="${coatTorso}" fill="${c}"/>${shadeR}<path d="M-14 460L0 494L14 460Z" fill="#FBF4E8" stroke-width="2.5"/><path d="M-14 460L-7 504M14 460L7 504" fill="none" stroke-width="2.5"/><circle cx="0" cy="522" r="2.6" fill="${INK}" stroke="none"/><circle cx="0" cy="548" r="2.6" fill="${INK}" stroke="none"/>` };
+    case 'hoodie': return { back: `<ellipse cx="0" cy="464" rx="26" ry="11" fill="${cd}"/>`, torso: `<path d="${male(572)}" fill="${c}"/>${maleShade(572)}<path d="M${-18 * w} 538Q0 548 ${18 * w} 538L${21 * w} 562Q0 570 ${-21 * w} 562Z" fill="${cd}" stroke-width="2.5"/><path d="M-6 470v18M6 470v18" stroke-width="2.5" fill="none"/>` };
+    case 'coat': return { back: '', torso: `<path d="${male(588)}" fill="${c}"/>${maleShade(588)}<path d="M-14 460L0 494L14 460Z" fill="#FBF4E8" stroke-width="2.5"/><path d="M-14 460L-7 504M14 460L7 504" fill="none" stroke-width="2.5"/><circle cx="0" cy="522" r="2.6" fill="${INK}" stroke="none"/><circle cx="0" cy="548" r="2.6" fill="${INK}" stroke="none"/><circle cx="0" cy="574" r="2.6" fill="${INK}" stroke="none"/>` };
     case 'sweater': return { back: '', torso: `<path d="${torso}" fill="${c}"/>${shadeR}<path d="M${-29 * w} 520Q0 530 ${29 * w} 520" fill="none" stroke="${cl}" stroke-width="9" stroke-linecap="butt"/><path d="M${-30 * w} 544Q0 554 ${30 * w} 544" fill="none" stroke="${cl}" stroke-width="9" stroke-linecap="butt"/>` };
-    case 'jacket': return { back: '', torso: `<path d="${torso}" fill="${c}"/>${shadeR}<path d="M-15 460L-9 474L0 466L9 474L15 460" fill="${cd}" stroke-width="2.5"/><path d="M0 466V574" fill="none" stroke-width="2.5"/><path d="M${-30 * w} 566Q0 576 ${30 * w} 566" fill="none" stroke="${cd}" stroke-width="8" stroke-linecap="butt"/>` };
-    default: return { back: '', torso: `<path d="${torso}" fill="${c}"/>${shadeR}<path d="M-10 460L10 460L0 494Z" fill="#FBF4E8" stroke-width="2.5"/><path d="M-3 470H3L5 496L0 503L-5 496Z" fill="#C4694A" stroke-width="2.5"/>` };
+    case 'jacket': return { back: '', torso: `<path d="${male(572)}" fill="${c}"/>${maleShade(572)}<path d="M-15 460L-9 474L0 466L9 474L15 460" fill="${cd}" stroke-width="2.5"/><path d="M0 466V574" fill="none" stroke-width="2.5"/><path d="M${-29 * w} 566Q0 576 ${29 * w} 566" fill="none" stroke="${cd}" stroke-width="8" stroke-linecap="butt"/>` };
+    case 'vest': {
+      /* рубашка с жилетом: белые рукава и ворот, жилет цвета наряда с V-образным вырезом */
+      const vest = `M-12 461Q${-26 * w} 468 ${-26 * w} 500L${-25 * w} 568Q0 578 ${25 * w} 568L${26 * w} 500Q${26 * w} 468 12 461L0 496Z`;
+      return { back: '', torso: `<path d="${male(572)}" fill="#FBF4E8"/>${maleShade(572)}<path d="${vest}" fill="${c}" stroke-width="2.5"/><path d="M-6 506v0M0 520v0M0 544v0" stroke="${INK}" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M-10 460L0 478L10 460" fill="#FBF4E8" stroke-width="2.5"/>` };
+    }
+    case 'dress': return { back: '', torso: `<path d="${fem('dress')}" fill="${c}"/>${femShade('dress')}<path d="M-11 461Q0 472 11 461" fill="none" stroke-width="2.5"/><path d="M${-17 * w} 526Q0 534 ${17 * w} 526" fill="none" stroke="${cd}" stroke-width="3"/><path d="M${-35 * w} 578Q0 589 ${35 * w} 578" fill="none" stroke="${cl}" stroke-width="6" stroke-linecap="butt"/>` };
+    case 'cardigan': {
+      /* кардиган поверх платья: платье светлее, кардиган цвета наряда с открытой полосой по центру и пуговицами */
+      const inner = `M-9 463L${-15 * w} 526Q${-22 * w} 556 ${-33 * w} 584Q0 593 ${33 * w} 584Q${22 * w} 556 ${15 * w} 526L9 463Q0 470 -9 463Z`;
+      return { back: '', torso: `<path d="${fem('cardigan')}" fill="${c}"/>${femShade('cardigan')}<path d="${inner}" fill="${lt(c, 0.6)}" stroke-width="2.5"/><circle cx="${-13 * w}" cy="500" r="2.2" fill="${INK}" stroke="none"/><circle cx="${-14 * w}" cy="528" r="2.2" fill="${INK}" stroke="none"/><circle cx="${-18 * w}" cy="556" r="2.2" fill="${INK}" stroke="none"/>` };
+    }
+    case 'blouse': {
+      /* блузка с юбкой: верх светлый с бантом, юбка цвета наряда */
+      const top = `M${-22 * w} 492Q${-22.5 * w} 468 -12 461Q0 458 12 461Q${22.5 * w} 468 ${22 * w} 492Q${17 * w} 506 ${17 * w} 528L${-17 * w} 528Q${-17 * w} 506 ${-22 * w} 492Z`;
+      return { back: '', torso: `<path d="${fem('blouse')}" fill="${dk(c, 0.12)}"/>${femShade('blouse')}<path d="${top}" fill="${lt(c, 0.72)}" stroke-width="2.5"/><path d="M-3 466Q-8 472 -3 478L0 472L3 478Q8 472 3 466L0 471Z" fill="${c}" stroke-width="2"/><path d="M${-17 * w} 528H${17 * w}" stroke-width="3" fill="none"/><path d="M${-31 * w} 574Q0 584 ${31 * w} 574" fill="none" stroke="${cd}" stroke-width="5" stroke-linecap="butt"/>` };
+    }
+    case 'beltcoat': return { back: '', torso: `<path d="${fem('beltcoat')}" fill="${c}"/>${femShade('beltcoat')}<path d="M-12 461L0 498L12 461" fill="${lt(c, 0.35)}" stroke-width="2.5"/><path d="M0 498V588" fill="none" stroke-width="2.5"/><path d="M${-19 * w} 518H${19 * w}L${19.5 * w} 531H${-19.5 * w}Z" fill="${cd}" stroke-width="2.5"/><rect x="-3.5" y="519" width="7" height="11" rx="2" fill="${lt(c, 0.5)}" stroke-width="2"/><circle cx="-6" cy="548" r="2.4" fill="${INK}" stroke="none"/><circle cx="6" cy="548" r="2.4" fill="${INK}" stroke="none"/><circle cx="-6" cy="568" r="2.4" fill="${INK}" stroke="none"/><circle cx="6" cy="568" r="2.4" fill="${INK}" stroke="none"/>` };
+    case 'sweaterdress': return { back: '', torso: `<path d="${fem('sweaterdress')}" fill="${c}"/>${femShade('sweaterdress')}<path d="M-12 461Q0 471 12 461" fill="none" stroke="${cl}" stroke-width="6" stroke-linecap="butt"/><path d="${`M${-18 * w} 512Q0 520 ${18 * w} 512`}" fill="none" stroke="${cl}" stroke-width="8" stroke-linecap="butt"/><path d="M${-27 * w} 548Q0 558 ${27 * w} 548" fill="none" stroke="${cl}" stroke-width="8" stroke-linecap="butt"/><path d="M${-33 * w} 572Q0 582 ${33 * w} 572" fill="none" stroke="${cl}" stroke-width="8" stroke-linecap="butt"/>` };
+    default: return { back: '', torso: `<path d="${male(572)}" fill="${c}"/>${maleShade(572)}<path d="M-10 460L10 460L0 494Z" fill="#FBF4E8" stroke-width="2.5"/><path d="M-3 470H3L5 496L0 503L-5 496Z" fill="#C4694A" stroke-width="2.5"/>` };
   }
 }
 
@@ -194,24 +265,33 @@ export const LEG_LEN = 9 + BONE.leg1 + BONE.leg2 + 9;
 
 /** Размеры головы по форме: round — прежний круг r 28; oval — на 4 % уже и выше; square — челюсть шире на 6 %, плоский подбородок. */
 export const FACE_DIM = { round: { rx: 28, ry: 28 }, oval: { rx: 26.88, ry: 29.12 } } as const;
-export const FACE_SQUARE_D = 'M-28 432Q-28 420.4 -19.8 412.2Q-11.6 404 0 404Q11.6 404 19.8 412.2Q28 420.4 28 432L29.68 447Q29.68 460 21 460L-21 460Q-29.68 460 -29.68 447Z';
-export const chinY = (shape: FaceSpec['shape']): number => (shape === 'oval' ? 432 + FACE_DIM.oval.ry : 460);
+/**
+ * Квадратное лицо (32-Е): верх широкий (полукруг r 28), на уровне глаз (y 437) ширина ≈ 58,4, к рту (y 451) сужается на ≈ 9 % (53,3),
+ * нижние углы скруглены радиусом ≈ 19,7 (0,37 ширины на уровне рта), подбородок мягкой дугой без прямого участка (самая нижняя точка 461,2).
+ */
+export const FACE_SQUARE_D = 'M-28 432Q-28 420.4 -19.8 412.2Q-11.6 404 0 404Q11.6 404 19.8 412.2Q28 420.4 28 432Q30 440 26.7 448Q26.4 460.4 7 460.4Q0 462 -7 460.4Q-26.4 460.4 -26.7 448Q-30 440 -28 432Z';
+export const chinY = (shape: FaceSpec['shape']): number => (shape === 'oval' ? 432 + FACE_DIM.oval.ry : shape === 'square' ? 461.2 : 460);
 /** Шея: ширина лица 56, доля 40 % (мужчины 44 %, женщины 36 %); видимая высота от подбородка по возрасту, ед. рисунка (× 1,76 в пикселях игры: 4,6 / 5,6 / 6,7 px). */
 export const NECK_FACE_W = 56;
 export const NECK_BASE = 0.4;
 export const NECK_SEX = 0.04;
 export const NECK_VISIBLE: Readonly<Record<Age, number>> = { young: 2.6, adult: 3.2, senior: 3.8 };
 /** Румянец: центр (±16,5; 445,5), радиус 2…5, непрозрачность 0,25…0,5. */
-export const WRINKLE_W = 1.7;
+/** Морщины: тонкие (1,2), полупрозрачные (0,38), тоном темнее кожи на ΔE76 22. */
+export const WRINKLE_W = 1.2;
+export const WRINKLE_ALPHA = 0.38;
+export const WRINKLE_DE = 22;
 export const BLUSH_X = 16.5;
 export const BLUSH_Y = 445.5;
 export function blushOf(face: FaceSpec, mood: MoodId, facial: Facial): { visible: boolean; r: number; alpha: number; eff: number } {
-  const eff = facial === 'beard' ? 0 : Math.min(1, face.blush + (mood === 'happy' || mood === 'joy' ? BLUSH_MOOD : 0));
+  const eff = hasBeard(facial) ? 0 : Math.min(1, face.blush + (mood === 'happy' || mood === 'joy' ? BLUSH_MOOD : 0));
   return { visible: eff > BLUSH_MIN, r: +(2 + 3 * eff).toFixed(2), alpha: +(0.25 + 0.25 * eff).toFixed(2), eff };
 }
-/** Поворот головы при ходьбе вбок: черты сдвигаются на 4,5 в сторону движения, дальний глаз уже на 15 %, дальнее ухо скрыто. */
-export const TURN_SHIFT = 4.5;
-export const TURN_FAR_EYE = 0.85;
+/** Поворот головы при ходьбе вбок: черты сдвигаются на 7,5 в сторону движения, дальний глаз уже на 30 %, дальнее ухо скрыто (32-Е: было 4,5 и 15 %). */
+export const TURN_SHIFT = 7.5;
+export const TURN_FAR_EYE = 0.7;
+/** Доля сдвига черт, на которую смещается рот (с усами) при повороте. */
+export const TURN_MOUTH = 0.5;
 /** Торс при повороте вбок уже на 6 % (дальнее плечо ближе к оси). */
 export const TURN_TORSO = 0.06;
 /** Тон кожи, затемнённый на заданную ΔE76 (морщины, тень под подбородком). */
@@ -232,7 +312,7 @@ export function personParts(o: Look, seat = false): PersonParts {
   const skd = dk(sk, 0.2);
   const ou = outfit(o.outfit, o.cloth, w);
   const hr = hairLayers(o.hair, o.hairCol, o.hat ?? o.cloth);
-  const slv = o.outfit === 'suit' ? dk(o.cloth, 0.1) : o.cloth;
+  const slv = o.outfit === 'suit' ? dk(o.cloth, 0.1) : o.outfit === 'vest' ? '#FBF4E8' : o.cloth;
   const pants = o.pants ?? '#4F4A5A';
   const shoe = o.shoe ?? '#2F211B';
   const item = seat ? 'none' : o.item;
@@ -241,24 +321,28 @@ export function personParts(o: Look, seat = false): PersonParts {
   const caseL =
     item === 'briefcase' ? `<rect x="-17" y="8" width="34" height="26" rx="5" fill="#C98B5A"/><path d="M-8 8q8 -13 16 0" fill="none" stroke-width="2.5"/><path d="M-17 20h34" stroke-width="2" fill="none"/>`
     : item === 'tote' ? `<rect x="-15" y="8" width="30" height="28" rx="6" fill="#E7D3AE"/><path d="M-9 8q9 -15 18 0" fill="none" stroke-width="2.5"/><circle cx="0" cy="22" r="5" fill="${lt(o.cloth, 0.1)}" stroke-width="2"/>`
+    : item === 'purse' ? `<rect x="-11" y="8" width="22" height="17" rx="4.5" fill="#B85C3F"/><path d="M-6 8q6 -11 12 0" fill="none" stroke-width="2.2"/><circle cx="0" cy="17" r="2.4" fill="#E8B04A" stroke-width="1.6"/>`
     : '';
   const phoneR = item === 'phone' ? `<rect x="-7" y="-17" width="13" height="22" rx="3.5" fill="#2F2B3A"/><rect x="-5" y="-14" width="9" height="14" rx="2" fill="#9FC3C7" stroke="none"/>` : '';
   const hand = (extra: string) => `${extra}<circle cx="0" cy="0" r="8.5" fill="${sk}"/>`;
   const face = o.face ?? DEFAULT_FACE;
   const dark = o.skin === SKIN[4] || o.skin === SKIN[3];
-  const stache = o.facial !== 'none' ? MOUSTACHE_PATH(o.hairCol) : '';
-  const beard = o.facial === 'beard' ? BEARD_PATH(o.hairCol) : '';
+  const stache = hasMustache(o.facial) ? MOUSTACHE_PATH(o.hairCol) : '';
+  const beard = beardLayer(o.facial, o.hairCol, o.age);
+  /* губы светлой линией нужны там, где рот лежит внутри плотной бороды */
+  const beardMass = o.facial === 'beard' || o.facial === 'short';
   const eye = (cx: number, hl: number, g: Gaze) => `<g><ellipse cx="${cx}" cy="437" rx="4.7" ry="5" fill="#FFFDF6" stroke-width="1.8"/><circle cx="${cx + 0.4 + g.x}" cy="${438 + g.y}" r="2.8" fill="#2F211B" stroke="none"/><circle cx="${hl + g.x}" cy="${436.6 + g.y}" r="1" fill="#fff" stroke="none"/></g>`;
-  const glasses = o.acc === 'glasses' ? `<circle cx="-11" cy="437" r="8" fill="#fff" fill-opacity=".28" stroke-width="2.5"/><circle cx="11" cy="437" r="8" fill="#fff" fill-opacity=".28" stroke-width="2.5"/><path d="M-3 436H3M-19 435L-28 432M19 435L28 432" stroke-width="2.5" fill="none"/>` : '';
+  const glassesSvg = (view: number): string => (o.acc === 'glasses' ? `<circle cx="-11" cy="437" r="8" fill="#fff" fill-opacity=".28" stroke-width="2.5"/><circle cx="11" cy="437" r="8" fill="#fff" fill-opacity=".28" stroke-width="2.5"/><path d="M-3 436H3${view === 1 ? '' : 'M-19 435L-28 432'}${view === -1 ? '' : 'M19 435L28 432'}" stroke-width="2.5" fill="none"/>` : '');
+  const glasses = glassesSvg(0);
   /* шарф закрывает шею: верх шарфа уходит под подбородок (32-Д) */
   const scarf = o.acc === 'scarf' ? `<path d="M-22 457Q0 463 22 457L26 478Q0 494 -26 478Z" fill="${lt('#C4694A', 0.05)}" stroke-width="2.8"/><path d="M14 478L20 512L30 508L24 476Z" fill="${lt('#C4694A', 0.05)}" stroke-width="2.8"/><path d="M-12 474v8M0 478v8M12 476v8" stroke="${lt('#C4694A', 0.45)}" stroke-width="2" fill="none"/>` : '';
   const band = o.acc === 'headphones' ? `<path d="M-27 428Q-28 396 0 394Q28 396 27 428" fill="none" stroke-width="8"/><path d="M-27 428Q-28 396 0 394Q28 396 27 428" fill="none" stroke="#4A6B72" stroke-width="4"/>` : '';
   const cups = o.acc === 'headphones' ? `<rect x="-35" y="422" width="12" height="22" rx="6" fill="#4A6B72"/><rect x="23" y="422" width="12" height="22" rx="6" fill="#4A6B72"/>` : '';
-  const earsSvg = (hide: number) => [-1, 1].map((sg) => (sg === hide ? '' : `<circle cx="${27 * sg}" cy="438" r="5.5" fill="${sk}"/>`)).join('');
+  const earsSvg = (hide: number) => [-1, 1].map((sg) => (sg === hide ? '' : `<circle cx="${27 * sg}" cy="438" r="5.5" fill="${sk}"/>${o.earrings && o.acc !== 'headphones' ? `<circle cx="${27.4 * sg}" cy="447.4" r="2.1" fill="#E8B04A" stroke-width="1.6"/>` : ''}`)).join('');
   /* у бородача рот лежит внутри бороды: узкая светлая полоска губ вдоль рта, без контура */
-  const lips = (mood: MoodId): string => (beard && lipsWidth(mood) > 0 ? `<path d="${MOOD[mood].m}" fill="none" stroke="${sk}" stroke-width="${lipsWidth(mood)}" stroke-linecap="round"/>` : '');
+  const lips = (mood: MoodId): string => (beardMass && lipsWidth(mood) > 0 ? `<path d="${MOOD[mood].m}" fill="none" stroke="${sk}" stroke-width="${lipsWidth(mood)}" stroke-linecap="round"/>` : '');
   const halfEye = (cx: number, g: Gaze): string => `<g><ellipse cx="${cx}" cy="438" rx="4.7" ry="2.4" fill="#FFFDF6" stroke-width="1.8"/><ellipse cx="${cx + 0.4 + g.x}" cy="438.3" rx="2.5" ry="1.8" fill="#2F211B" stroke="none"/><path d="M${cx - 5.2} 436.6q5.2 -3 10.4 0" fill="none" stroke-width="2"/></g>`;
-  const wrinkleTone = tone(sk, 12);
+  const wrinkleTone = tone(sk, WRINKLE_DE);
   const neckTone = tone(sk, 10);
   /* шея: отдельная форма под лицом (слой neck), видимая высота от подбородка по возрасту, ширина 36–44 % ширины лица */
   const nw = NECK_FACE_W * (NECK_BASE + (o.sex === 'm' ? NECK_SEX : -NECK_SEX));
@@ -276,22 +360,27 @@ export function personParts(o: Look, seat = false): PersonParts {
     const eyes = closed ? `<path d="M-15 438q5 -7 10 0M5 438q5 -7 10 0" fill="none" stroke-width="2.6"/>` : blink === 'half' ? `${squeeze(-10, halfEye(-10, gaze))}${squeeze(10, halfEye(10, gaze))}` : `${squeeze(-10, eye(-10, -8.5, gaze))}${squeeze(10, eye(10, 11.5, gaze))}`;
     const lash = face.lashes && !closed ? `<path d="M-14.8 ${blink === 'half' ? 436 : 434.4}l-2.3 -2.2M-12.8 ${blink === 'half' ? 434.6 : 432.8}l-1.6 -2.6M14.8 ${blink === 'half' ? 436 : 434.4}l2.3 -2.2M12.8 ${blink === 'half' ? 434.6 : 432.8}l1.6 -2.6" fill="none" stroke-width="1.5" stroke-linecap="round"/>` : '';
     const browSvg = brows ? `<path d="${brows.d}" fill="none" stroke="${brows.color}" stroke-width="${brows.w}" stroke-linecap="round"/>` : `<path d="${m.b}" fill="none" stroke-width="${OTHER_BROW_W[face.brow]}"/>`;
-    /* возрастные черты: морщины-«гусиные лапки» (1 и 2), у пожилых всегда ещё мешки под глазами и носогубные складки, при 2 ещё линия на лбу */
-    const WL = `fill="none" stroke="${wrinkleTone}" stroke-width="${WRINKLE_W}" stroke-linecap="round"`;
-    const wr = face.wrinkles >= 1 ? `<path d="M-19.6 435.2l-3.6 -1.8M-19.6 438.6l-3.6 1M19.6 435.2l3.6 -1.8M19.6 438.6l3.6 1" ${WL}/>` : '';
-    const old = o.age === 'senior' ? `<path d="M-14.4 444.2q4.4 2.2 8.8 0M5.6 444.2q4.4 2.2 8.8 0" ${WL}/>${beard ? '' : `<path d="M-6 444.6q-7.6 0.6 -9 9.4M6 444.6q7.6 0.6 9 9.4" ${WL}/>`}` : '';
-    const wr2 = face.wrinkles >= 2 ? `<path d="M-8 423.2q8 -2.2 16 0" ${WL}/>` : '';
+    /* возрастные черты (32-Е): мягкие короткие дуги вместо веера; тонкие, полупрозрачные, цвет кожи на тон темнее; при повороте дальняя сторона скрыта */
+    const WL = `fill="none" stroke="${wrinkleTone}" stroke-opacity="${WRINKLE_ALPHA}" stroke-width="${WRINKLE_W}" stroke-linecap="round"`;
+    const sides = [-1, 1].filter((sg) => sg !== view);
+    const wr = face.wrinkles >= 1 ? `<path d="${sides.map((sg) => `M${17.4 * sg} 436.2q${2.3 * sg} -1.4 ${4.2 * sg} -0.4M${17.6 * sg} 439.6q${1.8 * sg} 0.8 ${2.8 * sg} 1.9`).join('')}" ${WL}/>` : '';
+    /* у пожилых всегда: мешки под глазами, носогубные складки (не у бородачей) и одна линия на лбу; морщины 2 добавляют вторую линию на лбу */
+    const old = o.age === 'senior' ? `<path d="${[-1, 1].map((sg) => `M${5.2 * sg} 443.8q${5.8 * sg} 2.3 ${11.6 * sg} 0`).join('')}${beardMass ? '' : sides.map((sg) => `M${5.6 * sg} 443.9q${5.2 * sg} 1.3 ${6.6 * sg} 8.7M${9.6 * sg} 449.8q${0.8 * sg} 1.8 ${0.4 * sg} 3.6`).join('')}M-9 423.6q9 -2.2 18 0" ${WL}/>` : '';
+    const wr2 = face.wrinkles >= 2 ? `<path d="M-5.5 419.8q5.5 -1.4 11 0" ${WL}/>` : '';
     const nose = `<path d="${face.nose === 'small' ? 'M-1.6 442.3q1.6 1.5 3.2 0' : 'M-2.6 441.9q2.6 2.2 5.2 0'}" fill="none" stroke-width="1.5" stroke-linecap="round"/>`;
     const eb = blushOf(face, mood, o.facial);
-    const blushSvg = eb.visible ? `<ellipse cx="${-BLUSH_X + fx * 0.7}" cy="${BLUSH_Y}" rx="${eb.r}" ry="${(eb.r * 0.62).toFixed(2)}" fill="#E3806C" fill-opacity="${(eb.alpha * (dark ? 0.75 : 1)).toFixed(2)}" stroke="none"/><ellipse cx="${BLUSH_X + fx * 0.7}" cy="${BLUSH_Y}" rx="${eb.r}" ry="${(eb.r * 0.62).toFixed(2)}" fill="#E3806C" fill-opacity="${(eb.alpha * (dark ? 0.75 : 1)).toFixed(2)}" stroke="none"/>` : '';
-    const feat = `${eyes}${lash}${browSvg}${wr}${old}${wr2}${nose}${lips(mood)}<path d="${m.m}" fill="${m.f ?? 'none'}" stroke-width="2.5"/>${blushSvg}${stache}`;
+    const blushSvg = eb.visible ? `<ellipse cx="${-BLUSH_X + fx * 0.35}" cy="${BLUSH_Y}" rx="${eb.r}" ry="${(eb.r * 0.62).toFixed(2)}" fill="#E3806C" fill-opacity="${(eb.alpha * (dark ? 0.75 : 1)).toFixed(2)}" stroke="none"/><ellipse cx="${BLUSH_X + fx * 0.35}" cy="${BLUSH_Y}" rx="${eb.r}" ry="${(eb.r * 0.62).toFixed(2)}" fill="#E3806C" fill-opacity="${(eb.alpha * (dark ? 0.75 : 1)).toFixed(2)}" stroke="none"/>` : '';
+    /* рот и усы ближе к оси головы: при повороте сдвигаются на 50 % сдвига черт (иначе уголок рта выходит за контур) */
+    const mouth = `${lips(mood)}<path d="${m.m}" fill="${m.f ?? 'none'}" stroke-width="2.5"/>`;
+    const mouthG = view !== 0 ? `<g transform="translate(${-(fx * (1 - TURN_MOUTH)).toFixed(2)} 0)">${mouth}${stache}</g>` : `${mouth}${stache}`;
+    const feat = `${eyes}${lash}${browSvg}${wr}${old}${wr2}${nose}${blushSvg}${mouthG}`;
     return {
       neck,
       ears: earsSvg(view),
       face: `${faceBase}<path d="M14 408Q34 424 20 452Q28 432 14 408Z" fill="${skd}" fill-opacity=".35" stroke="none"/><path d="M-26 424Q-24 414 -18 410" fill="none" stroke="${lt(sk, 0.5)}" stroke-width="3" stroke-opacity=".7"/>`,
-      beard: view !== 0 && beard ? `<g transform="translate(${fx * 0.7} 0)">${beard}</g>` : beard,
+      beard: view !== 0 && beard ? `<g transform="translate(${fx * 0.45} 0) scale(0.9 1)">${beard}</g>` : beard,
       features: view !== 0 ? `<g transform="translate(${fx} 0)">${feat}</g>` : feat,
-      glasses: view !== 0 && glasses ? `<g transform="translate(${fx} 0)">${glasses}</g>` : glasses,
+      glasses: view !== 0 && glasses ? `<g transform="translate(${fx * 0.75} 0)">${glassesSvg(view)}</g>` : glasses,
       hair: hr.f,
       band,
       bun: hr.o,
