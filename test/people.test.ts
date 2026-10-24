@@ -3,8 +3,8 @@ import BASE from './fixtures/people-baseline.json';
 import { baristaHash, fixedLooks, mulberry, orderStream, partsHash } from './helpers/peopleSnap';
 import { deltaE } from '../src/game/drinkModel';
 import {
-  AGE_SHARE, BARISTA_LOOK, CLOTH, FACIAL_SHARE, FALLBACK_HAT, FALLBACK_STYLE, GREY, HAIR_FEMALE, HAIR_MALE, HAIR_NEUTRAL, HAIR_SENIOR_OTHER, HEADPHONES_SHARE, HURRY_CLOTH, HURRY_SUIT_SHARE,
-  LEGACY_DRAWS, SEX_SHARE_M, SKIN, allowedHair, hairColors, hairGroups, lookFor, renderStyle, type Age, type Look, type PersonType
+  AGE_SHARE, BARISTA_LOOK, CLOTH, FACIAL_SHARE, FALLBACK_HAT, GREY, HAIR_FEMALE, HAIR_MALE, HAIR_SENIOR_OTHER, HEADPHONES_SHARE, HURRY_CLOTH, HURRY_SUIT_SHARE,
+  LEGACY_DRAWS, SEX_SHARE_M, SKIN, allowedHair, hairColors, hairGroups, lookFor, type Age, type Look, type PersonType
 } from '../src/game/look';
 import { baristaParts } from '../src/render/world/art';
 
@@ -19,8 +19,12 @@ const near = (got: number, want: number, tol = 2): void => expect(Math.abs(got -
 
 describe('картинка не изменилась (эталон из HEAD до 32-Б)', () => {
   test('части фигуры у старых внешностей совпадают побитово', () => {
-    const looks = fixedLooks('headphones').map((l) => ({ ...l, sex: 'f', age: 'adult', facial: l.mustache ? 'mustache' : 'none' }));
-    expect(looks.map((l) => partsHash(l as never))).toEqual(BASE.parts);
+    const looks = fixedLooks('headphones').map((l) => ({ ...l, sex: 'f', age: 'adult', facial: l.mustache ? 'mustache' : 'none' } as Record<string, unknown>));
+    const got = looks.map((l) => partsHash(l as never));
+    /* 32-В намеренно перерисовал grey, long и curly: у них хеш другой, у остальных прежний; наушники получили бирюзовую дужку */
+    const redrawn = looks.map((l) => ['grey', 'long', 'curly'].includes(l.hair as string) || l.acc === 'headphones');
+    expect(redrawn.filter(Boolean).length).toBe(5);
+    got.forEach((h, i) => (redrawn[i] ? expect(h).not.toBe(BASE.parts[i]) : expect(h).toBe(BASE.parts[i])));
   });
   test('бариста: части не изменились, BARISTA_LOOK в новом формате', () => {
     expect(baristaHash()).toBe(BASE.barista);
@@ -57,7 +61,6 @@ describe('lookFor: правила генератора (20 000 гостей на
     for (const t of TYPES) {
       for (const l of data[t]) {
         if (l.sex === 'f' || l.age === 'young') expect(l.facial).toBe('none');
-        expect(l.mustache).toBe(l.facial !== 'none');
       }
       for (const age of ['adult', 'senior'] as Age[]) {
         const men = data[t].filter((l) => l.sex === 'm' && l.age === age);
@@ -116,10 +119,6 @@ describe('lookFor: правила генератора (20 000 гостей на
       const want = new Set((['young', 'adult', 'senior'] as Age[]).filter((a) => AGE_SHARE[t].some(([x]) => x === a)).flatMap((a) => allowedHair(t, a)));
       expect([...seen].sort()).toEqual([...want].sort());
     }
-  });
-  test('новых причёсок пока нет в арте: рисуются по FALLBACK_STYLE', () => {
-    expect(Object.keys(FALLBACK_STYLE).sort()).toEqual(['braid', 'crop', 'sidepart', 'wavy']);
-    for (const h of [...HAIR_MALE, ...HAIR_FEMALE, ...HAIR_NEUTRAL]) expect(['short', 'grey', 'bob', 'bun', 'pony', 'long', 'curly', 'beanie']).toContain(renderStyle(h));
   });
 });
 

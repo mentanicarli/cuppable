@@ -12,10 +12,9 @@ export type Age = 'young' | 'adult' | 'senior';
 export type Facial = 'none' | 'mustache' | 'beard';
 export type PersonType = 'regular' | 'student' | 'hurry';
 
-/** Причёски по смыслу. crop, sidepart, braid, wavy в арте появятся в 32-В, до этого рисуются по FALLBACK_STYLE. */
+/** Причёски по смыслу; у каждой свой рисунок в art.ts (hairLayers). */
 export type HairStyle = 'short' | 'grey' | 'crop' | 'sidepart' | 'bob' | 'bun' | 'braid' | 'pony' | 'long' | 'curly' | 'wavy' | 'beanie';
-/** Причёски, которые рисует art.ts сейчас. */
-export type RenderStyle = 'short' | 'grey' | 'bob' | 'bun' | 'pony' | 'long' | 'curly' | 'beanie';
+export const HAIR_STYLES: readonly HairStyle[] = ['short', 'grey', 'crop', 'sidepart', 'bob', 'bun', 'braid', 'pony', 'long', 'curly', 'wavy', 'beanie'];
 
 export interface Look {
   skin: string;
@@ -29,16 +28,10 @@ export interface Look {
   acc?: string;
   item?: string;
   build?: string;
-  /** Производное от facial (пока 32-В не заменит рисунок): усы рисуются и для бороды. */
-  mustache?: boolean;
   sex: Sex;
   age: Age;
   facial: Facial;
 }
-
-/** ВРЕМЕННО (до 32-В): ближайший существующий рисунок для новых причёсок. */
-export const FALLBACK_STYLE: Readonly<Partial<Record<HairStyle, RenderStyle>>> = { crop: 'short', sidepart: 'short', braid: 'long', wavy: 'curly' };
-export const renderStyle = (h: HairStyle): RenderStyle => FALLBACK_STYLE[h] ?? (h as RenderStyle);
 
 export const SKIN: readonly string[] = ['#F5D0AE', '#EBC09A', '#D9A67E', '#B98160', '#A26C49'];
 export const HAIR: readonly string[] = ['#3A2A22', '#7A3E2B', '#C99028', '#2E2E3A', '#A55B3A', '#CFC4B4'];
@@ -175,7 +168,6 @@ export function lookFor(type: string, rng: Rng = Math.random): Look {
     acc,
     item: pickFrom(r, ITEMS[t]),
     build: pickFrom(r, BUILDS[t]),
-    mustache: facial !== 'none',
     sex,
     age,
     facial

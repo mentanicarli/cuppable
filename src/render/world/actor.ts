@@ -1,5 +1,5 @@
 import { CanvasTextMetrics, Container, Graphics, Rectangle, Sprite, Text, TextStyle, Texture } from 'pixi.js';
-import { BONE, GUEST_K, HEAD_BOX, JOINT, personParts, wrapCell, wrapPart, type Gaze, type Look, type MoodId, type PersonParts } from './art';
+import { BONE, GUEST_K, HEAD_BOX, JOINT, headTopOf, personParts, wrapCell, wrapPart, type Gaze, type Look, type MoodId, type PersonParts } from './art';
 import { Seq, Spring, Spring2, clamp, damp, ease, ik2 } from './anim';
 import { Ribbon, frameSprite } from './ribbon';
 import { rasterAtlas, raster, type Atlas } from './svg';
@@ -8,7 +8,6 @@ import { drinkIconPx } from './drinkModel';
 import { TexCache, modelTexKey } from './texCache';
 import { cupTexture } from './cupTex';
 import { tableCupDy } from './cupPlan';
-import { renderStyle } from '../../game/look';
 import { hasSteam, specOf, type ModelRef } from '../../game/drinkModel';
 import { readableOn } from '../../game/contrast';
 
@@ -45,9 +44,6 @@ export interface ActorOpts {
   /** Пар над чашкой: мировые координаты. */
   steam?: (x: number, y: number) => void;
 }
-
-/** верх головы по причёскам (см. art.ts hair): у пучка выше, у шапки и кудрей чуть ниже обычного */
-const HEAD_TOP: Readonly<Record<string, number>> = { bun: 379, curly: 384, beanie: 390, grey: 402 };
 
 /** пузырь заказа чуть меньше (карточка 128 px → 115): при шаге очереди 130 px соседние пузыри не заходят друг на друга */
 const BUBBLE_SCALE = 0.9;
@@ -275,7 +271,8 @@ export class Actor {
     this.inner.addChild(this.back.root, this.front.root, this.cupHolder, this.bubble);
     this.root.addChild(sh, this.inner);
     this.k = o.scale ?? 1;
-    this.headTop = HEAD_TOP[renderStyle(o.look.hair)] ?? 397;
+    /* верх головы по причёске и наушникам: art.ts HEAD_TOP, headTopOf */
+    this.headTop = headTopOf(o.look);
     this.root.pivot.set(0, 600);
     this.root.position.set(o.x, 600);
     this.root.scale.set(this.k);
