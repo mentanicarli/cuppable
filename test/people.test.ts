@@ -21,9 +21,9 @@ describe('картинка не изменилась (эталон из HEAD д�
   test('части фигуры у старых внешностей совпадают побитово', () => {
     const looks = fixedLooks('headphones').map((l) => ({ ...l, sex: 'f', age: 'adult', facial: l.mustache ? 'mustache' : 'none' } as Record<string, unknown>));
     const got = looks.map((l) => partsHash(l as never));
-    /* 32-В намеренно перерисовал grey, long и curly: у них хеш другой, у остальных прежний; наушники получили бирюзовую дужку */
-    const redrawn = looks.map((l) => ['grey', 'long', 'curly'].includes(l.hair as string) || l.acc === 'headphones');
-    expect(redrawn.filter(Boolean).length).toBe(5);
+    /* 32-В намеренно перерисовал grey, long, curly и bob: у них хеш другой, у остальных прежний; наушники получили бирюзовую дужку */
+    const redrawn = looks.map((l) => ['grey', 'long', 'curly', 'bob'].includes(l.hair as string) || l.acc === 'headphones');
+    expect(redrawn.filter(Boolean).length).toBe(7);
     got.forEach((h, i) => (redrawn[i] ? expect(h).not.toBe(BASE.parts[i]) : expect(h).toBe(BASE.parts[i])));
   });
   test('бариста: части не изменились, BARISTA_LOOK в новом формате', () => {

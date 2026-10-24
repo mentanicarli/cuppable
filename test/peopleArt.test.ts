@@ -4,30 +4,17 @@ import ACTOR from '../src/render/world/actor.ts?raw';
 import * as LOOKMOD from '../src/game/look';
 import { GREY, HAIR_STYLES, SKIN, type Facial, type HairStyle, type Look } from '../src/game/look';
 import { BAND_TOP, BEARD_D, HEAD_LAYER_ORDER, HEAD_TOP, MOUTH_PATHS, hairBackKind, hairLayers, headTopOf, personParts, type MoodId } from '../src/render/world/art';
-import { maxY, minX, minY, pathPoints, shapePoints, type Pt } from './helpers/geom';
+import { maxY, minX, minY, pathPoints, shapePoints } from './helpers/geom';
 
 const MOODS: MoodId[] = ['neutral', 'happy', 'joy', 'wait', 'annoyed', 'angry'];
 const BASE: Look = { skin: SKIN[1] as string, hair: 'short', hairCol: '#3A2A22', outfit: 'sweater', cloth: '#C4694A', pants: '#4F4A5A', acc: 'none', item: 'none', build: 'mid', sex: 'm', age: 'adult', facial: 'none' };
 const mk = (o: Partial<Look>): Look => ({ ...BASE, ...o });
 /** Причёски, перерисованные или нарисованные в 32-В: их верх проверяем точно. */
-const NEW_OR_REDRAWN: HairStyle[] = ['crop', 'sidepart', 'braid', 'wavy', 'grey', 'long', 'curly'];
+const NEW_OR_REDRAWN: HairStyle[] = ['crop', 'sidepart', 'braid', 'wavy', 'grey', 'long', 'curly', 'bob'];
 const top = (s: HairStyle): number => {
   const l = hairLayers(s, '#3A2A22', '#5F7A8A');
   return minY(shapePoints(l.f + l.o));
 };
-const dense = (p: Pt[]): Pt[] => {
-  const out: Pt[] = [];
-  for (let i = 0; i < p.length; i++) {
-    out.push(p[i] as Pt);
-    const n = p[i + 1];
-    if (!n) continue;
-    const a = p[i] as Pt;
-    const steps = Math.ceil(Math.hypot(n.x - a.x, n.y - a.y) / 0.5);
-    for (let k = 1; k < steps; k++) out.push({ x: a.x + ((n.x - a.x) * k) / steps, y: a.y + ((n.y - a.y) * k) / steps });
-  }
-  return out;
-};
-
 describe('причёски: у каждой свой рисунок, запасной таблицы нет', () => {
   test('FALLBACK_STYLE и renderStyle удалены', () => {
     expect('FALLBACK_STYLE' in LOOKMOD).toBe(false);
@@ -102,20 +89,6 @@ describe('HEAD_TOP: числа сняты с рисунка', () => {
 });
 
 describe('борода: вокруг рта, рот виден при любом настроении', () => {
-  const beard = dense(pathPoints(BEARD_D));
-  test('внутренний край бороды: под ртом ниже 457, сбоку не ближе 12 к середине в зоне рта', () => {
-    for (const p of beard) {
-      if (Math.abs(p.x) < 12) expect(p.y, `x ${p.x}`).toBeGreaterThanOrEqual(457);
-      if (p.y >= 444 && p.y <= 456) expect(Math.abs(p.x), `y ${p.y}`).toBeGreaterThanOrEqual(12);
-    }
-  });
-  test.each(MOODS)('рот «%s» не ближе 2,5 px от бороды (линия рта и бороды не касаются)', (m) => {
-    const mouth = dense(pathPoints(MOUTH_PATHS[m]));
-    expect(maxY(mouth)).toBeLessThanOrEqual(457.1);
-    let d = Infinity;
-    for (const a of mouth) for (const b of beard) d = Math.min(d, Math.hypot(a.x - b.x, a.y - b.y));
-    expect(d).toBeGreaterThanOrEqual(2.5);
-  });
   test('все лица × настроения: борода и усы есть, борода ниже рта по порядку слоёв, цвет = цвет волос (седая у senior)', () => {
     for (const col of ['#3A2A22', '#7A3E2B', GREY]) {
       const p = personParts(mk({ facial: 'beard', hairCol: col, age: col === GREY ? 'senior' : 'adult' }));

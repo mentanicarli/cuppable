@@ -42,35 +42,40 @@ export function hairLayers(style: HairStyle, h: string, bc: string): HairLayers 
   switch (style) {
     case 'bun': return { b: '', f: top, o: `<circle cx="0" cy="391" r="12" fill="${h}"/><path d="M-6 389q6 -5 12 0" fill="none" stroke="${lt(h, 0.35)}" stroke-width="2.5"/>` };
     case 'pony': return { b: `<path d="M18 408Q54 410 46 462Q38 444 24 436Z" fill="${h}"/>`, f: top, o: '' };
-    case 'long':
-      /* до 32-В: плоская плита; теперь объём у лица (пряди шире щёк), пробор по центру, неровный нижний край */
-      return {
-        b: `<path d="M-32 432Q-40 402 0 397Q40 402 32 432L38 480Q33 494 26 484Q22 490 18 474L-18 474Q-22 490 -26 484Q-33 496 -38 480Z" fill="${h}"/>`,
-        f: `<path d="M-29 434Q-34 398 -1 396Q-8 408 -22 417Q-26 424 -29 434Z" fill="${h}"/><path d="M29 434Q34 398 1 396Q8 408 22 417Q26 424 29 434Z" fill="${h}"/>`,
-        o: ''
-      };
-    case 'bob': return { b: `<path d="M-31 440Q-36 400 0 397Q36 400 31 440L31 456Q18 460 16 446L-16 446Q-18 460 -31 456Z" fill="${h}"/>`, f: `<path d="M-28 430Q-31 398 0 397Q31 398 28 430Q8 412 -10 420Q-20 422 -28 430Z" fill="${h}"/>`, o: '' };
-    case 'curly': return { b: '', f: [[-20, 415], [-11, 405], [0, 401], [11, 405], [20, 415], [-25, 428], [25, 428]].map((p) => `<circle cx="${p[0]}" cy="${p[1]}" r="9.5" fill="${h}"/>`).join(''), o: '' };
+    case 'long': {
+      /* 32-В2: линия роста по лбу (волосы закрывают верх лба, пробор «домиком»), объём вокруг лица, неровный нижний край сзади */
+      const b = `<path d="M-32 432Q-40 402 0 397Q40 402 32 432L38 480Q33 494 26 484Q22 490 18 474L-18 474Q-22 490 -26 484Q-33 496 -38 480Z" fill="${h}"/>`;
+      const f = `<path d="M-29 437Q-35 398 1 394Q40 398 31 437Q27 426 21 421.5Q14 418.5 8.5 415.5Q4.5 413 1.5 409Q-1 413 -6 416Q-13 419 -21 422Q-26 426 -29 437Z" fill="${h}"/><path d="M-17 404Q-9 399 -3 401M12 402Q18 405 22 412" fill="none" stroke="${dk(h, 0.25)}" stroke-width="2"/>`;
+      return { b, f, o: '' };
+    }
+    case 'bob': return { b: `<path d="M-31 440Q-36 400 0 397Q36 400 31 440L31 456Q18 460 16 446L-16 446Q-18 460 -31 456Z" fill="${h}"/>`, f: `<path d="M-28 436Q-31 398 0 397Q31 398 28 430Q10 411.5 -8 417.5Q-20 422 -28 436Z" fill="${h}"/>`, o: '' };
+    case 'curly': {
+      /* 32-В2: общая шапка волос и завитки разного размера по краю; сначала контуры, затем заливка без контура (внутри массы линий нет) */
+      const cap = `<path d="M-29 434Q-32 403 0 400Q32 403 29 434Q25 421 16 417Q0 413 -16 417.5Q-25 421 -29 434Z" fill="${h}"/>`;
+      const cs = [[-27, 430, 6.5], [-30, 418, 8.6], [-26, 408, 9.8], [-17, 399.5, 9], [-6, 398.5, 8], [5, 400, 9.2], [15, 399.5, 8.2], [24, 406, 8.4], [30, 418, 7.2], [28, 430, 6.8], [-12, 408, 6]];
+      const ring = (stroke: string): string => cs.map((c) => `<circle cx="${c[0]}" cy="${c[1]}" r="${c[2]}" fill="${h}"${stroke}/>`).join('');
+      return { b: '', f: ring('') + cap + ring(' stroke="none"') + cap.replace('/>', ' stroke="none"/>') + `<path d="M-21 403q4 -4 8 0M9 397q4 -4 8 0" fill="none" stroke="${dk(h, 0.25)}" stroke-width="2"/>`, o: '' };
+    }
     case 'beanie': return { b: '', f: `<path d="M-29 427Q-30 392 0 390Q30 392 29 427Z" fill="${bc}"/><rect x="-30" y="420" width="60" height="12" rx="6" fill="${lt(bc, 0.35)}"/><path d="M-20 424v6M-10 424v6M0 424v6M10 424v6M20 424v6" stroke="${dk(bc, 0.2)}" stroke-width="2"/><circle cx="0" cy="388" r="8" fill="${lt(bc, 0.5)}"/>`, o: '' };
     case 'grey':
-      /* седые волосы с объёмом на макушке и висками (раньше: лысина с боковыми прядями) */
-      return { b: '', f: `<path d="M-29 436Q-36 404 -16 396Q0 388 16 396Q36 404 29 436Q24 420 16 412Q0 406 -16 412Q-24 420 -29 436Z" fill="${h}"/><path d="M-12 399q6 -5 12 0M3 397q6 -5 12 1" fill="none" stroke="${dk(h, 0.2)}" stroke-width="2.2"/>`, o: '' };
+      /* 32-В2: седая шапка волос целиком (раньше контур без заливки на макушке), объём над макушкой, три пряди внутри массы */
+      return { b: '', f: `<path d="M-32 437Q-41 405 -17 396Q0 389 17 396Q36 404 30 437Q27 424 19 419Q9 416.5 0 417.5Q-9 417 -19 419.5Q-28 424 -32 437Z" fill="${h}"/><path d="M-16 401Q-8 395.5 0 398M3 396Q11 394 18 400M-11 408Q-3 404.5 6 406" fill="none" stroke="${dk(h, 0.18)}" stroke-width="2"/>`, o: '' };
     case 'crop':
-      /* ёжик: прилегает к голове, нет чёлки, виски светлее и короче, «щетина» на макушке */
-      return { b: '', f: `<path d="M-27 430Q-30 401 0 399Q30 401 27 430Q22 421 15 415Q0 411 -15 415Q-22 421 -27 430Z" fill="${h}"/><path d="M-27 430Q-26 424 -22 420M27 430Q26 424 22 420" fill="none" stroke="${lt(h, 0.4)}" stroke-width="2.5"/><path d="M-8 405v4M0 403v4M8 405v4" stroke="${dk(h, 0.3)}" stroke-width="1.8" fill="none"/>`, o: '' };
+      /* ёжик: плотно к голове, ниже short, нет чёлки; виски того же цвета, короткие штрихи «машинки» на макушке */
+      return { b: '', f: `<path d="M-27.5 431Q-30 403 0 401Q30 403 27.5 431Q24 421 16 416.5Q0 413 -16 416.5Q-24 421 -27.5 431Z" fill="${h}"/><path d="M-9 408v4M0 406v4M9 408v4" fill="none" stroke="${dk(h, 0.3)}" stroke-width="1.8"/>`, o: '' };
     case 'sidepart':
-      /* короткая с чётким боковым пробором: объём слева, линия пробора правее центра */
-      return { b: '', f: `<path d="M-29 432Q-36 398 -8 394Q22 392 28 424Q28 430 27 432Q22 418 10 412Q-2 410 -12 418Q-20 416 -29 432Z" fill="${h}"/><path d="M9 396Q12 404 8 412" fill="none" stroke="${dk(h, 0.4)}" stroke-width="2.2"/>`, o: '' };
+      /* короткая с чётким боковым пробором: объём слева, чёлка изгибом через лоб, линия пробора правее центра */
+      return { b: '', f: `<path d="M-29 434Q-32 399 -8 395Q20 392 28 420Q28 427 27 434Q25 421 14 416Q6 413.5 0 414.5Q-8 415.5 -14 419.5Q-22 421.5 -29 434Z" fill="${h}"/><path d="M9 396Q12 405 7 414" fill="none" stroke="${dk(h, 0.4)}" stroke-width="2.2"/><path d="M-22 411Q-14 401 -4 401" fill="none" stroke="${dk(h, 0.25)}" stroke-width="2"/>`, o: '' };
     case 'braid': {
       /* одна коса через плечо вперёд (читается и стоя, и за ноутбуком), резинка другого цвета; висит как hairBack */
       const beads = [[-33, 440], [-36, 452], [-33, 464], [-36, 476], [-34, 486]].map((p) => `<ellipse cx="${p[0]}" cy="${p[1]}" rx="6.5" ry="8" fill="${h}"/>`).join('');
       return { b: `${beads}<rect x="-40" y="486" width="11" height="5" rx="2" fill="${tieOf(h)}" stroke-width="2"/><ellipse cx="-34" cy="492" rx="4.5" ry="4" fill="${h}"/>`, f: top, o: '' };
     }
     case 'wavy':
-      /* волны до плеч: объём ниже ушей, S-образный контур; впереди волнистая линия чёлки */
+      /* волны до плеч: объём ниже ушей, S-образный контур; впереди волнистая чёлка (волны разной величины) */
       return {
         b: `<path d="M-31 432Q-42 404 0 397Q42 404 31 432Q42 450 36 462Q44 474 34 482Q26 476 22 470L-22 470Q-26 476 -34 482Q-44 474 -36 462Q-42 450 -31 432Z" fill="${h}"/>`,
-        f: `<path d="M-28 430Q-33 398 0 396Q33 398 28 430Q24 420 18 418Q14 424 8 418Q2 424 -4 417Q-10 423 -16 417Q-22 422 -28 430Z" fill="${h}"/>`,
+        f: `<path d="M-28 437Q-38 398 0 396Q33 398 28 431Q25 421 18.5 417.5Q14 421.5 8.5 416.5Q3 420.5 -3 415.5Q-9 419.5 -15 415Q-22 419.5 -28 437Z" fill="${h}"/>`,
         o: ''
       };
     default: return { b: '', f: top, o: '' }; /* short */
@@ -85,16 +90,22 @@ export const hairBackKind = (s: HairStyle): HairBackKind | null => (s === 'pony'
  * Верх головы по причёскам (y в координатах головы до масштаба 1,1; по нему стоят пузырь и реплика).
  * Значения равны верху рисунка hairLayers (проверяет test/peopleArt.test.ts); у beanie помпон выше шапки на 10, его не считаем.
  */
-export const HEAD_TOP: Readonly<Record<HairStyle, number>> = { short: 397, grey: 392, crop: 399, sidepart: 394, bob: 397, bun: 379, braid: 397, pony: 397, long: 396, curly: 392, wavy: 396, beanie: 390 };
+export const HEAD_TOP: Readonly<Record<HairStyle, number>> = { short: 397, grey: 392.5, crop: 401, sidepart: 394.8, bob: 397, bun: 379, braid: 397, pony: 397, long: 394, curly: 390.5, wavy: 396, beanie: 390 };
 /** Верх дужки наушников вместе с обводкой (путь до y 394, обводка 8, бирюзовая линия 4). */
 export const BAND_TOP = 390;
 export const headTopOf = (l: Pick<Look, 'hair' | 'acc'>): number => (l.acc === 'headphones' ? Math.min(HEAD_TOP[l.hair], BAND_TOP + 0.5) : HEAD_TOP[l.hair]);
 
 /** Рты настроений (для проверки бороды). Борода идёт вокруг рта и никогда его не закрывает. */
 export const MOUTH_PATHS: Readonly<Record<MoodId, string>> = { neutral: MOOD.neutral.m, happy: MOOD.happy.m, joy: MOOD.joy.m, wait: MOOD.wait.m, annoyed: MOOD.annoyed.m, angry: MOOD.angry.m };
-export const BEARD_D = 'M-27 436Q-28 470 0 473Q28 470 27 436L22 441L13 446.5L14.5 449Q15 461 0 462Q-15 461 -14.5 449L-13 446.5L-22 441Z';
-export const BEARD_PATH = (c: string): string => `<path d="${BEARD_D}" fill="${c}" stroke-width="2.5"/>`;
-export const MOUSTACHE_PATH = (c: string): string => `<path d="M-11 446Q-5 440 0 444Q5 440 11 446Q5 451 0 447Q-5 451 -11 446Z" fill="${c}" stroke-width="2"/>`;
+export const BEARD_D = 'M-26.5 434Q-28 451 -21 461Q-12 472 0 472Q12 472 21 461Q28 451 26.5 434Q27 445.5 14 445.5Q0 439 -14 445.5Q-27 445.5 -26.5 434Z';
+export const BEARD_PATH = (c: string): string => `<path d="${BEARD_D}" fill="${c}"/>`;
+/** Ширина рта по настроению и светлая полоска губ: не толще 40 % ширины рта, без своего контура; у открытого рта (joy) губ нет. */
+export const MOUTH_WIDTH: Readonly<Record<MoodId, number>> = { neutral: 12, happy: 16, joy: 20, wait: 10, annoyed: 14, angry: 16 };
+export const LIPS_SHARE = 0.4;
+export const lipsWidth = (m: MoodId): number => (m === 'joy' ? 0 : Math.floor(MOUTH_WIDTH[m] * LIPS_SHARE * 10) / 10);
+export const MOUSTACHE_D = 'M-11 446Q-5 440 0 444Q5 440 11 446Q5 451 0 447Q-5 451 -11 446Z';
+export const MOUSTACHE_PATH = (c: string): string => `<path d="${MOUSTACHE_D}" fill="${c}" stroke-width="2"/>`;
+export const MOODS_FOR_TEST: readonly MoodId[] = ['neutral', 'happy', 'joy', 'wait', 'annoyed', 'angry'];
 
 /** Порядок слоёв головы снизу вверх (docs/design/people.md, таблица); hairBack — отдельный спрайт под головой. */
 export const HEAD_LAYER_ORDER = ['ears', 'face', 'beard', 'features', 'glasses', 'hair', 'band', 'bun', 'cups'] as const;
@@ -170,6 +181,8 @@ export function personParts(o: Look, seat = false): PersonParts {
   const band = o.acc === 'headphones' ? `<path d="M-27 428Q-28 396 0 394Q28 396 27 428" fill="none" stroke-width="8"/><path d="M-27 428Q-28 396 0 394Q28 396 27 428" fill="none" stroke="#4A6B72" stroke-width="4"/>` : '';
   const cups = o.acc === 'headphones' ? `<rect x="-35" y="422" width="12" height="22" rx="6" fill="#4A6B72"/><rect x="23" y="422" width="12" height="22" rx="6" fill="#4A6B72"/>` : '';
   const ears = `<circle cx="-27" cy="438" r="5.5" fill="${sk}"/><circle cx="27" cy="438" r="5.5" fill="${sk}"/>`;
+  /* у бородача рот лежит внутри бороды: узкая светлая полоска губ вдоль рта, без контура */
+  const lips = (mood: MoodId): string => (beard && lipsWidth(mood) > 0 ? `<path d="${MOOD[mood].m}" fill="none" stroke="${sk}" stroke-width="${lipsWidth(mood)}" stroke-linecap="round"/>` : '');
   const headLayers = (mood: MoodId, blink: boolean, gaze: Gaze): Record<HeadLayer, string> => {
     const m = MOOD[mood];
     const eyes = m.h || blink ? `<path d="M-15 438q5 -7 10 0M5 438q5 -7 10 0" fill="none" stroke-width="2.6"/>` : `${eye(-10, -8.5, gaze)}${eye(10, 11.5, gaze)}`;
@@ -177,7 +190,7 @@ export function personParts(o: Look, seat = false): PersonParts {
       ears,
       face: `<circle cx="0" cy="432" r="28" fill="${sk}"/><path d="M14 408Q34 424 20 452Q28 432 14 408Z" fill="${skd}" fill-opacity=".35" stroke="none"/><path d="M-26 424Q-24 414 -18 410" fill="none" stroke="${lt(sk, 0.5)}" stroke-width="3" stroke-opacity=".7"/>`,
       beard,
-      features: `${eyes}<path d="${m.b}" fill="none" stroke-width="2.5"/><path d="${m.m}" fill="${m.f ?? 'none'}" stroke-width="2.5"/>${cheeks}${stache}`,
+      features: `${eyes}<path d="${m.b}" fill="none" stroke-width="2.5"/>${lips(mood)}<path d="${m.m}" fill="${m.f ?? 'none'}" stroke-width="2.5"/>${beard ? '' : cheeks}${stache}`,
       glasses,
       hair: hr.f,
       band,
