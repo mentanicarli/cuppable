@@ -127,6 +127,7 @@ const SEAT32 = { sm_coat: 'l.sex === "m" && l.outfit === "coat"', sm_vest: 'l.se
       await p.context().close();
     }
   };
+  if (mode === 'beardhair') await headTurn([['bh_curly', 'l.sex === "m" && l.facial === "beard" && l.hair === "curly" && l.acc === "none"'], ['bh_short', 'l.sex === "m" && l.facial === "beard" && l.hair === "short" && l.acc === "none"'], ['bh_grey', 'l.sex === "m" && l.facial === "beard" && l.hair === "grey" && l.acc === "none"'], ['bh_beanie', 'l.sex === "m" && l.facial !== "none" && l.facial !== "mustache" && l.hair === "beanie"']], 'bh');
   if (mode === 'eyes') await headTurn(EYES, 'eyes');
   if (mode === 'stubble') await headTurn([['st_m', 'l.sex === "m" && l.age === "adult" && l.acc === "none" && l.facial === "stubble"'], ['st_dark', 'l.sex === "m" && l.facial === "stubble" && l.age === "adult" && l.hair !== "short"'], ['st_senior', 'l.sex === "m" && l.age === "senior" && l.facial === "stubble"'], ['sh_m', 'l.sex === "m" && l.facial === "short"'], ['bd_m', 'l.sex === "m" && l.facial === "beard" && l.acc === "none"'], ['mu_m', 'l.sex === "m" && l.facial === "mustache" && l.acc === "none"']], 'stub');
   if (mode === 'curly') { await headTurn(CURLY, 'curly'); }

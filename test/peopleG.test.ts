@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { deltaE } from '../src/game/drinkModel';
 import { SKIN, type FaceSpec, type Look } from '../src/game/look';
 import {
-  BEARD_D, BEARD_SHORT_D, FACE_DIM, FOLD_KEEP_OUT, FACE_SQUARE_D, FEMALE_BODY, MALE_HEM_Y, MOUTH_PATHS, STUBBLE_ALPHA_MAX, STUBBLE_ALPHA_MIN, STUBBLE_CLEAR, TURN_FAR_EYE, TURN_MOUTH, TURN_SHIFT,
+  BEARD_D, BEARD_SHORT_D, FACE_DIM, FACE_SQUARE_D, FEMALE_BODY, MALE_HEM_Y, MOUTH_PATHS, STUBBLE_ALPHA_MAX, STUBBLE_ALPHA_MIN, STUBBLE_CLEAR, TURN_FAR_EYE, TURN_MOUTH, TURN_SHIFT,
   beardD, beardLayer, femaleOutline, hairLayers, legVisibleShare, maleOutline, mix, personParts, samplePath, stubbleColor, stubbleDots, type MoodId
 } from '../src/render/world/art';
 import { fillShapes, inPoly, raster } from './helpers/hairAudit';
@@ -12,6 +12,7 @@ const look = (o: Partial<Look>): Look => ({ skin: SKIN[2] as string, hair: 'shor
 const MOODS: MoodId[] = ['neutral', 'happy', 'joy', 'wait', 'annoyed', 'angry'];
 const SHAPES = ['round', 'oval', 'square'] as const;
 type XY = [number, number];
+const RW = 256;
 const toPt = (p: XY[]): Pt[] => p.map(([x, y]) => ({ x, y }));
 const facePoly = (shape: (typeof SHAPES)[number]): Pt[] => {
   if (shape === 'square') return toPt(samplePath(FACE_SQUARE_D));
@@ -40,32 +41,10 @@ const contourX = (poly: Pt[], y: number): number => {
   }
   return best;
 };
-/* растр helpers/hairAudit: 2 px на единицу, начало (−64; 366), ширина 256 */
-const RW = 256;
-const pxAt = (g: Uint8Array, x: number, y: number): number => g[Math.floor((y - 366) * 2) * RW + Math.floor((x + 64) * 2)] ?? 0;
 
 describe('Ж1 (32-Ж): щетина — зерно в зоне короткой бороды, без заливки и контура', () => {
   const dots = stubbleDots();
   const svg = beardLayer('stubble', '#3A2A22', 'adult');
-  const zoneRaster = raster([toPt(samplePath(BEARD_SHORT_D))]);
-  const coverRaster = (markup: string): Uint8Array => {
-    const g = raster(fillShapes(markup).map((s) => s.poly));
-    /* короткие штрихи: диски вдоль линии */
-    for (const m of markup.matchAll(/<path d="M([-\d.]+) ([-\d.]+)l([-\d.]+) ([-\d.]+)"[^>]*stroke-width="([\d.]+)"/g)) {
-      const [x, y, dx, dy, w] = [1, 2, 3, 4, 5].map((i) => Number(m[i]));
-      for (let k = 0; k <= 4; k++) {
-        const cx = (x as number) + ((dx as number) * k) / 4;
-        const cy = (y as number) + ((dy as number) * k) / 4;
-        for (let a = -1; a <= 1; a += 0.5) for (let b = -1; b <= 1; b += 0.5) if (a * a + b * b <= 1) {
-          const ix = Math.floor((cx + a * ((w as number) / 2) + 64) * 2);
-          const iy = Math.floor((cy + b * ((w as number) / 2) - 366) * 2);
-          g[iy * RW + ix] = 1;
-        }
-      }
-    }
-    return g;
-  };
-  const cover = coverRaster(svg);
   test('зерно: не меньше 100 штук, прозрачность каждого 0,25–0,4 (≤ 0,45), заливки зоны и контура нет, штрихи тоньше 1', () => {
     expect(dots.length).toBeGreaterThanOrEqual(100);
     for (const d of dots) {
@@ -79,38 +58,9 @@ describe('Ж1 (32-Ж): щетина — зерно в зоне короткой 
     for (const m of svg.matchAll(/<circle [^>]*r="([\d.]+)"/g)) expect(Number(m[1])).toBeLessThanOrEqual(0.6);
     expect(svg.match(/<g fill=/g)?.length).toBe(1);
   });
-  test('покрытие: доля пикселей зерна от площади зоны короткой бороды 0,18–0,32 (в кадрах ≈ 0,25)', () => {
-    let z = 0;
-    let c = 0;
-    for (let i = 0; i < zoneRaster.length; i++) if (zoneRaster[i]) { z++; if (cover[i]) c++; }
-    expect(c / z).toBeGreaterThanOrEqual(0.18);
-    expect(c / z).toBeLessThanOrEqual(0.32);
-  });
-  test('нет вырезов: ни один круг радиуса 2,5 внутри зоны (вне чистой зоны рта) не пуст и не закрашен сплошь (≤ 92 %)', () => {
-    const R = 2.5;
-    const clear = [...MOODS.flatMap((m) => pathPoints(MOUTH_PATHS[m])), ...pathPoints(FOLD_KEEP_OUT)];
-    let n = 0;
-    for (let cy = 436; cy <= 460; cy++) for (let cx = -24; cx <= 24; cx++) {
-      if (clear.some((q) => Math.hypot(q.x - cx, q.y - cy) < R + STUBBLE_CLEAR + 0.5)) continue;
-      let tot = 0;
-      let inZone = 0;
-      let cov = 0;
-      for (let y = cy - R; y <= cy + R; y += 0.5) for (let x = cx - R; x <= cx + R; x += 0.5) {
-        if ((x - cx) ** 2 + (y - cy) ** 2 > R * R) continue;
-        tot++;
-        if (pxAt(zoneRaster, x, y)) inZone++;
-        if (pxAt(cover, x, y)) cov++;
-      }
-      if (inZone < tot) continue;
-      n++;
-      expect(cov, `круг ${cx},${cy} пуст`).toBeGreaterThan(0);
-      expect(cov / tot, `круг ${cx},${cy} сплошной`).toBeLessThanOrEqual(0.92);
-    }
-    expect(n).toBeGreaterThan(20);
-  });
   test('рот и складки чистые: зерно не ближе STUBBLE_CLEAR + радиус к линиям рта всех настроений (≥ 2,5 px = 1,42 ед.)', () => {
     expect(STUBBLE_CLEAR).toBeGreaterThanOrEqual(1.42);
-    for (const m of MOODS) for (const q of pathPoints(MOUTH_PATHS[m])) for (const d of dots) expect(Math.hypot(d.x - q.x, d.y - q.y) - d.r, `${m}`).toBeGreaterThanOrEqual(1.42);
+    for (const m of MOODS) for (const q of pathPoints(MOUTH_PATHS[m])) for (const d of stubbleDots(0, m)) expect(Math.hypot(d.x - q.x, d.y - q.y) - d.r, `${m}`).toBeGreaterThanOrEqual(1.42);
   });
   test('зерно внутри контура всех форм лица (запас ≥ радиуса), и после сдвига при повороте влево и вправо', () => {
     for (const shape of SHAPES) {

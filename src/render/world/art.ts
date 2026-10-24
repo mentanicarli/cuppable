@@ -2,7 +2,7 @@
  * Рисованные персонажи: гости собираются из частей, бариста и мимика.
  * Здесь только SVG-разметка (векторный исходник); в игру части попадают как текстуры (см. rig.ts).
  */
-import { deltaE } from '../../game/drinkModel';
+import { deltaE, labOf } from '../../game/drinkModel';
 import { BARISTA_LOOK, BLUSH_MIN, BLUSH_MOOD, DEFAULT_FACE, SKIN, hasBeard, type Age, type Facial, type FaceSpec, type HairStyle, type Look } from '../../game/look';
 export const INK = '#4A2F25';
 const S = `stroke="${INK}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"`;
@@ -227,73 +227,105 @@ function relPoints(d: string): XY[] {
  * Область рта и складок (расстояние до линий рта, носогубных складок и мешков не меньше STUBBLE_CLEAR) и нос остаются чистыми.
  * Раскладка детерминирована (сетка с дрожанием и матрицей Байера, свой генератор чисел).
  */
-export const STUBBLE_GRID = 1.15;
+export const STUBBLE_GRID = 1.65;
 export const STUBBLE_ALPHA_MIN = 0.25;
 export const STUBBLE_ALPHA_MAX = 0.4;
 export const STUBBLE_CLEAR = 1.75;
+/** Плотность падает только у края зоны: на расстоянии STUBBLE_FADE и дальше от края зерно стоит в каждой клетке сетки. */
+export const STUBBLE_FADE = 2;
 /** Линии, возле которых щетина не рисуется: рты всех настроений. */
 export const MOUTH_KEEP_OUT = 'M-6 450q6 3 12 0M-8 447q8 9 16 0M-10 446q10 14 20 0M-5 451h10M-7 454q7 -5 14 0M-8 456q8 -8 16 0';
 /** Складки пожилых (носогубные, угловые, мешки под глазами) и нос. */
 export const FOLD_KEEP_OUT = [-1, 1].map((sg) => `M${5.6 * sg} 443.9q${5.2 * sg} 1.3 ${6.6 * sg} 8.7M${9.6 * sg} 449.8q${0.8 * sg} 1.8 ${0.4 * sg} 3.6M${5.2 * sg} 443.8q${5.8 * sg} 2.3 ${11.6 * sg} 0`).join('') + 'M-2.6 441.9q2.6 2.2 5.2 0';
 export interface StubbleDot { x: number; y: number; r: number; a: number; dx: number; dy: number }
-let stubbleCache: StubbleDot[] | null = null;
-/** Зерно щетины в координатах анфаса (dx, dy ненулевые — короткий штрих, иначе точка радиуса r). */
-export function stubbleDots(): StubbleDot[] {
-  if (stubbleCache) return stubbleCache;
+const stubbleCache = new Map<string, StubbleDot[]>();
+/** Зерно щетины для конкретного человека: seed считается из Look (stubbleSeed), чисел у Math.random не берёт. */
+export const stubbleSeed = (o: Pick<Look, 'skin' | 'hairCol' | 'hair' | 'outfit' | 'cloth' | 'face'>): number => {
+  let h = 2166136261;
+  for (const ch of `${o.skin}|${o.hairCol}|${o.hair}|${o.outfit}|${o.cloth}|${o.face?.shape ?? ''}`) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+  return h >>> 0;
+};
+/**
+ * Зерно щетины в координатах анфаса (dx, dy ненулевые — короткий штрих, иначе точка радиуса r).
+ * Сетка со сдвигом рядов на полклетки (шестиугольная) и дрожанием ±0,3: нет ни кучек, ни пустот; плотность падает плавно только у края зоны (inclusion по расстоянию до края).
+ */
+export function stubbleDots(seed = 0, mood: MoodId = 'neutral', senior = false): StubbleDot[] {
+  const key = `${seed}|${mood}|${senior ? 1 : 0}`;
+  const cached = stubbleCache.get(key);
+  if (cached) return cached;
   const zone = samplePath(BEARD_SHORT_D);
   const round = Array.from({ length: 72 }, (_, k): XY => [28 * Math.cos((k / 72) * 6.2832), 432 + 28 * Math.sin((k / 72) * 6.2832)]);
   const oval = Array.from({ length: 72 }, (_, k): XY => [FACE_DIM.oval.rx * Math.cos((k / 72) * 6.2832), 432 + FACE_DIM.oval.ry * Math.sin((k / 72) * 6.2832)]);
   const faces = [round, oval, samplePath(FACE_SQUARE_D)];
-  const keep = [...relPoints(MOUTH_KEEP_OUT), ...relPoints(FOLD_KEEP_OUT)];
-  const bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-  let seed = 20240732;
+  /* чисто только вокруг рта текущего настроения и (у пожилых) складок; сетка и числа те же у всех настроений, поэтому зерно вдали от рта не меняется */
+  const keep = [...relPoints(MOOD[mood].m), ...(senior ? relPoints(FOLD_KEEP_OUT) : relPoints('M-2.6 441.9q2.6 2.2 5.2 0'))];
+  let st = (20240732 ^ seed) | 0;
   const rnd = (): number => {
-    seed = (seed + 0x6d2b79f5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    st = (st + 0x6d2b79f5) | 0;
+    let t = Math.imul(st ^ (st >>> 15), 1 | st);
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
   const out: StubbleDot[] = [];
   const G = STUBBLE_GRID;
-  for (let iy = 0; iy < 34; iy++) for (let ix = -26; ix <= 26; ix++) {
-    const jx = (rnd() - 0.5) * 0.35;
-    const jy = (rnd() - 0.5) * 0.35;
-    const x = ix * G + jx + (iy % 2) * G * 0.5;
-    const y = 435 + iy * G + jy;
-    const r0 = 0.42 + rnd() * 0.16;
+  const rowH = G * 0.866;
+  const ox = rnd() * G;
+  const oy = rnd() * rowH;
+  for (let iy = 0; iy < 28; iy++) for (let ix = -20; ix <= 20; ix++) {
+    const jx = (rnd() - 0.5) * 0.4;
+    const jy = (rnd() - 0.5) * 0.4;
+    const x = ix * G + jx + (iy % 2) * G * 0.5 + ox - G / 2;
+    const y = 434 + iy * rowH + jy + oy;
+    const r0 = 0.44 + rnd() * 0.14;
     const kind = rnd();
     const alpha = STUBBLE_ALPHA_MIN + rnd() * (STUBBLE_ALPHA_MAX - STUBBLE_ALPHA_MIN);
     const ang = rnd() * 3.1416;
-    const len = 1 + rnd() * 0.5;
+    const len = 1.1 + rnd() * 0.5;
+    const pick = rnd();
     /* зона: короткая борода плюс полоска над губой */
     const inZone = inPolyXY(zone, x, y) || (Math.abs(x) < 11 && y > 441.8 && y < 446.4);
     if (!inZone) continue;
     if (Math.abs(x) < 4.4 && y < 444.6) continue; /* нос */
-    /* плотность: 0,3 у скул, 1 от y 450, у самого низа лица плавно 0,85 (шея), к краям чуть реже */
-    const u = Math.max(0, Math.min(1, (y - 436) / 14));
-    let d = 0.28 + 0.62 * u * u * (3 - 2 * u);
-    if (y > 456) d *= 0.85;
-    d *= 1 - 0.18 * (Math.abs(x) / 27) ** 2;
-    if (((bayer[(iy & 3) * 4 + (((ix % 4) + 4) % 4)] ?? 0) / 16) * 0.5 + rnd() * 0.5 >= d) continue;
+    /* плавное убывание только у края зоны (к скулам и к шее) */
+    const e = inPolyXY(zone, x, y) ? Math.min(1, distToPoly(zone.map(([zx, zy]): XY => [zx, zy]), x, y) / STUBBLE_FADE) : 1;
+    if (pick >= 0.4 + 0.6 * e * e * (3 - 2 * e)) continue;
     const m = r0 + 0.35;
     /* зерно остаётся внутри контура и после сдвига при повороте (fx = ±TURN_SHIFT) */
     if (!faces.every((f) => [x, beardWarpX(x, TURN_SHIFT), beardWarpX(x, -TURN_SHIFT)].every((xx) => inPolyXY(f, xx, y) && distToPoly(f, xx, y) > m))) continue;
     if (keep.some((q) => Math.hypot(q[0] - x, q[1] - y) < STUBBLE_CLEAR + r0)) continue;
-    const stroke = kind < 0.35;
+    const stroke = kind < 0.4;
     out.push({ x: +x.toFixed(2), y: +y.toFixed(2), r: +r0.toFixed(2), a: +alpha.toFixed(2), dx: stroke ? +(Math.cos(ang) * len).toFixed(2) : 0, dy: stroke ? +(Math.sin(ang) * len * 0.8).toFixed(2) : 0 });
   }
-  stubbleCache = out;
+  stubbleCache.set(key, out);
   return out;
 }
 /** Цвет щетины: у седых серый, у остальных цвет волос. */
 export const stubbleColor = (hairCol: string, age: Age): string => (age === 'senior' ? '#8F8A86' : hairCol);
-export const STUBBLE_PATH = (c: string, fx = 0): string => {
-  const dots = stubbleDots();
+export const STUBBLE_PATH = (c: string, fx = 0, seed = 0, mood: MoodId = 'neutral', senior = false): string => {
+  const dots = stubbleDots(seed, mood, senior);
   const wx = (x: number): number => (fx === 0 ? x : +beardWarpX(x, fx).toFixed(2));
   const circles = dots.filter((d) => !d.dx && !d.dy).map((d) => `<circle cx="${wx(d.x)}" cy="${d.y}" r="${d.r}" fill-opacity="${d.a}"/>`).join('');
   const strokes = dots.filter((d) => d.dx || d.dy).map((d) => `<path d="M${wx(d.x - d.dx / 2)} ${+(d.y - d.dy / 2).toFixed(2)}l${d.dx} ${d.dy}" fill="none" stroke="${c}" stroke-opacity="${d.a}" stroke-width="0.9" stroke-linecap="round"/>`).join('');
   return `<g fill="${c}" stroke="none">${circles}</g>${strokes}`;
 };
+/** Борода отличается от волос по светлоте не меньше чем на BEARD_DE (ΔE76), тон тот же: чуть темнее (у очень тёмных волос светлее), чтобы борода и причёска читались как две детали. */
+export const BEARD_DE = 7;
+const beardColors = new Map<string, string>();
+export function beardColor(hair: string): string {
+  const hit = beardColors.get(hair);
+  if (hit) return hit;
+  const target = labOf(hair)[0] > 30 ? '#000000' : '#FFFFFF';
+  let c = mix(hair, target, 0.6);
+  for (let t = 0.04; t <= 0.6; t += 0.02) {
+    const m = mix(hair, target, t);
+    if (deltaE(m, hair) >= BEARD_DE) { c = m; break; }
+  }
+  beardColors.set(hair, c);
+  return c;
+}
+/** Линия-разделитель борода / волосы: верхний край щеки от виска (контур лица) до скулы, обе стороны; толщина как у линий черт лица. */
+export const SEAM_D = 'M-26.5 434Q-26.775 440.325 -22.97 443.2M26.5 434Q26.775 440.325 22.97 443.2';
+export const SEAM_W = 2.5;
 /** У квадратного лица борода шире на 6 % (контур лица у висков 28,8–29,6, у круглого 28): иначе между бородой и контуром видна кожа. */
 export const SQUARE_BEARD_K = 1.06;
 /** Контур бороды (полной или короткой) для формы лица и сдвига черт fx (0 — анфас). */
@@ -301,9 +333,11 @@ export const beardD = (kind: 'beard' | 'short', shape: FaceSpec['shape'], fx = 0
   const base = kind === 'beard' ? BEARD_D : BEARD_SHORT_D;
   return warped(shape === 'square' ? mapPath(base, (x, y) => [x * SQUARE_BEARD_K, y]) : base, fx);
 };
+/** Разделитель с учётом формы лица и сдвига при повороте (те же преобразования, что у бороды). */
+export const seamSvg = (shape: FaceSpec['shape'], fx = 0): string => `<path d="${warped(shape === 'square' ? mapPath(SEAM_D, (x, y) => [x * SQUARE_BEARD_K, y]) : SEAM_D, fx)}" fill="none" stroke-width="${SEAM_W}" data-seam="1"/>`;
 /** Растительность по виду: слой beard; fx — сдвиг черт при повороте головы (0 — анфас). */
-export const beardLayer = (facial: Facial, hairCol: string, age: Age, fx = 0, shape: FaceSpec['shape'] = 'round'): string =>
-  facial === 'beard' ? `<path d="${beardD('beard', shape, fx)}" fill="${hairCol}"/>` : facial === 'short' ? `<path d="${beardD('short', shape, fx)}" fill="${hairCol}" stroke-width="1.8"/>` : facial === 'stubble' ? STUBBLE_PATH(stubbleColor(hairCol, age), fx) : '';
+export const beardLayer = (facial: Facial, hairCol: string, age: Age, fx = 0, shape: FaceSpec['shape'] = 'round', seed = 0, mood: MoodId = 'neutral'): string =>
+  facial === 'beard' ? `<path d="${beardD('beard', shape, fx)}" fill="${beardColor(hairCol)}"/>${seamSvg(shape, fx)}` : facial === 'short' ? `<path d="${beardD('short', shape, fx)}" fill="${beardColor(hairCol)}" stroke-width="2.5"/>${seamSvg(shape, fx)}` : facial === 'stubble' ? STUBBLE_PATH(stubbleColor(hairCol, age), fx, seed, mood, age === 'senior') : '';
 /** Усы рисуются у усатых, с короткой и полной бородой (срастаются с бородой), у щетины нет. */
 export const hasMustache = (f: Facial): boolean => f === 'mustache' || f === 'short' || f === 'beard';
 /** Ширина рта по настроению и светлая полоска губ: не толще 40 % ширины рта, без своего контура; у открытого рта (joy) губ нет. */
@@ -481,8 +515,9 @@ export function personParts(o: Look, seat = false): PersonParts {
   const hand = (extra: string) => `${extra}<circle cx="0" cy="0" r="8.5" fill="${sk}"/>`;
   const face = o.face ?? DEFAULT_FACE;
   const dark = o.skin === SKIN[4] || o.skin === SKIN[3];
-  const stache = hasMustache(o.facial) ? MOUSTACHE_PATH(o.hairCol) : '';
-  const beard = beardLayer(o.facial, o.hairCol, o.age, 0, face.shape);
+  const stache = hasMustache(o.facial) ? MOUSTACHE_PATH(beardColor(o.hairCol)) : '';
+  const sSeed = stubbleSeed(o);
+
   /* губы светлой линией нужны там, где рот лежит внутри плотной бороды */
   const beardMass = o.facial === 'beard' || o.facial === 'short';
   /** Глаз; k < 1 — дальний при повороте: белок, зрачок и блик сужены по ширине вместе (высота прежняя), зрачок целиком внутри белка, блик внутри зрачка. */
@@ -572,7 +607,7 @@ export function personParts(o: Look, seat = false): PersonParts {
       neck,
       ears: earsSvg(view),
       face: `${faceBase}<path d="M14 408Q34 424 20 452Q28 432 14 408Z" fill="${skd}" fill-opacity=".35" stroke="none"/><path d="M-26 424Q-24 414 -18 410" fill="none" stroke="${lt(sk, 0.5)}" stroke-width="3" stroke-opacity=".7"/>`,
-      beard: view !== 0 ? beardLayer(o.facial, o.hairCol, o.age, fx, face.shape) : beard,
+      beard: beardLayer(o.facial, o.hairCol, o.age, fx, face.shape, sSeed, mood),
       features: view !== 0 ? `<g transform="translate(${fx} 0)">${feat}</g>` : feat,
       glasses: view !== 0 ? glassesSvg(view) : glasses,
       hair: hr.f,

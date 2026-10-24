@@ -3,7 +3,7 @@ import DOC from '../docs/design/people.md?raw';
 import ACTOR from '../src/render/world/actor.ts?raw';
 import * as LOOKMOD from '../src/game/look';
 import { GREY, HAIR_STYLES, SKIN, type Facial, type HairStyle, type Look } from '../src/game/look';
-import { BAND_TOP, BEARD_D, HEAD_LAYER_ORDER, HEAD_TOP, MOUTH_PATHS, hairBackKind, hairLayers, headTopOf, personParts, type MoodId } from '../src/render/world/art';
+import { BAND_TOP, BEARD_D, beardColor, HEAD_LAYER_ORDER, HEAD_TOP, MOUTH_PATHS, hairBackKind, hairLayers, headTopOf, personParts, type MoodId } from '../src/render/world/art';
 import { maxY, minX, minY, pathPoints, shapePoints } from './helpers/geom';
 
 const MOODS: MoodId[] = ['neutral', 'happy', 'joy', 'wait', 'annoyed', 'angry'];
@@ -90,13 +90,13 @@ describe('HEAD_TOP: числа сняты с рисунка', () => {
 });
 
 describe('борода: вокруг рта, рот виден при любом настроении', () => {
-  test('все лица × настроения: борода и усы есть, борода ниже рта по порядку слоёв, цвет = цвет волос (седая у senior)', () => {
+  test('все лица × настроения: борода и усы есть, борода ниже рта по порядку слоёв, цвет = beardColor(волос), 32-З', () => {
     for (const col of ['#3A2A22', '#7A3E2B', GREY]) {
       const p = personParts(mk({ facial: 'beard', hairCol: col, age: col === GREY ? 'senior' : 'adult' }));
       for (const m of MOODS) for (const blink of [false, true]) {
         const h = p.head(m, blink);
-        expect(h).toContain(`<path d="${BEARD_D}" fill="${col}"`);
-        expect(h).toContain(`fill="${col}" stroke-width="2"/>`);
+        expect(h).toContain(`<path d="${BEARD_D}" fill="${beardColor(col)}"`);
+        expect(h).toContain(`fill="${beardColor(col)}" stroke-width="2"/>`);
         expect(h.indexOf(BEARD_D)).toBeLessThan(h.indexOf(MOUTH_PATHS[m]));
       }
     }

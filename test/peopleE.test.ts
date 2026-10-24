@@ -3,7 +3,7 @@ import { deltaE } from '../src/game/drinkModel';
 import { BEARD_KINDS, COMMON_OUTFITS, EARRINGS_SHARE, FEMALE_OUTFITS, GREY, MALE_OUTFITS, OUTFITS_BY_SEX, SKIN, TIGHTS, hasBeard, lookFor, type Age, type Facial, type Look, type PersonType, type Sex } from '../src/game/look';
 import {
   BEARD_D, BEARD_SHORT_D, FACE_DIM, FACE_SQUARE_D, FEMALE_BODY, MALE_BODY, MALE_HEM_Y, MOUTH_PATHS, WRINKLE_ALPHA, WRINKLE_W,
-  beardLayer, chinY, femaleOutline, maleOutline, personParts, type MoodId
+  beardColor, beardLayer, chinY, femaleOutline, maleOutline, personParts, type MoodId
 } from '../src/render/world/art';
 import { inPoly } from './helpers/hairAudit';
 import { pathPoints, type Pt } from './helpers/geom';
@@ -248,8 +248,8 @@ describe('Н4 (32-Е): ступени бороды', () => {
     expect((BEARD_SHORT_D.match(/Q/g) ?? []).length).toBeGreaterThanOrEqual(9);
   });
   test('цвет: у senior седая, у adult цвет волос; борода не выходит за контур лица по бокам; очки и наушники совместимы, слой beard под лицом features и hair', () => {
-    expect(beardLayer('beard', GREY, 'senior')).toContain(`fill="${GREY}"`);
-    expect(beardLayer('short', GREY, 'senior')).toContain(`fill="${GREY}"`);
+    expect(beardLayer('beard', GREY, 'senior')).toContain(`fill="${beardColor(GREY)}"`);
+    expect(beardLayer('short', GREY, 'senior')).toContain(`fill="${beardColor(GREY)}"`);
     for (const k of ['short', 'beard', 'mustache'] as Facial[]) for (const acc of ['glasses', 'headphones', 'none']) for (const hair of ['short', 'crop', 'beanie'] as const) {
       const p = personParts(look({ facial: k, acc, hair, age: 'senior', hairCol: GREY }));
       const L = p.layers;

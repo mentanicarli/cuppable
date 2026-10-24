@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { deltaE, labOf } from '../src/game/drinkModel';
 import { GREY, HAIR_STYLES, SKIN, type HairStyle, type Look } from '../src/game/look';
-import { BEARD_D, MOODS_FOR_TEST, MOUSTACHE_D, MOUTH_PATHS, MOUTH_WIDTH, hairLayers, lipsWidth, personParts, type MoodId } from '../src/render/world/art';
+import { BEARD_D, beardColor, MOODS_FOR_TEST, MOUSTACHE_D, MOUTH_PATHS, MOUTH_WIDTH, hairLayers, lipsWidth, personParts, type MoodId } from '../src/render/world/art';
 import { HAIRLINE_MAX, HAIRLINE_MIN, asymmetry, curls, diffShare, fillShapes, gaps, hairline, inPoly, mass, sideEnd, silhouetteGap } from './helpers/hairAudit';
 import { pathPoints, type Pt } from './helpers/geom';
 
@@ -131,10 +131,10 @@ describe('Н6: борода — единая форма, рот внутри, б
     const beardTop = Math.min(...bd.filter((p) => Math.abs(p.x) < 6).map((p) => p.y));
     expect(Math.abs(top - beardTop)).toBeLessThanOrEqual(2.5);
   });
-  test('три цвета: заливка равна цвету волос (чёрная, каштановая, седая)', () => {
+  test('три цвета: заливка равна beardColor цвета волос (32-З: чуть темнее / светлее)', () => {
     for (const col of ['#2E2E3A', '#7A3E2B', GREY]) {
       const look: Look = { skin: SKIN[1] as string, hair: 'short', hairCol: col, outfit: 'sweater', cloth: '#C4694A', sex: 'm', age: col === GREY ? 'senior' : 'adult', facial: 'beard' };
-      expect(personParts(look).head('neutral')).toContain(`<path d="${BEARD_D}" fill="${col}"/>`);
+      expect(personParts(look).head('neutral')).toContain(`<path d="${BEARD_D}" fill="${beardColor(col)}"/>`);
     }
   });
 });
