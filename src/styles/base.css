@@ -125,9 +125,10 @@ html.kbd button:focus-visible, html.kbd input:focus-visible { outline: 3px solid
 #stage.inbar .say { display: none; }
 @media (prefers-reduced-motion: reduce) { .say { transition: opacity .2s; transform: translate(-50%, 0); } }
 
-/* плашка помощника под шапкой */
-#helperChip { position: absolute; left: 24px; top: 84px; z-index: 3; padding: 6px 12px; border: 3px solid var(--ink); border-radius: 14px; background: #FFF8EC; font-size: 14px; font-weight: 800; box-shadow: 0 3px 0 var(--ink); pointer-events: none; }
+/* плашка помощника под шапкой справа (31-8В): слева стоят тост #toast (left 24, top 70) и реплики гостей; в баре плашки нет, там билет и вывеска */
+#helperChip { position: absolute; right: 24px; top: 84px; z-index: 3; padding: 6px 12px; border: 3px solid var(--ink); border-radius: 14px; background: #FFF8EC; font-size: 14px; font-weight: 800; box-shadow: 0 3px 0 var(--ink); pointer-events: none; }
 #helperChip[hidden] { display: none; }
+#stage.inbar #helperChip { display: none; }
 
 /* заставка, пока рисуется зал */
 #boot { position: absolute; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: #F6EAD6; transition: opacity .45s ease; }

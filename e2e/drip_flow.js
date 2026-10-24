@@ -1,6 +1,6 @@
 /* Капельная кофеварка (блок 31-8Б): купить eq_drip, клик по кофеварке, заварить малую порцию (настоящие 20 с), подать фильтр-кофе гостю,
    колба уменьшилась, расход и выручка, блокировки с тостами, кадры окон; помощник (шаг 4) в этом же сценарии.
-   CHROMIUM_ARGS=--mute-audio node e2e/drip_flow.js dist/artifact.html docs/art/fixes/31-8b   (отладочная сборка) */
+   CHROMIUM_ARGS=--mute-audio node e2e/drip_flow.js dist/artifact.html docs/art/fixes/31-8v   (отладочная сборка) */
 const { chromium } = require('playwright'); const path = require('path'); const fs = require('fs');
 const PW = require('./pw');
 const out = path.resolve(process.argv[3] || 'out/drip'); fs.mkdirSync(out, { recursive: true });
@@ -137,7 +137,9 @@ let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' 
   await p.waitForFunction(() => !__dbg.D.helper.c, null, { timeout: 20000 });
   const hs = (await p.evaluate(() => performance.now()) - th) / 1000;
   ok(hs > 5 && hs < 12, 'помощник налил за оставшиеся секунды из 10 (прошло ' + hs.toFixed(1) + ' с)');
+  await shot('h3_helper_done_hall'); /* 31-8В: гость с чашкой в руке, колба уже уменьшилась; в зале сама колба не видна, расход смотреть на баре (h2) */
   ok(await p.evaluate(() => __dbg.D.carafe.ml === 900 && __dbg.D.stats.served >= 1), 'гость обслужен помощником, из колбы ушло 300 мл');
+  await order('0.3'); await open(); await shot('h2_bar_level_after_helper'); await p.evaluate(() => __dbg.barAbort()); /* бар: колба на 3/4 после налива помощника */
   /* пустая колба: помощник пропускает, гость остаётся, тост один раз */
   await p.evaluate(() => { __dbg.D.carafe.ml = 0; });
   await order('0.3');

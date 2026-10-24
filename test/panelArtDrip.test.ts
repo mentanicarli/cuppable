@@ -15,7 +15,7 @@ describe('окна кофеварки', () => {
       const s = art(t);
       expect(s, t).toContain('data-item="drip"');
       expect(s, t).toContain('id="xpCar"');
-      expect(s, t).toContain('data-full="52"');
+      expect(s, t).toContain('data-full="52.0"');
     }
   });
   test('налив из колбы: стакан с #xpLiq, у окна заварки стакана нет', () => {

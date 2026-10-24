@@ -249,12 +249,12 @@ export interface ArtOpts { task: string; col: string; col2: string; drink?: stri
 /** Кофеварка бара (корпус и колба) и её передний слой; сцена окна 400 × 190: предмет 130 × 160 ставится в (x, 16). */
 const DRIP_ITEM: Box = { x: 859, y: 346, w: 130, h: 160 };
 const CARAFE_IN = { dx: 25, bottom: 140, w: 44, full: 52 }; /* стеклянная колба внутри предмета: левый край, дно от верха предмета, ширина, высота кофе */
-function dripScene(x: number, level: number): string {
-  const y = 16;
-  const body = place(barObject('drip', 'data-item="drip"'), DRIP_ITEM, x, y, 1, '', 0, { src: 1 });
-  const front = place((PARTS_C['dripFront'] as Part).svg.replace(/^<svg[^>]*>/, '').replace(/<\/svg>\s*$/, ''), { x: 878, y: 424, w: 58, h: 68 }, x + 19, y + 78, 1, '', 0, { src: 1 });
-  const cx = x + CARAFE_IN.dx, bottom = y + CARAFE_IN.bottom;
-  const liq = `<rect id="xpCar" data-top="${bottom}" data-full="${CARAFE_IN.full}" data-level="${level.toFixed(3)}" x="${cx}" y="${(bottom - CARAFE_IN.full * level).toFixed(1)}" width="${CARAFE_IN.w}" height="${(CARAFE_IN.full * level).toFixed(1)}" rx="3" fill="${col('CHOC')}" stroke="none"/>`;
+function dripScene(x: number, level: number, k = 1): string {
+  const y = 16 + DRIP_ITEM.h * (1 - k); /* основание на одной линии при любом масштабе */
+  const body = place(barObject('drip', 'data-item="drip"'), DRIP_ITEM, x, y, k, '', 0, { src: 1 });
+  const front = place((PARTS_C['dripFront'] as Part).svg.replace(/^<svg[^>]*>/, '').replace(/<\/svg>\s*$/, ''), { x: 878, y: 424, w: 58, h: 68 }, x + 19 * k, y + 78 * k, k, '', 0, { src: 1 });
+  const cx = x + CARAFE_IN.dx * k, bottom = y + CARAFE_IN.bottom * k, full = CARAFE_IN.full * k;
+  const liq = `<rect id="xpCar" data-top="${bottom.toFixed(1)}" data-full="${full.toFixed(1)}" data-level="${level.toFixed(3)}" x="${cx.toFixed(1)}" y="${(bottom - full * level).toFixed(1)}" width="${(CARAFE_IN.w * k).toFixed(1)}" height="${(full * level).toFixed(1)}" rx="3" fill="${col('CHOC')}" stroke="none"/>`;
   return `${body}${liq}${front}`;
 }
 
@@ -267,7 +267,7 @@ export function panelArt(o: ArtOpts): string {
     case 'drip': {
       /* налив из колбы: кофеварка слева (уровень падает по мере налива), стакан справа; налив растёт через #xpLiq */
       const pre = { base: '', top: 172, full: 140 };
-      return `<g ${WRAP}>${dripScene(20, 0)}${cup(c, '', pre)}</g>`;
+      return `<g ${WRAP}>${dripScene(4, 0)}${cup(c, '', pre)}</g>`;
     }
     case 'layer':
       return layerArt(drink ?? 'orange_bumble', o.size ?? '0.3', o.cold ?? true);

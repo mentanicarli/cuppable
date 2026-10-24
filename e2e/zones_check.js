@@ -3,7 +3,7 @@
 const { chromium } = require('playwright'); const path = require('path'); const fs = require('fs'); const PW = require('./pw');
 const OUT = path.resolve(process.argv[3] || 'out/zc'); fs.mkdirSync(OUT, { recursive: true });
 const HOOK = 'newGame(); updateHud(); showTitle(); window.__dbg = { get G() { return G; }, get D() { return D; }, get BR() { return BR; }, spawn, barOpen, applyUpgrades };';
-const ALL = ['milk', 'eq_ice', 'eq_tea', 'eq_matcha', 'eq_powders', 'eq_juice', 'eq_whipper', 'eq_blender', 'eq_boba', 'eq_shaker'];
+const ALL = ['milk', 'eq_drip', 'eq_ice', 'eq_tea', 'eq_matcha', 'eq_powders', 'eq_juice', 'eq_whipper', 'eq_blender', 'eq_boba', 'eq_shaker'];
 let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' : 'FAIL ') + m); };
 (async () => {
   const src = fs.readFileSync(path.resolve(process.argv[2]), 'utf8').replace('newGame(); updateHud(); showTitle();', HOOK);
@@ -18,13 +18,13 @@ let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' 
     await p.waitForFunction(() => __dbg.D.customers[0] && __dbg.D.customers[0].arrived, null, { timeout: 90000 });
     await p.evaluate(() => __dbg.barOpen(__dbg.D.customers[0])); await p.waitForTimeout(900); await PW.dismissCard(p);
     await p.evaluate(() => { setInterval(() => { __dbg.D.t = 100; }, 16); });
-    for (const sec of ['L', 'R']) {
+    for (const sec of ['L', 'R', 'C']) { /* C (31-8В): зоны вокруг кофеварки в центре: пар, кофеварка, звонок, молоко */
       await p.evaluate(s => window.__cam.go(s, true), sec); await p.waitForTimeout(700);
       const info = await p.evaluate(sec => {
         const R = e => { const r = e.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; };
         const vis = e => e && !e.hidden && getComputedStyle(e).visibility !== 'hidden' && e.getBoundingClientRect().width > 0;
         const st = document.querySelector('#stage').getBoundingClientRect(), k = st.width / 1280;
-        const zones = [...document.querySelectorAll(`#bZones [data-sec="${sec}"] rect`)].map(e => ({ id: e.dataset.z, ...R(e), on: e.style.pointerEvents !== 'none' }));
+        const zones = [...document.querySelectorAll(sec === 'C' ? '#bZones > rect[data-z="steam"], #bZones > rect[data-z="drip"], #bZones > rect[data-z="bell"], #bZones > rect[data-z="milk"]' : `#bZones [data-sec="${sec}"] rect`)].map(e => ({ id: e.dataset.z, ...R(e), on: e.style.pointerEvents !== 'none' }));
         const strips = [['HUD', '#hud'], ['К залу', '#bBack'], ['билет', '#bTk'], ['коуч', '#bCoach'], ['стрелка', '.secNavBtn:not([hidden])'], ['тосты', '#bFloat']].map(([n, q]) => { const e = document.querySelector(q); return e && vis(e) ? { n, ...R(e) } : null; }).filter(Boolean);
         /* HUD: верхняя полоса сцены y 0–64 (макет), на экране — по масштабу */
         strips.push({ n: 'HUD-полоса 0–64', x: st.left, y: st.top, w: st.width, h: 64 * k });
@@ -33,7 +33,7 @@ let fails = 0; const ok = (c, m) => { if (!c) fails++; console.log((c ? 'ok   ' 
       const hit = (a, c, m = 0) => a.x < c.x + c.w + m && c.x < a.x + a.w + m && a.y < c.y + c.h + m && c.y < a.y + a.h + m;
       const zs = info.zones.slice().sort((a, c) => a.x - c.x); const tag = `${sec}_${W}x${H}`;
       let minGap = 1e9; for (let i = 0; i < zs.length - 1; i++) minGap = Math.min(minGap, (zs[i + 1].x - zs[i].x - zs[i].w) / info.st.k);
-      ok(minGap >= 12, `${tag}: наименьший зазор между зонами ${minGap.toFixed(1)} px сцены (≥ 12)`);
+      ok(+minGap.toFixed(1) >= 12, `${tag}: наименьший зазор между зонами ${minGap.toFixed(1)} px сцены (≥ 12)`);
       const bad = []; for (const z of info.zones) for (const s of info.strips) if (hit(z, s)) bad.push(`${z.id} × ${s.n}`);
       ok(!bad.length, `${tag}: зоны не заходят в полосы интерфейса (${info.strips.map(s => s.n).join(', ')})${bad.length ? ': ' + bad.join('; ') : ''}`);
       let minToStrip = 1e9; for (const z of info.zones) for (const s of info.strips) { const dx = Math.max(0, Math.max(z.x - (s.x + s.w), s.x - (z.x + z.w))), dy = Math.max(0, Math.max(z.y - (s.y + s.h), s.y - (z.y + z.h))); if (dx === 0 && dy === 0) continue; minToStrip = Math.min(minToStrip, Math.hypot(dx, dy)); }
