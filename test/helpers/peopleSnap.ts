@@ -55,6 +55,21 @@ export function partsHashWith(fn: PartsFn, look: never, moods: MoodId[] = MOODS)
   }
   return sha(parts.join(''));
 }
+/** Хеш клеток без торса и заднего слоя волос: руки, ноги, ступни, кисти (с вещами в руке). */
+export function cellsHashWith(fn: PartsFn, look: never): string {
+  const parts: string[] = [];
+  for (const seat of [false, true]) {
+    const p = fn(look, seat);
+    for (const c of [...p.cells, ...p.seatCells]) if (c.id !== 'torso' && c.id !== 'hairBack') parts.push(c.id, JSON.stringify(c.box), c.svg);
+  }
+  return sha(parts.join('\u0001'));
+}
+export function torsoHashWith(fn: PartsFn, look: never): string {
+  const p = fn(look, false);
+  return sha(p.cells.filter((c) => c.id === 'torso').map((c) => JSON.stringify(c.box) + c.svg).join('\u0001'));
+}
+export const cellsHash = (look: never): string => cellsHashWith(personParts as unknown as PartsFn, look);
+export const torsoHash = (look: never): string => torsoHashWith(personParts as unknown as PartsFn, look);
 export const partsHash = (look: never, moods: MoodId[] = MOODS): string => partsHashWith(personParts as unknown as PartsFn, look, moods);
 
 export function baristaHash(): string {

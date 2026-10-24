@@ -1,10 +1,11 @@
 import { describe, expect, test } from 'vitest';
 import BASE from './fixtures/people-baseline.json';
-import { UNCHANGED_MOODS, baristaHash, fixedLooks, mulberry, orderStream, partsHash } from './helpers/peopleSnap';
+import LOOKS from './fixtures/look-baseline.json';
+import { baristaHash, cellsHash, fixedLooks, mulberry, orderStream, sha, torsoHash } from './helpers/peopleSnap';
 import { deltaE } from '../src/game/drinkModel';
 import {
-  AGE_SHARE, BARISTA_LOOK, CLOTH, FACIAL_SHARE, FALLBACK_HAT, GREY, HAIR_FEMALE, HAIR_MALE, HAIR_SENIOR_OTHER, HEADPHONES_SHARE, HURRY_CLOTH, HURRY_SUIT_SHARE,
-  LEGACY_DRAWS, SEX_SHARE_M, SKIN, allowedHair, hairColors, hairGroups, lookFor, type Age, type Look, type PersonType
+  AGE_SHARE, BARISTA_LOOK, CLOTH, FACIAL_SHARE, FALLBACK_HAT, GLASSES_BY_AGE, GREY, HAIR_FEMALE, HAIR_MALE, HAIR_SENIOR_OTHER, HURRY_CLOTH, HURRY_SUIT_SHARE,
+  LEGACY_DRAWS, SEX_SHARE_M, SKIN, hairColors, hairFor, headphonesShare, lookFor, type Age, type Look, type PersonType
 } from '../src/game/look';
 import { baristaParts } from '../src/render/world/art';
 
@@ -17,15 +18,21 @@ const draw = (t: PersonType, seed: number): Look[] => {
 const share = (xs: Look[], f: (l: Look) => boolean): number => (xs.filter(f).length / xs.length) * 100;
 const near = (got: number, want: number, tol = 2): void => expect(Math.abs(got - want), `${got.toFixed(2)} vs ${want}`).toBeLessThanOrEqual(tol);
 
-describe('картинка не изменилась (эталон из HEAD до 32-Б)', () => {
-  test('части фигуры у старых внешностей совпадают побитово', () => {
+describe('картинка не изменилась (эталон из кода до 32-Б)', () => {
+  test('руки, ноги, ступни, кисти старых внешностей побитово прежние; торс прежний, кроме свитера и шарфа (32-Д: шея и воротник)', () => {
     const looks = fixedLooks('headphones').map((l) => ({ ...l, sex: 'f', age: 'adult', facial: l.mustache ? 'mustache' : 'none' } as Record<string, unknown>));
-    /* с 32-Г у neutral и happy есть брови: хеш прежних образцов считается по остальным настроениям (эталон пересчитан из кода до 32-Б) */
-    const got = looks.map((l) => partsHash(l as never, UNCHANGED_MOODS));
-    /* 32-В намеренно перерисовал grey, long, curly и bob: у них хеш другой, у остальных прежний; наушники получили бирюзовую дужку */
-    const redrawn = looks.map((l) => ['grey', 'long', 'curly', 'bob'].includes(l.hair as string) || l.acc === 'headphones');
-    expect(redrawn.filter(Boolean).length).toBe(7);
-    got.forEach((h, i) => (redrawn[i] ? expect(h).not.toBe(BASE.parts[i]) : expect(h).toBe(BASE.parts[i])));
+    expect(looks.map((l) => cellsHash(l as never))).toEqual(BASE.cells);
+    looks.forEach((l, i) => {
+      const changed = l.outfit === 'sweater' || l.acc === 'scarf';
+      if (changed) expect(torsoHash(l as never)).not.toBe(BASE.torso[i]);
+      else expect(torsoHash(l as never)).toBe(BASE.torso[i]);
+    });
+  });
+  test('внешности по сиду 32 (по 300 на тип) совпадают с эталоном look-baseline.json (пересоздан в 32-Д намеренно: пол, лицо, наушники, очки)', () => {
+    for (const t of TYPES) {
+      const r = mulberry(32);
+      expect(sha(JSON.stringify(Array.from({ length: 300 }, () => lookFor(t, r))))).toBe(LOOKS[t]);
+    }
   });
   test('бариста: части не изменились, BARISTA_LOOK в новом формате', () => {
     expect(baristaHash()).toBe(BASE.barista);
@@ -84,14 +91,14 @@ describe('lookFor: правила генератора (20 000 гостей на
     near(share(seniors, (l) => l.hairCol === GREY), 75, 4);
     for (const l of seniors) if (l.hairCol !== GREY) expect(HAIR_SENIOR_OTHER).toContain(l.hairCol);
   });
-  test('причёски по полу: «своя» группа около 85 %, у beanie есть шапка, ΔE шапки и худи ≥ 15', () => {
+  test('причёски строго по полу (кросс-гендерных нет), косы, хвост, пучок только у женщин; у beanie есть шапка, ΔE шапки и худи ≥ 15', () => {
     for (const t of TYPES) {
-      const men = data[t].filter((l) => l.sex === 'm');
-      const women = data[t].filter((l) => l.sex === 'f');
-      near(share(men, (l) => (HAIR_FEMALE as readonly string[]).includes(l.hair)), 15, 3);
-      near(share(women, (l) => (HAIR_MALE as readonly string[]).includes(l.hair)), 15, 3);
       for (const l of data[t]) {
-        expect(allowedHair(t, l.age)).toContain(l.hair);
+        expect(hairFor(t, l.sex, l.age)).toContain(l.hair);
+        if (l.sex === 'm') expect((HAIR_MALE as readonly string[]).includes(l.hair)).toBe(true);
+        else expect((HAIR_FEMALE as readonly string[]).includes(l.hair)).toBe(true);
+        if (['braid', 'pony', 'bun', 'long', 'wavy', 'bob'].includes(l.hair)) expect(l.sex).toBe('f');
+        if (l.facial !== 'none') expect(l.sex).toBe('m');
         if (l.hair === 'beanie') {
           expect(l.hat).toBeTruthy();
           if (l.hat !== FALLBACK_HAT) expect(deltaE(l.hat as string, l.cloth)).toBeGreaterThanOrEqual(15);
@@ -105,8 +112,13 @@ describe('lookFor: правила генератора (20 000 гостей на
     expect(hats.length).toBeGreaterThan(500);
     expect(share(hats, (l) => l.hat === FALLBACK_HAT)).toBeLessThan(1);
   });
-  test('наушники: у student 35 %, у остальных 5 %; одежда не зависит от пола; у hurry костюм 60 % / пальто 40 %', () => {
-    for (const t of TYPES) near(share(data[t], (l) => l.acc === 'headphones'), HEADPHONES_SHARE[t] * 100, 2);
+  test('наушники: student 35 %, иначе по возрасту (young 20 / adult 5 / senior 1); очки по возрасту (8 / 12 / 35); одежда не зависит от пола; у hurry костюм 60 % / пальто 40 %', () => {
+    for (const t of TYPES) for (const a of ['young', 'adult', 'senior'] as Age[]) {
+      const g = data[t].filter((l) => l.age === a);
+      if (g.length < 800) continue;
+      near(share(g, (l) => l.acc === 'headphones'), headphonesShare(t, a) * 100, 2.5);
+      near(share(g.filter((l) => l.acc !== 'headphones'), (l) => l.acc === 'glasses'), GLASSES_BY_AGE[a] * 100, 3);
+    }
     near(share(data.hurry, (l) => l.outfit === 'suit'), HURRY_SUIT_SHARE * 100);
     for (const t of ['regular', 'student'] as PersonType[]) {
       const m = data[t].filter((l) => l.sex === 'm');
@@ -117,7 +129,7 @@ describe('lookFor: правила генератора (20 000 гостей на
   test('все причёски типа встречаются, нулевых долей нет', () => {
     for (const t of TYPES) {
       const seen = new Set(data[t].map((l) => l.hair));
-      const want = new Set((['young', 'adult', 'senior'] as Age[]).filter((a) => AGE_SHARE[t].some(([x]) => x === a)).flatMap((a) => allowedHair(t, a)));
+      const want = new Set((['young', 'adult', 'senior'] as Age[]).filter((a) => AGE_SHARE[t].some(([x]) => x === a)).flatMap((a) => [...hairFor(t, 'm', a), ...hairFor(t, 'f', a)]));
       expect([...seen].sort()).toEqual([...want].sort());
     }
   });
@@ -140,7 +152,7 @@ describe('число различимых внешностей не меньше
       const hats = [...CLOTH, FALLBACK_HAT].filter((c) => deltaE(c, cloth) >= 15);
       for (const [age] of AGE_SHARE[t]) for (const sex of ['m', 'f'] as const) {
         const facials = sex === 'm' ? FACIAL_SHARE[age].map(([f]) => f) : ['none'];
-        for (const [group] of hairGroups(t, sex, age)) for (const hair of group) {
+        for (const hair of hairFor(t, sex, age)) {
           const cols = hair === 'grey' ? [GREY] : age === 'senior' ? [GREY, ...HAIR_SENIOR_OTHER] : hairColors(hair, age);
           for (const f of facials) {
             const colVisible = hair !== 'beanie' || f !== 'none';
