@@ -32,7 +32,7 @@ const SPECS: Readonly<Record<string, Spec>> = {
   eq_blender: { layers: [side(R, 'blender', 'data-item="blender"')], view: { cx: 618, cy: 397, s: 232 } },
   eq_boba: { layers: [side(L, 'boba', 'data-item="boba"')], view: { cx: 790, cy: 450, s: 150 } },
   eq_shaker: { layers: [side(R, 'shaker', 'data-item="shaker"')], view: { cx: 1088, cy: 455, s: 150 } },
-  eq_drip: { layers: [whole(C, 'drip'), whole(C, 'dripFront')], view: { cx: 332, cy: 342, s: 176 }, line: 0.8 },
+  eq_drip: { layers: [whole(C, 'drip'), whole(C, 'dripFront')], view: { cx: 924, cy: 426, s: 176 }, line: 0.8 },
   eq_ice: { layers: [whole(C, 'ice')], view: { cx: 686, cy: 662, s: 140 }, line: 0.8 },
   eq_case_snacks: { layers: [whole(C, 'showcase'), whole(C, 'scSnacks'), whole(C, 'showcaseGlass')], view: { cx: 327, cy: 665, s: 112 }, line: 0.7 },
   eq_case_pastry: { layers: [whole(C, 'showcase'), whole(C, 'scPastry'), whole(C, 'showcaseGlass')], view: { cx: 458, cy: 665, s: 112 }, line: 0.7 },

@@ -247,14 +247,14 @@ describe('шкала: станции боковых секций (×1,10)', () =
   });
 });
 
-/* Блок 31-8Б: капельная кофеварка в центре бара (×1,0), реальные 24 × 20 × 34 см */
+/* Блок 31-8Б, 31-8В: капельная кофеварка на столешнице в центре бара (×1,0), реальные 28 × 20 × 34 см (с ручкой колбы) */
 describe('шкала: капельная кофеварка (31-8Б)', () => {
-  test('112 × 158 px против 111 × 158 px: отношение 1,01 / 1,00, в допуске 0,75–1,5', () => {
+  test('130 × 160 px против 130 × 158 px (28 × 34 см): отношение 1,00 / 1,01, в допуске 0,75–1,5', () => {
     const m = /data-item="drip" data-box="([\d. ]+)"/.exec((CENTER_PARTS['drip'] as { svg: string }).svg);
     const [, , w, h] = (m?.[1] ?? '').split(' ').map(Number) as [number, number, number, number];
-    expect([w, h]).toEqual([112, 158]);
-    expect(w / (24 * S_BAR)).toBeGreaterThanOrEqual(0.75);
-    expect(w / (24 * S_BAR)).toBeLessThanOrEqual(1.5);
+    expect([w, h]).toEqual([130, 160]);
+    expect(w / (28 * S_BAR)).toBeGreaterThanOrEqual(0.75);
+    expect(w / (28 * S_BAR)).toBeLessThanOrEqual(1.5);
     expect(h / (34 * S_BAR)).toBeGreaterThanOrEqual(0.75);
     expect(h / (34 * S_BAR)).toBeLessThanOrEqual(1.5);
   });

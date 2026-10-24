@@ -108,8 +108,11 @@ describe('29-2: холодильник молока', () => {
     expect(vb(MILK)).toEqual({ x: 1058, y: 236, w: 206, h: 278 });
     expect(inside({ x: 1066, y: 244, w: 190, h: 262 }, vb(MILK))).toBe(true);
     const z = zone('milk');
-    expect(z.x).toBe(1066);
+    /* 31-8В: левый край зоны отступает от корпуса на 8 px (1074 вместо 1066), чтобы между зоной звонка (до 1062) и зоной молока было 12 px; правый край и верх прежние */
+    expect(z.x).toBe(1074);
+    expect(z.x + z.w).toBe(1256);
     expect(z.y).toBe(244);
+    expect(1074 - (1002 + 60)).toBeGreaterThanOrEqual(12);
     expect(count(MILK, "V74L40 58H74L90 74V140Z") + count(MILK, "V74L112 58H138L152 74V140Z")).toBe(2);
     expect(MILK).toContain('<rect x="166" y="96" width="9" height="64"');
     expect(166).toBeGreaterThan(95);

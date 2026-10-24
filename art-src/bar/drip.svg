@@ -1,35 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="272 252 120 176" data-part="drip" data-after="corkBoard" data-scale="1">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="855 342 138 168" data-part="drip" data-after="corkBoard" data-scale="1">
 <!--
-  Капельная кофеварка на стенной полке над матом темпера (блок 31-8Б, раскладка Ц1 из docs/design/filter-coffee.md).
-  Предмет 112 × 158 px в x 276–388, y 252–410 (бытовая кофеварка 24 × 34 см при 4,64 px/см), полка 120 × 18 в x 272–392, y 410–428 (доска и два кронштейна).
+  Капельная кофеварка на столешнице справа от кофемашины (блок 31-8В, раскладка Ц2 из docs/design/filter-coffee.md, раздел 4).
+  Предмет 130 × 160 px в x 859–989, y 346–506 (база y 506 общая с задним рядом бара): 28 × 34,5 см при 4,64 px/см, шире и ниже прежней 112 × 158 на стенной полке (она убрана).
   Тёмный корпус: голова с кнопкой, колонна с окошком воды, подогрев; стеклянная колба с ручкой слева стоит на подогреве. Уровень кофе в колбе рисует код (прямоугольник
-  x 298–336, дно y 392, полная высота 52 px до y 340) между этой частью и передней (dripFront: блики). Подписей нет, контур L/M/D, цвета из палитры.
+  x 884–928, дно y 486, полная высота 52 px до y 434) между этой частью и передней (dripFront: блики и деления). Подписей нет, контур L/M/D, цвета из палитры.
 -->
 <g stroke="{{INK}}" stroke-linejoin="round" stroke-linecap="round">
-<g data-item="drip" data-box="276 252 112 158">
-<rect x="342" y="262" width="44" height="134" rx="8" fill="{{DARK}}" stroke-width="{{M}}"/>
-<rect x="354" y="282" width="20" height="56" rx="6" fill="{{GLASS}}" stroke-width="{{D}}"/>
-<rect x="356" y="312" width="16" height="24" rx="4" fill="{{DUSTY}}" stroke="none"/>
-<path d="M349 274V386" fill="none" stroke="{{STEEL_SH}}" stroke-opacity=".6" stroke-width="{{L}}"/>
-<rect x="292" y="252" width="96" height="38" rx="10" fill="{{DARK}}" stroke-width="{{M}}"/>
-<path d="M300 259H358" fill="none" stroke="{{STEEL_HI}}" stroke-opacity=".45" stroke-width="{{L}}"/>
-<circle cx="372" cy="272" r="5" fill="{{MUSTARD}}" stroke-width="{{D}}"/>
-<rect x="308" y="290" width="40" height="6" rx="2" fill="{{STEEL}}" stroke-width="{{D}}"/>
-<path d="M306 296H350L344 316H312Z" fill="{{STEEL_HI}}" stroke-width="{{M}}"/>
-<path d="M314 304H342" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
-<rect x="324" y="316" width="6" height="6" rx="2" fill="{{STEEL}}" stroke-width="{{D}}"/>
-<path d="M327 322V326" fill="none" stroke="{{CHOC}}" stroke-width="{{M}}"/>
-<rect x="278" y="396" width="110" height="14" rx="5" fill="{{DARK}}" stroke-width="{{M}}"/>
-<path d="M286 400H380" fill="none" stroke="{{STEEL_SH}}" stroke-opacity=".7" stroke-width="{{D}}"/>
-<path d="M292 330H342L338 392Q338 396 333 396H301Q296 396 296 392Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
-<path d="M292 342Q276 344 278 364Q280 382 296 384" fill="none" stroke-width="{{M}}"/>
-<rect x="296" y="322" width="46" height="8" rx="3" fill="{{DARK}}" stroke-width="{{M}}"/>
-</g>
-<g data-shelf="1">
-<path d="M284 420V428L296 420Z" fill="{{WOOD_SH}}" stroke-width="{{D}}"/>
-<path d="M380 420V428L368 420Z" fill="{{WOOD_SH}}" stroke-width="{{D}}"/>
-<rect x="272" y="410" width="120" height="10" rx="3" fill="{{WOOD}}" stroke-width="{{M}}"/>
-<path d="M278 414H386" fill="none" stroke="{{WOOD_HI}}" stroke-width="{{D}}"/>
+<ellipse cx="924" cy="508" rx="62" ry="4" fill="{{INK}}" fill-opacity=".16" stroke="none"/>
+<g data-item="drip" data-box="859 346 130 160">
+<rect x="936" y="356" width="51" height="136" rx="8" fill="{{DARK}}" stroke-width="{{M}}"/>
+<rect x="950" y="386" width="23" height="57" rx="6" fill="{{GLASS}}" stroke-width="{{D}}"/>
+<rect x="952" y="417" width="19" height="24" rx="4" fill="{{DUSTY}}" stroke="none"/>
+<path d="M944 368V482" fill="none" stroke="{{STEEL_SH}}" stroke-opacity=".6" stroke-width="{{L}}"/>
+<rect x="878" y="346" width="111" height="38" rx="10" fill="{{DARK}}" stroke-width="{{M}}"/>
+<path d="M887 353H954" fill="none" stroke="{{STEEL_HI}}" stroke-opacity=".45" stroke-width="{{L}}"/>
+<circle cx="970" cy="366" r="5" fill="{{MUSTARD}}" stroke-width="{{D}}"/>
+<rect x="896" y="384" width="46" height="6" rx="2" fill="{{STEEL}}" stroke-width="{{D}}"/>
+<path d="M894 391H945L938 411H903Z" fill="{{STEEL_HI}}" stroke-width="{{M}}"/>
+<path d="M903 399H936" fill="none" stroke="{{STEEL_SH}}" stroke-width="{{D}}"/>
+<rect x="915" y="411" width="7" height="6" rx="2" fill="{{STEEL}}" stroke-width="{{D}}"/>
+<path d="M919 417V421" fill="none" stroke="{{CHOC}}" stroke-width="{{M}}"/>
+<rect x="861" y="492" width="128" height="14" rx="5" fill="{{DARK}}" stroke-width="{{M}}"/>
+<path d="M871 496H980" fill="none" stroke="{{STEEL_SH}}" stroke-opacity=".7" stroke-width="{{D}}"/>
+<path d="M878 424H936L931 487Q931 491 925 491H888Q882 491 882 487Z" fill="{{GLASS}}" stroke-width="{{M}}"/>
+<path d="M878 436Q859 438 861 459Q863 478 882 480" fill="none" stroke-width="{{M}}"/>
+<rect x="882" y="417" width="53" height="8" rx="3" fill="{{DARK}}" stroke-width="{{M}}"/>
 </g>
 </g>
 </svg>

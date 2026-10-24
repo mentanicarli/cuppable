@@ -72,7 +72,7 @@ export interface BarUpgrades {
   pitcher: boolean;
   /** полка сиропов: сиропы открываются рангом (31-7) */
   syrups: boolean;
-  /** капельная кофеварка на стенной полке: покупка eq_drip (31-8Б) */
+  /** капельная кофеварка на столешнице справа от кофемашины: покупка eq_drip (31-8Б, 31-8В) */
   drip: boolean;
 }
 
@@ -241,7 +241,7 @@ export class BarScene {
     /* стена и столешница (29-4) вырезаны из static; вывеска, доска, полка с растением и стойка сиропов (29-3) тоже; вордмарк бренда отдельной частью поверх плашки; в static остались только подписи (Pixi-текст), рисуются выше */
     for (const id of ['wall', 'counterTop', 'plantShelf', 'corkBoard', 'sign', 'wordmark']) spr(id);
     this.syrupShelf = spr('syrupShelf');
-    /* капельная кофеварка на стене над матом темпера: полка и корпус, под ними не рисуем ничего; кофе в колбе — между drip и dripFront */
+    /* капельная кофеварка на столешнице (31-8В): корпус с колбой; кофе в колбе — между drip и dripFront */
     this.drip.addChild(spr('drip', this.drip), this.dripLiq, spr('dripFront', this.drip));
     R.addChild(this.drip);
     txt('static', R);
@@ -292,6 +292,10 @@ export class BarScene {
     pm.position.set(940, 514);
     pm.addChild(this.pitLvl.root);
     this.pitcher.addChild(pm);
+    /* 31-8В: питчер ×0,7 стоит на переднем крае столешницы под кофеваркой (рамка 880, 530, 91 × 77), якорь (940, 514) переехал в (922, 595,8) */
+    this.pitcher.pivot.set(940, 514);
+    this.pitcher.position.set(922, 595.8);
+    this.pitcher.scale.set(0.7);
     R.addChild(this.pitcher);
 
     this.bell.position.set(1032, 526);
@@ -637,7 +641,10 @@ export class BarScene {
       this.lastDrip = f.dripLevel;
       const h = Math.round(52 * Math.min(1, Math.max(0, f.dripLevel)));
       this.dripLiq.clear();
-      if (h > 0) this.dripLiq.roundRect(298, 392 - h, 38, h, 3).fill(hexNum(PAL.colors.CHOC));
+      if (h > 0) {
+        this.dripLiq.roundRect(884, 486 - h, 44, h, 3).fill(hexNum(PAL.colors.CHOC));
+        this.dripLiq.moveTo(886, 486 - h + 1.5).lineTo(926, 486 - h + 1.5).stroke({ width: 2, color: hexNum(PAL.colors.HILITE), alpha: 0.55 });
+      }
     }
     const bs = f.bell ? 1 + f.bell : 1;
     this.bell.scale.set(bs);

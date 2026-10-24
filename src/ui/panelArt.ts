@@ -246,13 +246,13 @@ function receiverLayersSpec(drink: string | undefined, size: string | undefined,
 export interface ArtOpts { task: string; col: string; col2: string; drink?: string; size?: string; cold?: boolean }
 
 /** Иллюстрация к шагу. Налив растёт через #xpLiq (его высоту ставит panelUpdate по data-top / data-full). */
-/** Кофеварка бара (корпус, колба, полка не нужна в окне, но она часть группы) и её передний слой; сцена окна 400 × 190: предмет 112 × 158 ставится в (x, 16). */
-const DRIP_ITEM: Box = { x: 276, y: 252, w: 112, h: 158 };
-const CARAFE_IN = { dx: 22, bottom: 140, w: 38, full: 52 }; /* стеклянная колба внутри предмета: левый край, дно от верха предмета, ширина, высота кофе */
+/** Кофеварка бара (корпус и колба) и её передний слой; сцена окна 400 × 190: предмет 130 × 160 ставится в (x, 16). */
+const DRIP_ITEM: Box = { x: 859, y: 346, w: 130, h: 160 };
+const CARAFE_IN = { dx: 25, bottom: 140, w: 44, full: 52 }; /* стеклянная колба внутри предмета: левый край, дно от верха предмета, ширина, высота кофе */
 function dripScene(x: number, level: number): string {
   const y = 16;
   const body = place(barObject('drip', 'data-item="drip"'), DRIP_ITEM, x, y, 1, '', 0, { src: 1 });
-  const front = place((PARTS_C['dripFront'] as Part).svg.replace(/^<svg[^>]*>/, '').replace(/<\/svg>\s*$/, ''), { x: 292, y: 330, w: 50, h: 66 }, x + 16, y + 78, 1, '', 0, { src: 1 });
+  const front = place((PARTS_C['dripFront'] as Part).svg.replace(/^<svg[^>]*>/, '').replace(/<\/svg>\s*$/, ''), { x: 878, y: 424, w: 58, h: 68 }, x + 19, y + 78, 1, '', 0, { src: 1 });
   const cx = x + CARAFE_IN.dx, bottom = y + CARAFE_IN.bottom;
   const liq = `<rect id="xpCar" data-top="${bottom}" data-full="${CARAFE_IN.full}" data-level="${level.toFixed(3)}" x="${cx}" y="${(bottom - CARAFE_IN.full * level).toFixed(1)}" width="${CARAFE_IN.w}" height="${(CARAFE_IN.full * level).toFixed(1)}" rx="3" fill="${col('CHOC')}" stroke="none"/>`;
   return `${body}${liq}${front}`;

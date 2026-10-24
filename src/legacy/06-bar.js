@@ -7,7 +7,7 @@ const pitCapOf = rc => rc.milk && !rc.cupMilk ? Math.max(330, Math.ceil((rc.milk
 const MILKY = new Set(['cappuccino', 'latte', 'flatwhite', 'raf', 'rafhalva']);
 const TASK_NAME = MENUAPI.TASK_NAME;
 const SYR = Object.fromEntries(MENUAPI.SYRUPS.filter(s => MENUAPI.SYRUP_META[s.name]).map(s => { const m = MENUAPI.SYRUP_META[s.name]; return [m.key, { name: s.name, short: m.short, col: m.col, z: 'syrup', rank: s.rank, recipe: MENUAPI.RECIPE_SYRUPS.has(s.name) }]; }));
-const ZONE_POS = { grind: [160, 330], tamp: [330, 496], shot: [630, 380], water: [500, 336], ice: [680, 676], food: [405, 676], micro: [932, 676], milk: [1160, 380], steam: [836, 420], pour: [630, 430], bell: [1032, 500], syrup: [968, 250], syr1: [902, 250], syr2: [968, 250], syr3: [1034, 250], drip: [332, 335] };
+const ZONE_POS = { grind: [160, 330], tamp: [330, 496], shot: [630, 380], water: [500, 336], ice: [680, 676], food: [405, 676], micro: [932, 676], milk: [1160, 380], steam: [836, 420], pour: [630, 430], bell: [1032, 500], syrup: [968, 250], syr1: [902, 250], syr2: [968, 250], syr3: [1034, 250], drip: [924, 428] };
 /* центры зон боковых станций (секция-локальные координаты SIDE_ZONES → мировые); зоны в центре больше не рисуются */
 MENUAPI.SIDE_ZONES.forEach(z => { ZONE_POS[z.id] = MENUAPI.sideZoneCenter(z); });
 const WEIGHT = MENUAPI.WEIGHT;

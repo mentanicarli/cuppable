@@ -80,10 +80,10 @@ const C1 = {
 };
 /* Ц2: на столешнице справа от кофемашины вместо питчера; питчер ×0,7 уходит на передний край столешницы, зоны пара и звонка уже */
 const C2 = {
-  title: 'Ц2. Центр: справа от кофемашины, питчер (×0,7) переезжает вперёд, зоны пара и звонка уже',
+  title: 'Ц2 (31-8В). Центр: кофеварка 130 × 160 справа от кофемашины, питчер (×0,7) на переднем крае, зоны пара, звонка и молока уже',
   arrow: null, gap: null,
-  items: [...CENTER_BASE.map((b) => (b.id === 'pitcher' ? { ...b, x: 880, y: 530, w: 91, h: 77 } : b)), { id: 'drip', name: 'КОФЕВАРКА', x: 868, y: 348, w: 112, h: 158, isNew: true }],
-  zones: [...CENTER_ZONES.map((z) => (z.id === 'z:steam' ? { ...z, w: 76 } : z.id === 'z:bell' ? { ...z, x: 992, w: 88 } : z)), { id: 'z:drip', name: 'зона кофеварки', x: 868, y: 338, w: 112, h: 176, isNew: true }],
+  items: [...CENTER_BASE.map((b) => (b.id === 'pitcher' ? { ...b, x: 880, y: 530, w: 91, h: 77 } : b)), { id: 'drip', name: 'КОФЕВАРКА', x: 859, y: 346, w: 130, h: 160, isNew: true }],
+  zones: [...CENTER_ZONES.map((z) => (z.id === 'z:steam' ? { ...z, w: 71 } : z.id === 'z:bell' ? { ...z, x: 1002, w: 60 } : z.id === 'z:milk' ? { ...z, x: 1074, w: 182 } : z)), { id: 'z:drip', name: 'зона кофеварки', x: 859, y: 336, w: 130, h: 184, isNew: true }],
   extra: []
 };
 const COMBOS = [['без молока и сливок, ранг 1', {}], ['ранг 2, сиропы', { rank2: true }], ['молоко (холодильник и питчер)', { milk: true, milkOrCream: true, rank2: true }], ['только сливки (питчер)', { milkOrCream: true, rank2: true }]];
@@ -133,7 +133,7 @@ function svgOf(v) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" font-family="Nunito, Arial, sans-serif">${r.join('')}</svg>`;
 }
 
-const variants = [['A_right', A], ['B_left', B], ['C1_shelf', C1], ['C2_right', C2]];
+const variants = process.env.ONLY_C2 ? [['C2_table', C2]] : [['A_right', A], ['B_left', B], ['C1_shelf', C1], ['C2_right', C2]];
 const b = await chromium.launch({ ...(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}) });
 const page = await b.newPage({ viewport: { width: 1280, height: 720 } });
 for (const [name, v] of variants) {
