@@ -8,6 +8,7 @@ import { drinkIconPx } from './drinkModel';
 import { TexCache, modelTexKey } from './texCache';
 import { cupTexture } from './cupTex';
 import { tableCupDy } from './cupPlan';
+import { renderStyle } from '../../game/look';
 import { hasSteam, specOf, type ModelRef } from '../../game/drinkModel';
 import { readableOn } from '../../game/contrast';
 
@@ -274,7 +275,7 @@ export class Actor {
     this.inner.addChild(this.back.root, this.front.root, this.cupHolder, this.bubble);
     this.root.addChild(sh, this.inner);
     this.k = o.scale ?? 1;
-    this.headTop = HEAD_TOP[o.look.hair] ?? 397;
+    this.headTop = HEAD_TOP[renderStyle(o.look.hair)] ?? 397;
     this.root.pivot.set(0, 600);
     this.root.position.set(o.x, 600);
     this.root.scale.set(this.k);

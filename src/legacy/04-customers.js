@@ -10,7 +10,7 @@ function spawn() {
   const drink = order.key;
   /* терпение зависит от сложности заказа (estimatedPrepSeconds), дня игры и случайного множителя гостя; заказ уже известен */
   const max = MENUAPI.patienceMax(type, { cozy: !!G.cozy, helper: !!G.helper, prep: MENUAPI.estimatedPrepSeconds(order), day: G.day, rng: Math.random });
-  const c = { id: ++D.idc, type, drink, max, pat: max, leaving: false, lastW: -1, look: ART.look(type), wk: 0, ty: 0, mood: 'neutral', arrived: false, walkOn: false, order, strong: order.strong, syrup: order.syrup ? order.syrup.shelf : null, pumps: order.syrup ? order.syrup.pumps : 1, art: Math.random() < .5 ? 'heart' : 'leaf' };
+  const c = { id: ++D.idc, type, drink, max, pat: max, leaving: false, lastW: -1, look: ART.look(type, Math.random), wk: 0, ty: 0, mood: 'neutral', arrived: false, walkOn: false, order, strong: order.strong, syrup: order.syrup ? order.syrup.shelf : null, pumps: order.syrup ? order.syrup.pumps : 1, art: Math.random() < .5 ? 'heart' : 'leaf' };
   const tags = [];
   const multi = Object.keys(MENUAPI.drinkById[order.id].sizes).length > 1;
   if (multi && order.size !== '0.2') tags.push({ text: String(order.size).replace('.', ',') + ' л', color: MENUAPI.TAG_BG.size });

@@ -2,6 +2,7 @@
  * Рисованные персонажи: гости собираются из частей, бариста и мимика.
  * Здесь только SVG-разметка (векторный исходник); в игру части попадают как текстуры (см. rig.ts).
  */
+import { BARISTA_LOOK, renderStyle, SKIN, type Look } from '../../game/look';
 export const INK = '#4A2F25';
 const S = `stroke="${INK}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"`;
 
@@ -13,10 +14,7 @@ export const mix = (a: string, b: string, t: number): string => {
 };
 const dk = (h: string, t = 0.22) => mix(h, '#3A1F18', t);
 const lt = (h: string, t = 0.3) => mix(h, '#FFF4E0', t);
-export const SKIN = ['#F5D0AE', '#EBC09A', '#D9A67E', '#B98160', '#A26C49'];
-const HAIR = ['#3A2A22', '#7A3E2B', '#C99028', '#2E2E3A', '#A55B3A', '#CFC4B4'];
-const CLOTH = ['#C4694A', '#93A684', '#E8B04A', '#7FA3A8', '#8A5A6E', '#D98C5F', '#5F7A8A', '#B85C3F'];
-const pick = <T,>(a: readonly T[]): T => a[Math.floor(Math.random() * a.length)] as T;
+export { SKIN, lookFor, type Look } from '../../game/look';
 
 const arm = (d: string, c: string, w = 11) =>
   `<path d="${d}" stroke="${INK}" stroke-width="${w + 6}" fill="none"/><path d="${d}" stroke="${c}" stroke-width="${w}" fill="none"/>`;
@@ -62,28 +60,6 @@ function outfit(kind: string, c: string, w: number): { back: string; torso: stri
   }
 }
 
-export interface Look {
-  skin: string;
-  hair: string;
-  hairCol: string;
-  outfit: string;
-  cloth: string;
-  hat?: string;
-  pants?: string;
-  shoe?: string;
-  acc?: string;
-  item?: string;
-  build?: string;
-  mustache?: boolean;
-}
-
-export const LOOKS: Readonly<Record<string, () => Look>> = {
-  regular: () => ({ skin: pick(SKIN), hair: pick(['grey', 'short', 'bob', 'bun', 'curly']), hairCol: pick(HAIR), outfit: pick(['coat', 'sweater', 'jacket']), cloth: pick(CLOTH), pants: pick(['#5C4A3E', '#4F4A5A', '#3E4A55']), acc: pick(['glasses', 'scarf', 'none', 'glasses']), item: pick(['tote', 'none']), build: pick(['slim', 'mid', 'round']), mustache: Math.random() < 0.15 }),
-  student: () => ({ skin: pick(SKIN), hair: pick(['beanie', 'long', 'pony', 'curly', 'bun']), hairCol: pick(HAIR), outfit: 'hoodie', cloth: pick(CLOTH), hat: pick(CLOTH), pants: pick(['#4F4A5A', '#6A5B4E', '#3E4A55']), shoe: '#FBF4E8', acc: pick(['backpack', 'phones', 'backpack']), item: 'none', build: pick(['slim', 'mid']) }),
-  hurry: () => ({ skin: pick(SKIN), hair: pick(['short', 'bob', 'pony']), hairCol: pick(HAIR), outfit: 'suit', cloth: pick(['#4A5568', '#5A4A5E', '#3F5A58', '#6B4A44']), pants: '#3A3440', acc: 'none', item: pick(['briefcase', 'phone']), build: pick(['slim', 'mid']) })
-};
-export const lookFor = (type: string): Look => (LOOKS[type] ?? LOOKS['regular'])!();
-
 /** Клетка атласа: кусок разметки в собственных координатах, рамка box — что из него попадёт в текстуру. */
 export interface PartCell { id: string; box: Box; svg: string }
 
@@ -114,7 +90,8 @@ export function personParts(o: Look, seat = false): PersonParts {
   const sk = o.skin;
   const skd = dk(sk, 0.2);
   const ou = outfit(o.outfit, o.cloth, w);
-  const hr = hair(o.hair, o.hairCol, o.hat ?? o.cloth);
+  const rs = renderStyle(o.hair);
+  const hr = hair(rs, o.hairCol, o.hat ?? o.cloth);
   const slv = o.outfit === 'suit' ? dk(o.cloth, 0.1) : o.cloth;
   const pants = o.pants ?? '#4F4A5A';
   const shoe = o.shoe ?? '#2F211B';
@@ -133,7 +110,7 @@ export function personParts(o: Look, seat = false): PersonParts {
   const eye = (cx: number, hl: number, g: Gaze) => `<g><ellipse cx="${cx}" cy="437" rx="4.7" ry="5" fill="#FFFDF6" stroke-width="1.8"/><circle cx="${cx + 0.4 + g.x}" cy="${438 + g.y}" r="2.8" fill="#2F211B" stroke="none"/><circle cx="${hl + g.x}" cy="${436.6 + g.y}" r="1" fill="#fff" stroke="none"/></g>`;
   const glasses = o.acc === 'glasses' ? `<circle cx="-11" cy="437" r="8" fill="#fff" fill-opacity=".28" stroke-width="2.5"/><circle cx="11" cy="437" r="8" fill="#fff" fill-opacity=".28" stroke-width="2.5"/><path d="M-3 436H3M-19 435L-28 432M19 435L28 432" stroke-width="2.5" fill="none"/>` : '';
   const scarf = o.acc === 'scarf' ? `<path d="M-24 464Q0 480 24 464L26 478Q0 494 -26 478Z" fill="${lt('#C4694A', 0.05)}" stroke-width="2.8"/><path d="M14 478L20 512L30 508L24 476Z" fill="${lt('#C4694A', 0.05)}" stroke-width="2.8"/><path d="M-12 474v8M0 478v8M12 476v8" stroke="${lt('#C4694A', 0.45)}" stroke-width="2" fill="none"/>` : '';
-  const phones = o.acc === 'phones' ? `<path d="M-27 428Q-28 396 0 394Q28 396 27 428" fill="none" stroke-width="5"/><rect x="-35" y="422" width="12" height="22" rx="6" fill="#4A6B72"/><rect x="23" y="422" width="12" height="22" rx="6" fill="#4A6B72"/>` : '';
+  const phones = o.acc === 'headphones' ? `<path d="M-27 428Q-28 396 0 394Q28 396 27 428" fill="none" stroke-width="5"/><rect x="-35" y="422" width="12" height="22" rx="6" fill="#4A6B72"/><rect x="23" y="422" width="12" height="22" rx="6" fill="#4A6B72"/>` : '';
   const ears = `<circle cx="-27" cy="438" r="5.5" fill="${sk}"/><circle cx="27" cy="438" r="5.5" fill="${sk}"/>`;
   const head = (mood: MoodId, blink = false, gaze: Gaze = { x: 0, y: 0 }): string => {
     const m = MOOD[mood];
@@ -153,7 +130,7 @@ export function personParts(o: Look, seat = false): PersonParts {
   const seatCells: PartCell[] = seat
     ? [{ id: 'knee', box: { x: -17, y: -14, w: 34, h: 28 }, svg: `<ellipse cx="0" cy="0" rx="13.5" ry="10.5" fill="${pants}"/><path d="M-7 -4Q0 -8 7 -4" stroke="${lt(pants, 0.25)}" stroke-width="2" fill="none" stroke-opacity=".6"/>` }, { id: 'shoeSeat', box: { x: -18, y: -13, w: 36, h: 26 }, svg: `<ellipse cx="0" cy="0" rx="14" ry="8.5" fill="${shoe}"/><ellipse cx="0" cy="2.5" rx="8.5" ry="4.6" fill="${lt(shoe, 0.22)}" stroke-width="2"/>` }]
     : [];
-  const hb = hr.b ? (o.hair === 'pony' ? 'pony' : o.hair === 'long' ? 'long' : 'bob') : null;
+  const hb = hr.b ? (rs === 'pony' ? 'pony' : rs === 'long' ? 'long' : 'bob') : null;
   if (hb) cells.push({ id: 'hairBack', box: { x: -48, y: 392, w: 114, h: 110 }, svg: `<g transform="translate(0 458) scale(1.1) translate(0 -458)">${hr.b}</g>` });
   return { cells, seatCells, head, hairBack: hb, skin: sk };
 }
@@ -186,18 +163,19 @@ export function wrapPart(inner: string, b: Box = PERSON_BOX): string {
 export type BaristaFace = 'smile' | 'blink' | 'joy' | 'focus' | 'tired';
 export interface BaristaParts { body: string; arm2: string; arm: string; head: (f: BaristaFace) => string; heldCup: string }
 export function baristaParts(): BaristaParts {
-  const sk = '#F5D0AE';
+  const sk = BARISTA_LOOK.skin;
   const skd = dk(sk, 0.2);
-  const hr = '#3A2A22';
+  const hr = BARISTA_LOOK.hairCol;
+  const sw = BARISTA_LOOK.cloth;
   return {
-    body: `<path d="M824 414Q824 370 865 364Q906 370 906 414Z" fill="#93A684"/>
+    body: `<path d="M824 414Q824 370 865 364Q906 370 906 414Z" fill="${sw}"/>
 <path d="M906 414Q906 374 874 365Q894 382 890 414Z" fill="#6E8262" fill-opacity=".45" stroke="none"/>
 <rect x="853" y="342" width="24" height="28" rx="9" fill="${sk}"/>
 <path d="M842 414L847 382Q865 374 883 382L888 414Z" fill="#8A5240"/>
 <path d="M848 380L852 364M882 380L878 364" fill="none" stroke-width="2.5"/>
 <rect x="855" y="396" width="20" height="14" rx="3.5" fill="#6A3E2E" stroke-width="2.5"/>`,
-    arm2: `${arm('M894 379Q918 384 938 386', '#93A684', 12)}<circle cx="942" cy="386" r="8.5" fill="${sk}"/>`,
-    arm: `${arm('M836 379Q818 381 808 386', '#93A684', 12)}<circle cx="805" cy="386" r="8.5" fill="${sk}"/>`,
+    arm2: `${arm('M894 379Q918 384 938 386', sw, 12)}<circle cx="942" cy="386" r="8.5" fill="${sk}"/>`,
+    arm: `${arm('M836 379Q818 381 808 386', sw, 12)}<circle cx="805" cy="386" r="8.5" fill="${sk}"/>`,
     heldCup: '',
     head: (f: BaristaFace) => {
       const eye = (cx: number, hl: number) => f === 'tired'
@@ -228,7 +206,7 @@ export function wrapCell(inner: string, b: Box, id: string): string {
 export const BARISTA_ARM_LEN = 9 + 48 + 10;
 export function baristaCells(): PartCell[] {
   return [
-    { id: 'bArm', box: { x: 0, y: -12, w: BARISTA_ARM_LEN, h: 24 }, svg: arm(`M9 0H${BARISTA_ARM_LEN - 10}`, '#93A684', 12) },
-    { id: 'bHand', box: { x: -12, y: -12, w: 24, h: 24 }, svg: '<circle cx="0" cy="0" r="8.5" fill="#F5D0AE"/>' }
+    { id: 'bArm', box: { x: 0, y: -12, w: BARISTA_ARM_LEN, h: 24 }, svg: arm(`M9 0H${BARISTA_ARM_LEN - 10}`, BARISTA_LOOK.cloth, 12) },
+    { id: 'bHand', box: { x: -12, y: -12, w: 24, h: 24 }, svg: `<circle cx="0" cy="0" r="8.5" fill="${BARISTA_LOOK.skin}"/>` }
   ];
 }
