@@ -48,8 +48,9 @@ describe('причёски: у каждой свой рисунок, запас�
       expect(maxY(pts)).toBeLessThanOrEqual(b.y + b.h);
     }
   });
-  test('actor качает braid и wavy как long: коэффициент 0,35, у хвоста 1', () => {
-    expect(ACTOR).toContain("this.parts.hairBack === 'pony' ? 1 : 0.35");
+  test('actor берёт качание из SWING (art.ts), верх головы из headTopOf', () => {
+    expect(ACTOR).toContain('swingAngle(');
+    expect(ACTOR).toContain('SWING[this.parts.hairBack].freq');
     expect(ACTOR).toContain('headTopOf(o.look)');
     expect(ACTOR).not.toContain('const HEAD_TOP');
   });

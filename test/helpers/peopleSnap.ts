@@ -41,17 +41,21 @@ export function fixedLooks(hp: string): Record<string, unknown>[] {
 }
 
 const MOODS: MoodId[] = ['neutral', 'happy', 'joy', 'wait', 'annoyed', 'angry'];
-/** Хеш всех частей фигуры (клетки атласа, сидячие клетки, головы всех настроений, моргание, взгляд). */
-export function partsHash(look: never): string {
+/** Настроения, у которых лицо с 32-Г прежнее (у neutral и happy появились брови). */
+export const UNCHANGED_MOODS: MoodId[] = ['joy', 'wait', 'annoyed', 'angry'];
+type PartsFn = (look: never, seat: boolean) => { cells: { id: string; box: unknown; svg: string }[]; seatCells: { id: string; box: unknown; svg: string }[]; hairBack: unknown; skin: string; head: (m: MoodId, b: boolean, g: { x: number; y: number }) => string };
+/** Хеш всех частей фигуры (клетки атласа, сидячие клетки, головы заданных настроений, моргание, взгляд) для любой реализации personParts. */
+export function partsHashWith(fn: PartsFn, look: never, moods: MoodId[] = MOODS): string {
   const parts: string[] = [];
   for (const seat of [false, true]) {
-    const p = personParts(look, seat);
+    const p = fn(look, seat);
     for (const c of [...p.cells, ...p.seatCells]) parts.push(c.id, JSON.stringify(c.box), c.svg);
     parts.push(String(p.hairBack), p.skin);
-    for (const m of MOODS) for (const b of [false, true]) parts.push(p.head(m, b, { x: 0, y: 0 }), p.head(m, b, { x: 1.9, y: 0.4 }));
+    for (const m of moods) for (const b of [false, true]) parts.push(p.head(m, b, { x: 0, y: 0 }), p.head(m, b, { x: 1.9, y: 0.4 }));
   }
-  return sha(parts.join('\u0001'));
+  return sha(parts.join(''));
 }
+export const partsHash = (look: never, moods: MoodId[] = MOODS): string => partsHashWith(personParts as unknown as PartsFn, look, moods);
 
 export function baristaHash(): string {
   const b = baristaParts();

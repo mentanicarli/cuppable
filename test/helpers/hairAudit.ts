@@ -220,3 +220,23 @@ export function diffShare(a: string, b: string): number {
   const nb = gb.reduce((s, v) => s + v, 0);
   return d / Math.max(na, nb, 1 + m);
 }
+
+/** Нижняя граница закраски в колонке x (сверху вниз до первого просвета после закраски); null, если колонка пуста. */
+export function columnBottom(svg: string, x: number): number | null {
+  const g = rasterOf(svg);
+  let seen = false;
+  let y = 392;
+  for (; y < 505; y += 1 / RES) {
+    if (px(g, x, y)) seen = true;
+    else if (seen) return y;
+  }
+  return seen ? y : null;
+}
+/** Линия роста по ширине лба: нижняя граница закраски в колонках от xa до xb. */
+export function hairlineProfile(svg: string, xa: number, xb: number): number[] {
+  const out: number[] = [];
+  for (let x = xa; x <= xb; x++) out.push(columnBottom(svg, x + 0.01) ?? HEAD.top);
+  return out;
+}
+/** Закрашена ли точка. */
+export const covered = (svg: string, x: number, y: number): boolean => px(rasterOf(svg), x, y) === 1;

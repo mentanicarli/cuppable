@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import BASE from './fixtures/people-baseline.json';
-import { baristaHash, fixedLooks, mulberry, orderStream, partsHash } from './helpers/peopleSnap';
+import { UNCHANGED_MOODS, baristaHash, fixedLooks, mulberry, orderStream, partsHash } from './helpers/peopleSnap';
 import { deltaE } from '../src/game/drinkModel';
 import {
   AGE_SHARE, BARISTA_LOOK, CLOTH, FACIAL_SHARE, FALLBACK_HAT, GREY, HAIR_FEMALE, HAIR_MALE, HAIR_SENIOR_OTHER, HEADPHONES_SHARE, HURRY_CLOTH, HURRY_SUIT_SHARE,
@@ -20,7 +20,8 @@ const near = (got: number, want: number, tol = 2): void => expect(Math.abs(got -
 describe('картинка не изменилась (эталон из HEAD до 32-Б)', () => {
   test('части фигуры у старых внешностей совпадают побитово', () => {
     const looks = fixedLooks('headphones').map((l) => ({ ...l, sex: 'f', age: 'adult', facial: l.mustache ? 'mustache' : 'none' } as Record<string, unknown>));
-    const got = looks.map((l) => partsHash(l as never));
+    /* с 32-Г у neutral и happy есть брови: хеш прежних образцов считается по остальным настроениям (эталон пересчитан из кода до 32-Б) */
+    const got = looks.map((l) => partsHash(l as never, UNCHANGED_MOODS));
     /* 32-В намеренно перерисовал grey, long, curly и bob: у них хеш другой, у остальных прежний; наушники получили бирюзовую дужку */
     const redrawn = looks.map((l) => ['grey', 'long', 'curly', 'bob'].includes(l.hair as string) || l.acc === 'headphones');
     expect(redrawn.filter(Boolean).length).toBe(7);
