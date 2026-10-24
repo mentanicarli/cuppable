@@ -53,10 +53,17 @@ function updateHud(bump) {
   $('#stars').setAttribute('aria-label', 'Рейтинг ' + r.toFixed(1) + ' из 5');
   $('#chServed span').textContent = D ? D.stats.served : 0;
 }
+/* 31-9: тост зала не налезает на реплики гостей и плашку помощника: наверху слева или, если там занято, внизу по центру */
+function placeToast() {
+  const t = $('#toast'); if (!t || stage.classList.contains('inbar')) return;
+  const avoid = [...document.querySelectorAll('.say')].map(d => ({ x: parseFloat(d.style.left) - d.offsetWidth / 2, y: 720 - parseFloat(d.style.bottom) - d.offsetHeight, w: d.offsetWidth, h: d.offsetHeight }));
+  const chip = $('#helperChip'); if (chip && !chip.hidden) avoid.push({ x: chip.offsetLeft, y: chip.offsetTop, w: chip.offsetWidth, h: chip.offsetHeight });
+  t.classList.toggle('low', MENUAPI.hallToastPos({ w: t.offsetWidth, h: t.offsetHeight }, avoid).low);
+}
 function toast(msg, ms = 2400) {
   /* показ не короче max(2,5 с; длина / 15 симв./с) */
   ms = Math.max(ms, 2500, msg.length / 15 * 1000);
-  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show'); placeToast();
   clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), ms);
 }
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));

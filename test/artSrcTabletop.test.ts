@@ -148,6 +148,12 @@ describe('29-2: пар', () => {
     }
     expect(BAR).toContain('this.steam.alpha += ((f.steam ? 0.9 : 0) - this.steam.alpha) * 0.4');
   });
+  test('31-9: пар не заходит на кофеварку: все точки контуров завитков левее x 848 (до кофеварки 859 зазор ≥ 11), рамка части не шире прежней', () => {
+    const nums = [...svgOf('steam').matchAll(/<path d="([^"]+)"/g)].flatMap((m) => [...(m[1] as string).matchAll(/[MQLZ]|(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g)].filter((q) => q[1] !== undefined).map((q) => +(q[1] as string)));
+    expect(nums.length).toBeGreaterThan(20);
+    expect(Math.max(...nums)).toBeLessThanOrEqual(848);
+    expect(859 - (Math.max(...nums) + 1)).toBeGreaterThanOrEqual(10); /* +1: половина контура D */
+  });
 });
 
 describe('29-2: чашка эспрессо — демитас, а не сбой масштаба', () => {

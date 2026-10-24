@@ -39,10 +39,11 @@ function placeSay(c) {
   const d = c.sayEl; if (!d) return;
   const half = Math.min(170, d.offsetWidth / 2 || 120), x = clamp(c.px, half + 16, 1280 - half - 16);
   d.style.left = Math.round(x) + 'px'; d.style.bottom = Math.round(720 - (c.act.bubbleTipY - SAY_STACK)) + 'px'; d.style.setProperty('--tail', Math.round(c.px - x) + 'px');
+  if ($('#toast').classList.contains('show')) placeToast(); /* реплика сдвинулась: тост зала пересчитывает своё место */
 }
 /* время показа растёт с длиной (≈ 12 символов в секунду, от 5 до 10 с); терпение и очередь от него не зависят */
 const sayDuration = line => clamp(line.length / 12, 5, 10);
-function hideSay(c) { if (!c.sayEl) return; const d = c.sayEl; c.sayEl = null; d.classList.remove('show'); setTimeout(() => d.remove(), 300); }
+function hideSay(c) { if (!c.sayEl) return; const d = c.sayEl; c.sayEl = null; d.classList.remove('show'); setTimeout(() => { d.remove(); if ($('#toast').classList.contains('show')) placeToast(); }, 300); }
 function exit(c) {
   hideSay(c);
   c.leaving = true; D.customers = D.customers.filter(x => x !== c); reindex();

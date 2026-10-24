@@ -65,6 +65,9 @@ button.chip:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink);
 @keyframes floatUp { 0% { opacity: 0; margin-top: 10px; } 15% { opacity: 1; } 100% { opacity: 0; margin-top: -56px; } }
 #toast { position: absolute; left: 24px; top: 70px; opacity: 0; pointer-events: none; transition: opacity .3s; font-size: 17px; padding: 8px 16px; }
 #toast.show { opacity: 1; }
+/* 31-9: если наверху слева тост задевает реплику гостя, он стоит внизу по центру (hallToastPos в barLayout.ts); в баре это место не действует */
+#toast.low { left: 50%; top: auto; bottom: 68px; transform: translateX(-50%); }
+#stage.inbar #toast.low { left: 484px; top: var(--toastTop, 136px); bottom: auto; transform: none; }
 
 #screen[hidden] { display: none; }
 #screen { z-index: 10; position: absolute; inset: 0; background: rgba(43,27,20,.55); display: flex; align-items: center; justify-content: center; }
