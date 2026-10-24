@@ -24,6 +24,15 @@ const NECKS = [
   ['hoodie', 'l.outfit === "hoodie" && l.facial === "none"'], ['coat', 'l.outfit === "coat" && l.facial === "none" && l.acc !== "scarf"'], ['sweater', 'l.outfit === "sweater" && l.facial === "none" && l.acc === "none"'], ['jacket', 'l.outfit === "jacket" && l.facial === "none"'], ['suit', 'l.outfit === "suit" && l.facial === "none"'],
   ['coat_beard', 'l.outfit === "coat" && l.facial === "beard"'], ['sweater_beard', 'l.outfit === "sweater" && l.facial === "beard"'], ['jacket_beard', 'l.outfit === "jacket" && l.facial === "beard"'], ['scarf', 'l.acc === "scarf"']
 ];
+/* 32-Е: наряды по полу (6 м + 6 ж), ступени бороды, сидящие 3 м + 3 ж */
+const OUTFITS = [
+  ['m_coat', 'l.sex === "m" && l.outfit === "coat"'], ['m_jacket', 'l.sex === "m" && l.outfit === "jacket"'], ['m_vest', 'l.sex === "m" && l.outfit === "vest"'], ['m_suit', 'l.sex === "m" && l.outfit === "suit"'], ['m_hoodie', 'l.sex === "m" && l.outfit === "hoodie"'], ['m_scarf', 'l.sex === "m" && l.acc === "scarf"'],
+  ['f_dress', 'l.sex === "f" && l.outfit === "dress"'], ['f_cardigan', 'l.sex === "f" && l.outfit === "cardigan"'], ['f_blouse', 'l.sex === "f" && l.outfit === "blouse"'], ['f_beltcoat', 'l.sex === "f" && l.outfit === "beltcoat"'], ['f_sweaterdress', 'l.sex === "f" && l.outfit === "sweaterdress"'], ['f_hoodie', 'l.sex === "f" && l.outfit === "hoodie"']
+];
+const BEARDS = ['none', 'stubble', 'short', 'mustache', 'beard'].map((f) => ['b_' + f, 'l.sex === "m" && l.age === "adult" && l.acc === "none" && l.facial === "' + f + '" && l.hair !== "beanie"']);
+const SHAPES = [['sq_m', 'l.sex === "m" && l.face.shape === "square" && l.facial === "none" && l.acc === "none"'], ['sq_m2', 'l.sex === "m" && l.face.shape === "square" && l.facial === "beard"'], ['ov_m', 'l.sex === "m" && l.face.shape === "oval" && l.facial === "none" && l.acc === "none"'], ['sq_m3', 'l.sex === "m" && l.face.shape === "square" && l.age === "senior" && l.acc === "none"'], ['rd_f', 'l.sex === "f" && l.face.shape === "round" && l.acc === "none"'], ['ov_f', 'l.sex === "f" && l.face.shape === "oval" && l.acc === "none"']];
+const WRINKLES = [['w_adult_m', 'l.sex === "m" && l.age === "adult" && l.face.wrinkles >= 1 && l.facial === "none" && l.acc === "none"'], ['w_adult_f', 'l.sex === "f" && l.age === "adult" && l.face.wrinkles >= 1 && l.acc === "none"'], ['w_senior_m1', 'l.sex === "m" && l.age === "senior" && l.face.wrinkles === 1 && l.facial === "none" && l.acc === "none"'], ['w_senior_m2', 'l.sex === "m" && l.age === "senior" && l.face.wrinkles === 2 && l.facial === "none" && l.acc === "none"'], ['w_senior_f', 'l.sex === "f" && l.age === "senior" && l.acc === "none"'], ['w_senior_beard', 'l.sex === "m" && l.age === "senior" && l.facial === "beard"']];
+const SEAT32 = { sm_coat: 'l.sex === "m" && l.outfit === "coat"', sm_vest: 'l.sex === "m" && l.outfit === "vest" && l.facial === "beard"', sm_hoodie: 'l.sex === "m" && l.outfit === "hoodie"', sf_dress: 'l.sex === "f" && l.outfit === "dress"', sf_cardigan: 'l.sex === "f" && l.outfit === "cardigan"', sf_beltcoat: 'l.sex === "f" && l.outfit === "beltcoat"' };
 (async () => {
   const PW = require('./pw');
   const src = fs.readFileSync(path.resolve(process.argv[2]), 'utf8').replace('newGame(); updateHud(); showTitle();', 'newGame(); updateHud(); showTitle(); window.__dbg = { WORLD, lookFor, get G() { return G; }, get D() { return D; } };');
@@ -66,6 +75,7 @@ const NECKS = [
     await p.context().close();
   };
   if (mode === 'seat' || mode === 'all') for (const [name, pred] of Object.entries(SEATS)) if (!process.env.ONLY || process.env.ONLY.split(',').includes(name)) await seatOne(name, pred);
+  if (mode === 'seat32') for (const [name, pred] of Object.entries(SEAT32)) await seatOne(name, pred);
   if (mode === 'seatcmp') for (const name of ['pony', 'bob', 'long', 'braid', 'wavy']) await seatOne(name, SEATS[name]);
   if (mode === 'stand' || mode === 'all') {
     for (const [name, pred] of Object.entries(STANDS)) {
@@ -79,7 +89,7 @@ const NECKS = [
       await p.context().close();
     }
   }
-  const lineup = async (list, prefix) => {
+  const lineup = async (list, prefix, crop) => {
     /* по 6 гостей в ряд, чтобы не пересекались; кадр на каждого */
     for (let g0 = 0; g0 < list.length; g0 += 6) {
       const { p, errs } = await open();
@@ -89,12 +99,31 @@ const NECKS = [
       await p.evaluate(seeds => { window.__as = seeds.map((sd, i) => window.__spawn(sd, 130 + i * 200)); }, seeds);
       await p.waitForTimeout(2500);
       await p.evaluate(() => { window.__as.forEach((a, i) => { for (let k = 0; k < 20; k++) a.update(1 / 30, 130 + i * 200, 0); }); window.__dbg.WORLD.update(1 / 30, 0.3, 480); });
-      for (let i = 0; i < part.length; i++) save(`${prefix}_${part[i][0]}.png`, await p.evaluate((x) => window.__crop(x - 95, 250, 190, 360, 380, 720), 130 + i * 200));
+      for (let i = 0; i < part.length; i++) save(`${prefix}_${part[i][0]}.png`, await p.evaluate(([x, c]) => c ? window.__crop(x - 60, 268, 120, 120, 480, 480) : window.__crop(x - 95, 250, 190, 360, 380, 720), [130 + i * 200, !!crop]));
       console.log(prefix, part.map((q, i) => q[0] + ':' + (seeds[i] ? seeds[i].s : '?')).join(' '), 'ERRS', errs.slice(0, 3).join('|') || 'нет');
       await p.context().close();
     }
   };
   if (mode === 'faces' || mode === 'all') await lineup(FACES, 'face');
+  if (mode === 'shapes') await lineup(SHAPES, 'shape', true);
+  if (mode === 'wrinkles') await lineup(WRINKLES, 'wr', true);
+  if (mode === 'outfits') await lineup(OUTFITS, 'outfit');
+  if (mode === 'beards') {
+    await lineup(BEARDS, 'beard');
+    for (const [name, pred] of BEARDS) for (const [dn, dir] of [['right', 1], ['left', -1]]) {
+      /* новая страница на каждый кадр: атлас головы нового гостя при остановленном цикле не дорисовывается */
+      const { p, errs } = await open();
+      const sd = await p.evaluate(pred => window.__seed(pred, false), pred);
+      await p.evaluate(([sd, dir]) => { window.__a = window.__spawn(sd, dir > 0 ? 300 : 900); window.__x = dir > 0 ? 300 : 900; window.__dir = dir; }, [sd, dir]);
+      await p.waitForTimeout(3000);
+      await p.evaluate(() => { const a = window.__a; for (let i = 0; i < 20; i++) { a.update(1 / 30, window.__x, 0); window.__dbg.WORLD.update(1 / 30, 0.3, 480); } });
+      await p.waitForTimeout(1500);
+      await p.evaluate(() => { const a = window.__a; for (let i = 0; i < 40; i++) { window.__x += window.__dir * 105 / 30; a.update(1 / 30, window.__x, 0); } window.__dbg.WORLD.update(1 / 30, 0.3, 480); });
+      save(`beardturn_${name}_${dn}.png`, await p.evaluate(() => window.__crop(window.__x - 90, 250, 180, 360, 270, 540)));
+      console.log('beardturn', name, dn, 'ERRS', errs.slice(0, 3).join('|') || 'нет');
+      await p.context().close();
+    }
+  }
   if (mode === 'neck' || mode === 'all') await lineup(NECKS, 'neck');
   if (mode === 'walk' || mode === 'all') {
     const { p, errs } = await open();

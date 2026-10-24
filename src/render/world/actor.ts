@@ -157,6 +157,8 @@ export class Actor {
   private readonly pending = new Set<string>();
   private atlas: Atlas | null = null;
   private headSp = new Sprite();
+  /** Картинка головы «вбок» уже запечена: пока её нет, анфас не прячем (иначе при повороте голова на миг исчезает). */
+  private sideReady = false;
   /* поворот при ходьбе вбок (32-Д): голова с чертами, сдвинутыми в сторону движения, поверх анфас; turn 0..1 */
   private headSide = new Sprite();
   private turn = 0;
@@ -417,6 +419,7 @@ export class Actor {
       const vk = `|c|v${this.viewDir}`;
       const t2 = this.heads.get(`${this.mood}${key}${vk}`) ?? (key === '~' ? this.heads.get(`${this.mood}*${vk}`) : undefined) ?? this.heads.get(`${this.mood}${vk}`);
       if (t2 && this.headSide.texture !== t2) this.headSide.texture = t2;
+      if (t2) this.sideReady = true;
     }
   }
 
@@ -859,7 +862,7 @@ export class Actor {
     if (this.turn !== wasTurn || sideT) {
       this.headSide.visible = this.turn > 0.01;
       this.headSide.alpha = Math.min(1, this.turn);
-      this.headSp.visible = this.turn < 0.98;
+      this.headSp.visible = this.turn < 0.98 || !this.sideReady;
       if (this.turn > 0.01) this.setHead();
       if (this.torsoSp) {
         const sx = 1 - TURN_TORSO * this.turn;
