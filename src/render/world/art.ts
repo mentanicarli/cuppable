@@ -144,15 +144,166 @@ export const BEARD_PATH = (c: string): string => `<path d="${BEARD_D}" fill="${c
  */
 export const BEARD_SHORT_D = 'M-26.5 434Q-27.6 446 -21 452.6Q-16.2 457.4 -11 459.6Q-9 460.9 -7 460.6Q-3.4 462.2 0 461.7Q4 461.4 7.6 460.9Q9 459.8 12 459.2Q15.4 457.6 21.4 452.2Q27.8 446 26.5 434Q27 445.5 14 445.5Q0 439 -14 445.5Q-27 445.5 -26.5 434Z';
 export const BEARD_SHORT_PATH = (c: string): string => `<path d="${BEARD_SHORT_D}" fill="${c}" stroke-width="1.8"/>`;
-/** Щетина: две полупрозрачные тени (внешняя и плотнее у подбородка) без контура; рот внутри, граница не выходит за контур лица. */
-export const STUBBLE_OUT_D = 'M-25 437Q-24.5 447 -17.4 453.4Q-9 458.8 0 459.8Q9 458.8 17.4 453.4Q24.5 447 25 437Q24 446 14 445.5Q0 441.5 -14 445.5Q-24 446 -25 437Z';
-export const STUBBLE_IN_D = 'M-21 446Q-17 453 -9 457.4Q0 459 9 457.4Q17 453 21 446Q14 446 9 444.6Q0 443.4 -9 444.6Q-14 446 -21 446Z';
-/** Цвет щетины: у седых серый (не светлее кожи), у остальных цвет волос. */
+/**
+ * Борода при повороте головы (32-Ж): внешний край остаётся на контуре лица, а середина (рот и вырез под ним) сдвигается на половину сдвига черт.
+ * Так борода тянется по контуру на обе стороны (на дальней доходит до уха и бакенбард, просвета кожи нет), а рот остаётся внутри.
+ * x' = x + 0,5·fx·max(0, 1 − (x/23)²): за |x| ≥ 23 (бакенбарды, челюсть у ушей) борода не двигается.
+ */
+export const BEARD_TURN_K = 0.5;
+export const beardWarpX = (x: number, fx: number): number => x + BEARD_TURN_K * fx * Math.max(0, 1 - (x / 23) ** 2);
+/** Преобразует числа абсолютного пути (M, Q, Z): пары «x y» заменяются результатом f. */
+export const mapPath = (d: string, f: (x: number, y: number) => [number, number]): string =>
+  d.replace(/(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g, (_m, x: string, y: string) => {
+    const [a, b] = f(Number(x), Number(y));
+    return `${+a.toFixed(2)} ${+b.toFixed(2)}`;
+  });
+const warped = (d: string, fx: number): string => (fx === 0 ? d : mapPath(d, (x, y) => [beardWarpX(x, fx), y]));
+type XY = [number, number];
+/** Точки абсолютного пути (M, Q, Z): кривые по 12 шагов. */
+export function samplePath(d: string): XY[] {
+  const t = d.match(/[MQZ]|-?\d+(?:\.\d+)?/g) ?? [];
+  const pts: XY[] = [];
+  let cur: XY = [0, 0];
+  let cmd = '';
+  for (let i = 0; i < t.length; ) {
+    const tok = t[i] as string;
+    if (/[MQZ]/.test(tok)) { cmd = tok; i++; continue; }
+    if (cmd === 'M') { cur = [Number(t[i]), Number(t[i + 1])]; i += 2; pts.push(cur); cmd = 'L'; }
+    else if (cmd === 'Q') {
+      const c: XY = [Number(t[i]), Number(t[i + 1])];
+      const e: XY = [Number(t[i + 2]), Number(t[i + 3])];
+      i += 4;
+      for (let k = 1; k <= 12; k++) { const u = k / 12; pts.push([(1 - u) ** 2 * cur[0] + 2 * u * (1 - u) * c[0] + u * u * e[0], (1 - u) ** 2 * cur[1] + 2 * u * (1 - u) * c[1] + u * u * e[1]]); }
+      cur = e;
+    } else i++;
+  }
+  return pts;
+}
+const inPolyXY = (poly: XY[], x: number, y: number): boolean => {
+  let r = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i] as XY;
+    const b = poly[j] as XY;
+    if (a[1] > y !== b[1] > y && x < ((b[0] - a[0]) * (y - a[1])) / (b[1] - a[1]) + a[0]) r = !r;
+  }
+  return r;
+};
+const distToPoly = (poly: XY[], x: number, y: number): number => {
+  let m = 1e9;
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i] as XY;
+    const b = poly[(i + 1) % poly.length] as XY;
+    const dx = b[0] - a[0];
+    const dy = b[1] - a[1];
+    const t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / (dx * dx + dy * dy || 1)));
+    m = Math.min(m, Math.hypot(x - a[0] - t * dx, y - a[1] - t * dy));
+  }
+  return m;
+};
+/** Точки линий с относительными q и h (рты, складки): раскрываются в ломаную. */
+function relPoints(d: string): XY[] {
+  const pts: XY[] = [];
+  for (const part of d.split(/(?=M)/).filter(Boolean)) {
+    const m = /^M(-?[\d.]+) (-?[\d.]+)(?:q(-?[\d.]+) (-?[\d.]+) (-?[\d.]+) (-?[\d.]+)|h(-?[\d.]+))?/.exec(part);
+    if (!m) continue;
+    const x0 = Number(m[1]);
+    const y0 = Number(m[2]);
+    pts.push([x0, y0]);
+    if (m[3] !== undefined) {
+      const cx = x0 + Number(m[3]);
+      const cy = y0 + Number(m[4]);
+      const ex = x0 + Number(m[5]);
+      const ey = y0 + Number(m[6]);
+      for (let k = 1; k <= 20; k++) { const u = k / 20; pts.push([(1 - u) ** 2 * x0 + 2 * u * (1 - u) * cx + u * u * ex, (1 - u) ** 2 * y0 + 2 * u * (1 - u) * cy + u * u * ey]); }
+    } else if (m[7] !== undefined) {
+      for (let k = 1; k <= 20; k++) pts.push([x0 + (Number(m[7]) * k) / 20, y0]);
+    }
+  }
+  return pts;
+}
+/**
+ * Щетина (32-Ж): зернистая полупрозрачная фактура (точки и короткие штрихи, прозрачность 0,25–0,4) без заливки и контура.
+ * Зона — та же, что у короткой бороды (щёки до висков, челюсть, подбородок) плюс полоска над верхней губой; плотность плавно растёт от скул (0,3) к челюсти и подбородку (1).
+ * Область рта и складок (расстояние до линий рта, носогубных складок и мешков не меньше STUBBLE_CLEAR) и нос остаются чистыми.
+ * Раскладка детерминирована (сетка с дрожанием и матрицей Байера, свой генератор чисел).
+ */
+export const STUBBLE_GRID = 1.15;
+export const STUBBLE_ALPHA_MIN = 0.25;
+export const STUBBLE_ALPHA_MAX = 0.4;
+export const STUBBLE_CLEAR = 1.75;
+/** Линии, возле которых щетина не рисуется: рты всех настроений. */
+export const MOUTH_KEEP_OUT = 'M-6 450q6 3 12 0M-8 447q8 9 16 0M-10 446q10 14 20 0M-5 451h10M-7 454q7 -5 14 0M-8 456q8 -8 16 0';
+/** Складки пожилых (носогубные, угловые, мешки под глазами) и нос. */
+export const FOLD_KEEP_OUT = [-1, 1].map((sg) => `M${5.6 * sg} 443.9q${5.2 * sg} 1.3 ${6.6 * sg} 8.7M${9.6 * sg} 449.8q${0.8 * sg} 1.8 ${0.4 * sg} 3.6M${5.2 * sg} 443.8q${5.8 * sg} 2.3 ${11.6 * sg} 0`).join('') + 'M-2.6 441.9q2.6 2.2 5.2 0';
+export interface StubbleDot { x: number; y: number; r: number; a: number; dx: number; dy: number }
+let stubbleCache: StubbleDot[] | null = null;
+/** Зерно щетины в координатах анфаса (dx, dy ненулевые — короткий штрих, иначе точка радиуса r). */
+export function stubbleDots(): StubbleDot[] {
+  if (stubbleCache) return stubbleCache;
+  const zone = samplePath(BEARD_SHORT_D);
+  const round = Array.from({ length: 72 }, (_, k): XY => [28 * Math.cos((k / 72) * 6.2832), 432 + 28 * Math.sin((k / 72) * 6.2832)]);
+  const oval = Array.from({ length: 72 }, (_, k): XY => [FACE_DIM.oval.rx * Math.cos((k / 72) * 6.2832), 432 + FACE_DIM.oval.ry * Math.sin((k / 72) * 6.2832)]);
+  const faces = [round, oval, samplePath(FACE_SQUARE_D)];
+  const keep = [...relPoints(MOUTH_KEEP_OUT), ...relPoints(FOLD_KEEP_OUT)];
+  const bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+  let seed = 20240732;
+  const rnd = (): number => {
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const out: StubbleDot[] = [];
+  const G = STUBBLE_GRID;
+  for (let iy = 0; iy < 34; iy++) for (let ix = -26; ix <= 26; ix++) {
+    const jx = (rnd() - 0.5) * 0.35;
+    const jy = (rnd() - 0.5) * 0.35;
+    const x = ix * G + jx + (iy % 2) * G * 0.5;
+    const y = 435 + iy * G + jy;
+    const r0 = 0.42 + rnd() * 0.16;
+    const kind = rnd();
+    const alpha = STUBBLE_ALPHA_MIN + rnd() * (STUBBLE_ALPHA_MAX - STUBBLE_ALPHA_MIN);
+    const ang = rnd() * 3.1416;
+    const len = 1 + rnd() * 0.5;
+    /* зона: короткая борода плюс полоска над губой */
+    const inZone = inPolyXY(zone, x, y) || (Math.abs(x) < 11 && y > 441.8 && y < 446.4);
+    if (!inZone) continue;
+    if (Math.abs(x) < 4.4 && y < 444.6) continue; /* нос */
+    /* плотность: 0,3 у скул, 1 от y 450, у самого низа лица плавно 0,85 (шея), к краям чуть реже */
+    const u = Math.max(0, Math.min(1, (y - 436) / 14));
+    let d = 0.28 + 0.62 * u * u * (3 - 2 * u);
+    if (y > 456) d *= 0.85;
+    d *= 1 - 0.18 * (Math.abs(x) / 27) ** 2;
+    if (((bayer[(iy & 3) * 4 + (((ix % 4) + 4) % 4)] ?? 0) / 16) * 0.5 + rnd() * 0.5 >= d) continue;
+    const m = r0 + 0.35;
+    /* зерно остаётся внутри контура и после сдвига при повороте (fx = ±TURN_SHIFT) */
+    if (!faces.every((f) => [x, beardWarpX(x, TURN_SHIFT), beardWarpX(x, -TURN_SHIFT)].every((xx) => inPolyXY(f, xx, y) && distToPoly(f, xx, y) > m))) continue;
+    if (keep.some((q) => Math.hypot(q[0] - x, q[1] - y) < STUBBLE_CLEAR + r0)) continue;
+    const stroke = kind < 0.35;
+    out.push({ x: +x.toFixed(2), y: +y.toFixed(2), r: +r0.toFixed(2), a: +alpha.toFixed(2), dx: stroke ? +(Math.cos(ang) * len).toFixed(2) : 0, dy: stroke ? +(Math.sin(ang) * len * 0.8).toFixed(2) : 0 });
+  }
+  stubbleCache = out;
+  return out;
+}
+/** Цвет щетины: у седых серый, у остальных цвет волос. */
 export const stubbleColor = (hairCol: string, age: Age): string => (age === 'senior' ? '#8F8A86' : hairCol);
-export const STUBBLE_ALPHA = [0.2, 0.2] as const;
-export const STUBBLE_PATH = (c: string): string => `<path d="${STUBBLE_OUT_D}" fill="${c}" fill-opacity="${STUBBLE_ALPHA[0]}" stroke="none"/><path d="${STUBBLE_IN_D}" fill="${c}" fill-opacity="${STUBBLE_ALPHA[1]}" stroke="none"/>`;
-/** Растительность по виду: слой beard. */
-export const beardLayer = (facial: Facial, hairCol: string, age: Age): string => (facial === 'beard' ? BEARD_PATH(hairCol) : facial === 'short' ? BEARD_SHORT_PATH(hairCol) : facial === 'stubble' ? STUBBLE_PATH(stubbleColor(hairCol, age)) : '');
+export const STUBBLE_PATH = (c: string, fx = 0): string => {
+  const dots = stubbleDots();
+  const wx = (x: number): number => (fx === 0 ? x : +beardWarpX(x, fx).toFixed(2));
+  const circles = dots.filter((d) => !d.dx && !d.dy).map((d) => `<circle cx="${wx(d.x)}" cy="${d.y}" r="${d.r}" fill-opacity="${d.a}"/>`).join('');
+  const strokes = dots.filter((d) => d.dx || d.dy).map((d) => `<path d="M${wx(d.x - d.dx / 2)} ${+(d.y - d.dy / 2).toFixed(2)}l${d.dx} ${d.dy}" fill="none" stroke="${c}" stroke-opacity="${d.a}" stroke-width="0.9" stroke-linecap="round"/>`).join('');
+  return `<g fill="${c}" stroke="none">${circles}</g>${strokes}`;
+};
+/** У квадратного лица борода шире на 6 % (контур лица у висков 28,8–29,6, у круглого 28): иначе между бородой и контуром видна кожа. */
+export const SQUARE_BEARD_K = 1.06;
+/** Контур бороды (полной или короткой) для формы лица и сдвига черт fx (0 — анфас). */
+export const beardD = (kind: 'beard' | 'short', shape: FaceSpec['shape'], fx = 0): string => {
+  const base = kind === 'beard' ? BEARD_D : BEARD_SHORT_D;
+  return warped(shape === 'square' ? mapPath(base, (x, y) => [x * SQUARE_BEARD_K, y]) : base, fx);
+};
+/** Растительность по виду: слой beard; fx — сдвиг черт при повороте головы (0 — анфас). */
+export const beardLayer = (facial: Facial, hairCol: string, age: Age, fx = 0, shape: FaceSpec['shape'] = 'round'): string =>
+  facial === 'beard' ? `<path d="${beardD('beard', shape, fx)}" fill="${hairCol}"/>` : facial === 'short' ? `<path d="${beardD('short', shape, fx)}" fill="${hairCol}" stroke-width="1.8"/>` : facial === 'stubble' ? STUBBLE_PATH(stubbleColor(hairCol, age), fx) : '';
 /** Усы рисуются у усатых, с короткой и полной бородой (срастаются с бородой), у щетины нет. */
 export const hasMustache = (f: Facial): boolean => f === 'mustache' || f === 'short' || f === 'beard';
 /** Ширина рта по настроению и светлая полоска губ: не толще 40 % ширины рта, без своего контура; у открытого рта (joy) губ нет. */
@@ -181,7 +332,10 @@ export const FEMALE_BODY: Readonly<Record<string, { shoulder: number; hem: numbe
   sweaterdress: { shoulder: 22, hem: 34, hemY: 582 }
 };
 /** Высота низа торса мужских нарядов: пальто длиннее. */
-export const MALE_HEM_Y: Readonly<Record<string, number>> = { hoodie: 572, coat: 588, jacket: 572, suit: 572, vest: 572 };
+/** 32-Ж: подол мужских пальто и куртки выше (до бедра), брюки и ботинки видны; hoodie общий с женщинами и не менялся. */
+export const MALE_HEM_Y: Readonly<Record<string, number>> = { hoodie: 572, coat: 558, jacket: 554, suit: 560, vest: 560 };
+/** Доля видимой части ног ниже подола (лента ноги от y 557 до щиколотки 592; низ подола на 5 ниже hemY из-за дуги). */
+export const legVisibleShare = (hemY: number): number => Math.max(0, Math.min(1, (592 - (hemY + 5)) / 35));
 /** Контур мужского торса. */
 export function maleOutline(w: number, hemY: number): string {
   const S = MALE_BODY.shoulder * w;
@@ -211,13 +365,13 @@ function outfit(kind: string, c: string, w: number): { back: string; torso: stri
   };
   switch (kind) {
     case 'hoodie': return { back: `<ellipse cx="0" cy="464" rx="26" ry="11" fill="${cd}"/>`, torso: `<path d="${male(572)}" fill="${c}"/>${maleShade(572)}<path d="M${-18 * w} 538Q0 548 ${18 * w} 538L${21 * w} 562Q0 570 ${-21 * w} 562Z" fill="${cd}" stroke-width="2.5"/><path d="M-6 470v18M6 470v18" stroke-width="2.5" fill="none"/>` };
-    case 'coat': return { back: '', torso: `<path d="${male(588)}" fill="${c}"/>${maleShade(588)}<path d="M-14 460L0 494L14 460Z" fill="#FBF4E8" stroke-width="2.5"/><path d="M-14 460L-7 504M14 460L7 504" fill="none" stroke-width="2.5"/><circle cx="0" cy="522" r="2.6" fill="${INK}" stroke="none"/><circle cx="0" cy="548" r="2.6" fill="${INK}" stroke="none"/><circle cx="0" cy="574" r="2.6" fill="${INK}" stroke="none"/>` };
+    case 'coat': return { back: '', torso: `<path d="${male(MALE_HEM_Y['coat'] as number)}" fill="${c}"/>${maleShade(MALE_HEM_Y['coat'] as number)}<path d="M-14 460L0 494L14 460Z" fill="#FBF4E8" stroke-width="2.5"/><path d="M-14 460L-7 504M14 460L7 504" fill="none" stroke-width="2.5"/><circle cx="0" cy="518" r="2.6" fill="${INK}" stroke="none"/><circle cx="0" cy="533" r="2.6" fill="${INK}" stroke="none"/><circle cx="0" cy="548" r="2.6" fill="${INK}" stroke="none"/>` };
     case 'sweater': return { back: '', torso: `<path d="${torso}" fill="${c}"/>${shadeR}<path d="M${-29 * w} 520Q0 530 ${29 * w} 520" fill="none" stroke="${cl}" stroke-width="9" stroke-linecap="butt"/><path d="M${-30 * w} 544Q0 554 ${30 * w} 544" fill="none" stroke="${cl}" stroke-width="9" stroke-linecap="butt"/>` };
-    case 'jacket': return { back: '', torso: `<path d="${male(572)}" fill="${c}"/>${maleShade(572)}<path d="M-15 460L-9 474L0 466L9 474L15 460" fill="${cd}" stroke-width="2.5"/><path d="M0 466V574" fill="none" stroke-width="2.5"/><path d="M${-29 * w} 566Q0 576 ${29 * w} 566" fill="none" stroke="${cd}" stroke-width="8" stroke-linecap="butt"/>` };
+    case 'jacket': return { back: '', torso: `<path d="${male(MALE_HEM_Y['jacket'] as number)}" fill="${c}"/>${maleShade(MALE_HEM_Y['jacket'] as number)}<path d="M-15 460L-9 474L0 466L9 474L15 460" fill="${cd}" stroke-width="2.5"/><path d="M0 466V556" fill="none" stroke-width="2.5"/><path d="M${-29 * w} 548Q0 558 ${29 * w} 548" fill="none" stroke="${cd}" stroke-width="8" stroke-linecap="butt"/>` };
     case 'vest': {
       /* рубашка с жилетом: белые рукава и ворот, жилет цвета наряда с V-образным вырезом */
-      const vest = `M-12 461Q${-26 * w} 468 ${-26 * w} 500L${-25 * w} 568Q0 578 ${25 * w} 568L${26 * w} 500Q${26 * w} 468 12 461L0 496Z`;
-      return { back: '', torso: `<path d="${male(572)}" fill="#FBF4E8"/>${maleShade(572)}<path d="${vest}" fill="${c}" stroke-width="2.5"/><path d="M-6 506v0M0 520v0M0 544v0" stroke="${INK}" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M-10 460L0 478L10 460" fill="#FBF4E8" stroke-width="2.5"/>` };
+      const vest = `M-12 461Q${-26 * w} 468 ${-26 * w} 500L${-25 * w} 554Q0 564 ${25 * w} 554L${26 * w} 500Q${26 * w} 468 12 461L0 496Z`;
+      return { back: '', torso: `<path d="${male(MALE_HEM_Y['vest'] as number)}" fill="#FBF4E8"/>${maleShade(MALE_HEM_Y['vest'] as number)}<path d="${vest}" fill="${c}" stroke-width="2.5"/><path d="M-6 506v0M0 520v0M0 538v0" stroke="${INK}" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M-10 460L0 478L10 460" fill="#FBF4E8" stroke-width="2.5"/>` };
     }
     case 'dress': return { back: '', torso: `<path d="${fem('dress')}" fill="${c}"/>${femShade('dress')}<path d="M-11 461Q0 472 11 461" fill="none" stroke-width="2.5"/><path d="M${-17 * w} 526Q0 534 ${17 * w} 526" fill="none" stroke="${cd}" stroke-width="3"/><path d="M${-35 * w} 578Q0 589 ${35 * w} 578" fill="none" stroke="${cl}" stroke-width="6" stroke-linecap="butt"/>` };
     case 'cardigan': {
@@ -232,7 +386,7 @@ function outfit(kind: string, c: string, w: number): { back: string; torso: stri
     }
     case 'beltcoat': return { back: '', torso: `<path d="${fem('beltcoat')}" fill="${c}"/>${femShade('beltcoat')}<path d="M-12 461L0 498L12 461" fill="${lt(c, 0.35)}" stroke-width="2.5"/><path d="M0 498V588" fill="none" stroke-width="2.5"/><path d="M${-19 * w} 518H${19 * w}L${19.5 * w} 531H${-19.5 * w}Z" fill="${cd}" stroke-width="2.5"/><rect x="-3.5" y="519" width="7" height="11" rx="2" fill="${lt(c, 0.5)}" stroke-width="2"/><circle cx="-6" cy="548" r="2.4" fill="${INK}" stroke="none"/><circle cx="6" cy="548" r="2.4" fill="${INK}" stroke="none"/><circle cx="-6" cy="568" r="2.4" fill="${INK}" stroke="none"/><circle cx="6" cy="568" r="2.4" fill="${INK}" stroke="none"/>` };
     case 'sweaterdress': return { back: '', torso: `<path d="${fem('sweaterdress')}" fill="${c}"/>${femShade('sweaterdress')}<path d="M-12 461Q0 471 12 461" fill="none" stroke="${cl}" stroke-width="6" stroke-linecap="butt"/><path d="${`M${-18 * w} 512Q0 520 ${18 * w} 512`}" fill="none" stroke="${cl}" stroke-width="8" stroke-linecap="butt"/><path d="M${-27 * w} 548Q0 558 ${27 * w} 548" fill="none" stroke="${cl}" stroke-width="8" stroke-linecap="butt"/><path d="M${-33 * w} 572Q0 582 ${33 * w} 572" fill="none" stroke="${cl}" stroke-width="8" stroke-linecap="butt"/>` };
-    default: return { back: '', torso: `<path d="${male(572)}" fill="${c}"/>${maleShade(572)}<path d="M-10 460L10 460L0 494Z" fill="#FBF4E8" stroke-width="2.5"/><path d="M-3 470H3L5 496L0 503L-5 496Z" fill="#C4694A" stroke-width="2.5"/>` };
+    default: return { back: '', torso: `<path d="${male(MALE_HEM_Y[kind] ?? 572)}" fill="${c}"/>${maleShade(MALE_HEM_Y[kind] ?? 572)}<path d="M-10 460L10 460L0 494Z" fill="#FBF4E8" stroke-width="2.5"/><path d="M-3 470H3L5 496L0 503L-5 496Z" fill="#C4694A" stroke-width="2.5"/>` };
   }
 }
 
@@ -266,11 +420,11 @@ export const LEG_LEN = 9 + BONE.leg1 + BONE.leg2 + 9;
 /** Размеры головы по форме: round — прежний круг r 28; oval — на 4 % уже и выше; square — челюсть шире на 6 %, плоский подбородок. */
 export const FACE_DIM = { round: { rx: 28, ry: 28 }, oval: { rx: 26.88, ry: 29.12 } } as const;
 /**
- * Квадратное лицо (32-Е): верх широкий (полукруг r 28), на уровне глаз (y 437) ширина ≈ 58,4, к рту (y 451) сужается на ≈ 9 % (53,3),
- * нижние углы скруглены радиусом ≈ 19,7 (0,37 ширины на уровне рта), подбородок мягкой дугой без прямого участка (самая нижняя точка 461,2).
+ * Квадратное лицо (32-Ж): верх широкий (полукруг r 28), на уровне глаз (y 437) ширина ≈ 57,5, к рту (y 451) сужается на ≈ 11,5 % (отношение 0,886; в 32-Е было 0,915),
+ * нижние углы скруглены ещё сильнее (горизонтальный вынос дуги 0,50 ширины на уровне рта, в 32-Е 0,43), ровного участка внизу ≈ 2,4, самая нижняя точка 461,25.
  */
-export const FACE_SQUARE_D = 'M-28 432Q-28 420.4 -19.8 412.2Q-11.6 404 0 404Q11.6 404 19.8 412.2Q28 420.4 28 432Q30 440 26.7 448Q26.4 460.4 7 460.4Q0 462 -7 460.4Q-26.4 460.4 -26.7 448Q-30 440 -28 432Z';
-export const chinY = (shape: FaceSpec['shape']): number => (shape === 'oval' ? 432 + FACE_DIM.oval.ry : shape === 'square' ? 461.2 : 460);
+export const FACE_SQUARE_D = 'M-28 432Q-28 420.4 -19.8 412.2Q-11.6 404 0 404Q11.6 404 19.8 412.2Q28 420.4 28 432Q29.6 438.75 27.4 443.5Q26.6 460.3 1.2 460.7Q0 461.8 -1.2 460.7Q-26.6 460.3 -27.4 443.5Q-29.6 438.75 -28 432Z';
+export const chinY = (shape: FaceSpec['shape']): number => (shape === 'oval' ? 432 + FACE_DIM.oval.ry : shape === 'square' ? 461.25 : 460);
 /** Шея: ширина лица 56, доля 40 % (мужчины 44 %, женщины 36 %); видимая высота от подбородка по возрасту, ед. рисунка (× 1,76 в пикселях игры: 4,6 / 5,6 / 6,7 px). */
 export const NECK_FACE_W = 56;
 export const NECK_BASE = 0.4;
@@ -287,9 +441,9 @@ export function blushOf(face: FaceSpec, mood: MoodId, facial: Facial): { visible
   const eff = hasBeard(facial) ? 0 : Math.min(1, face.blush + (mood === 'happy' || mood === 'joy' ? BLUSH_MOOD : 0));
   return { visible: eff > BLUSH_MIN, r: +(2 + 3 * eff).toFixed(2), alpha: +(0.25 + 0.25 * eff).toFixed(2), eff };
 }
-/** Поворот головы при ходьбе вбок: черты сдвигаются на 7,5 в сторону движения, дальний глаз уже на 30 %, дальнее ухо скрыто (32-Е: было 4,5 и 15 %). */
+/** Поворот головы при ходьбе вбок: черты сдвигаются на 7,5 в сторону движения, дальний глаз (с зрачком, бликом, ресницами, бровью и линзой очков) уже на 25 %, дальнее ухо скрыто. */
 export const TURN_SHIFT = 7.5;
-export const TURN_FAR_EYE = 0.7;
+export const TURN_FAR_EYE = 0.75;
 /** Доля сдвига черт, на которую смещается рот (с усами) при повороте. */
 export const TURN_MOUTH = 0.5;
 /** Торс при повороте вбок уже на 6 % (дальнее плечо ближе к оси). */
@@ -328,11 +482,34 @@ export function personParts(o: Look, seat = false): PersonParts {
   const face = o.face ?? DEFAULT_FACE;
   const dark = o.skin === SKIN[4] || o.skin === SKIN[3];
   const stache = hasMustache(o.facial) ? MOUSTACHE_PATH(o.hairCol) : '';
-  const beard = beardLayer(o.facial, o.hairCol, o.age);
+  const beard = beardLayer(o.facial, o.hairCol, o.age, 0, face.shape);
   /* губы светлой линией нужны там, где рот лежит внутри плотной бороды */
   const beardMass = o.facial === 'beard' || o.facial === 'short';
-  const eye = (cx: number, hl: number, g: Gaze) => `<g><ellipse cx="${cx}" cy="437" rx="4.7" ry="5" fill="#FFFDF6" stroke-width="1.8"/><circle cx="${cx + 0.4 + g.x}" cy="${438 + g.y}" r="2.8" fill="#2F211B" stroke="none"/><circle cx="${hl + g.x}" cy="${436.6 + g.y}" r="1" fill="#fff" stroke="none"/></g>`;
-  const glassesSvg = (view: number): string => (o.acc === 'glasses' ? `<circle cx="-11" cy="437" r="8" fill="#fff" fill-opacity=".28" stroke-width="2.5"/><circle cx="11" cy="437" r="8" fill="#fff" fill-opacity=".28" stroke-width="2.5"/><path d="M-3 436H3${view === 1 ? '' : 'M-19 435L-28 432'}${view === -1 ? '' : 'M19 435L28 432'}" stroke-width="2.5" fill="none"/>` : '');
+  /** Глаз; k < 1 — дальний при повороте: белок, зрачок и блик сужены по ширине вместе (высота прежняя), зрачок целиком внутри белка, блик внутри зрачка. */
+  const eye = (cx: number, hl: number, g: Gaze, k = 1) => {
+    if (k === 1) return `<g><ellipse cx="${cx}" cy="437" rx="4.7" ry="5" fill="#FFFDF6" stroke-width="1.8"/><circle cx="${cx + 0.4 + g.x}" cy="${438 + g.y}" r="2.8" fill="#2F211B" stroke="none"/><circle cx="${hl + g.x}" cy="${436.6 + g.y}" r="1" fill="#fff" stroke="none"/></g>`;
+    const rx = +(4.7 * k).toFixed(2);
+    /* зрачок целиком внутри белка (с запасом на контур 0,9): взгляд ослабляется, пока эллипс зрачка не поместится */
+    const fits = (dx: number, dy: number): boolean => Array.from({ length: 32 }, (_, i) => i / 32 * 6.2832).every((a) => ((dx + 2.8 * k * Math.cos(a)) / (rx - 0.9)) ** 2 + ((dy + 2.8 * Math.sin(a)) / 4.1) ** 2 <= 1);
+    let t = 1;
+    while (t > 0 && !fits((0.4 + g.x * t) * k, 1 + g.y * t)) t = Math.max(0, +(t - 0.1).toFixed(1));
+    const px = (0.4 + g.x * t) * k;
+    const py = 438 + g.y * t;
+    const hx = px + (hl - cx - 0.4) * k;
+    return `<g><ellipse cx="${cx}" cy="437" rx="${+rx.toFixed(2)}" ry="5" fill="#FFFDF6" stroke-width="1.8"/><ellipse cx="${+(cx + px).toFixed(2)}" cy="${+py.toFixed(2)}" rx="${+(2.8 * k).toFixed(2)}" ry="2.8" fill="#2F211B" stroke="none"/><ellipse cx="${+(cx + hx).toFixed(2)}" cy="${+(py - 1.4).toFixed(2)}" rx="${+k.toFixed(2)}" ry="1" fill="#fff" stroke="none"/></g>`;
+  };
+  /* очки: при повороте обе линзы едут вместе с глазами (сдвиг fx), дальняя линза уже в TURN_FAR_EYE раз; дужка только у ближней стороны, до уха */
+  const glassesSvg = (view: number): string => {
+    if (o.acc !== 'glasses') return '';
+    if (view === 0) return `<circle cx="-11" cy="437" r="8" fill="#fff" fill-opacity=".28" stroke-width="2.5"/><circle cx="11" cy="437" r="8" fill="#fff" fill-opacity=".28" stroke-width="2.5"/><path d="M-3 436H3M-19 435L-28 432M19 435L28 432" stroke-width="2.5" fill="none"/>`;
+    const fx = view * TURN_SHIFT;
+    const nearC = -view * 11 + fx;
+    const farC = view * 10 + fx;
+    const k = TURN_FAR_EYE;
+    const nearEdge = nearC + view * 8;
+    const farEdge = farC - view * 8 * k;
+    return `<circle cx="${nearC}" cy="437" r="8" fill="#fff" fill-opacity=".28" stroke-width="2.5"/><ellipse cx="${farC}" cy="437" rx="${+(8 * k).toFixed(2)}" ry="8" fill="#fff" fill-opacity=".28" stroke-width="2.5"/><path d="M${nearEdge} 436H${farEdge}M${nearC - view * 8} 435L${-view * 28} 432" stroke-width="2.5" fill="none"/>`;
+  };
   const glasses = glassesSvg(0);
   /* шарф закрывает шею: верх шарфа уходит под подбородок (32-Д) */
   const scarf = o.acc === 'scarf' ? `<path d="M-22 457Q0 463 22 457L26 478Q0 494 -26 478Z" fill="${lt('#C4694A', 0.05)}" stroke-width="2.8"/><path d="M14 478L20 512L30 508L24 476Z" fill="${lt('#C4694A', 0.05)}" stroke-width="2.8"/><path d="M-12 474v8M0 478v8M12 476v8" stroke="${lt('#C4694A', 0.45)}" stroke-width="2" fill="none"/>` : '';
@@ -341,7 +518,9 @@ export function personParts(o: Look, seat = false): PersonParts {
   const earsSvg = (hide: number) => [-1, 1].map((sg) => (sg === hide ? '' : `<circle cx="${27 * sg}" cy="438" r="5.5" fill="${sk}"/>${o.earrings && o.acc !== 'headphones' ? `<circle cx="${27.4 * sg}" cy="447.4" r="2.1" fill="#E8B04A" stroke-width="1.6"/>` : ''}`)).join('');
   /* у бородача рот лежит внутри бороды: узкая светлая полоска губ вдоль рта, без контура */
   const lips = (mood: MoodId): string => (beardMass && lipsWidth(mood) > 0 ? `<path d="${MOOD[mood].m}" fill="none" stroke="${sk}" stroke-width="${lipsWidth(mood)}" stroke-linecap="round"/>` : '');
-  const halfEye = (cx: number, g: Gaze): string => `<g><ellipse cx="${cx}" cy="438" rx="4.7" ry="2.4" fill="#FFFDF6" stroke-width="1.8"/><ellipse cx="${cx + 0.4 + g.x}" cy="438.3" rx="2.5" ry="1.8" fill="#2F211B" stroke="none"/><path d="M${cx - 5.2} 436.6q5.2 -3 10.4 0" fill="none" stroke-width="2"/></g>`;
+  const halfEye = (cx: number, g: Gaze, k = 1): string => (k === 1
+    ? `<g><ellipse cx="${cx}" cy="438" rx="4.7" ry="2.4" fill="#FFFDF6" stroke-width="1.8"/><ellipse cx="${cx + 0.4 + g.x}" cy="438.3" rx="2.5" ry="1.8" fill="#2F211B" stroke="none"/><path d="M${cx - 5.2} 436.6q5.2 -3 10.4 0" fill="none" stroke-width="2"/></g>`
+    : `<g><ellipse cx="${cx}" cy="438" rx="${+(4.7 * k).toFixed(2)}" ry="2.4" fill="#FFFDF6" stroke-width="1.8"/><ellipse cx="${+(cx + (0.4 + g.x) * k).toFixed(2)}" cy="438.3" rx="${+(2.5 * k).toFixed(2)}" ry="1.8" fill="#2F211B" stroke="none"/><path d="M${+(cx - 5.2 * k).toFixed(2)} 436.6q${+(5.2 * k).toFixed(2)} -3 ${+(10.4 * k).toFixed(2)} 0" fill="none" stroke-width="2"/></g>`);
   const wrinkleTone = tone(sk, WRINKLE_DE);
   const neckTone = tone(sk, 10);
   /* шея: отдельная форма под лицом (слой neck), видимая высота от подбородка по возрасту, ширина 36–44 % ширины лица */
@@ -356,10 +535,25 @@ export function personParts(o: Look, seat = false): PersonParts {
     const brows = browSpec(mood, o.acc === 'glasses', o.hairCol, o.hair === 'beanie', face.brow);
     const closed = m.h || blink === true;
     const fx = view * TURN_SHIFT;
-    const squeeze = (cx: number, svg: string): string => (view !== 0 && Math.sign(cx) === view ? `<g transform="translate(${cx} 0) scale(${TURN_FAR_EYE} 1) translate(${-cx} 0)">${svg}</g>` : svg);
-    const eyes = closed ? `<path d="M-15 438q5 -7 10 0M5 438q5 -7 10 0" fill="none" stroke-width="2.6"/>` : blink === 'half' ? `${squeeze(-10, halfEye(-10, gaze))}${squeeze(10, halfEye(10, gaze))}` : `${squeeze(-10, eye(-10, -8.5, gaze))}${squeeze(10, eye(10, 11.5, gaze))}`;
-    const lash = face.lashes && !closed ? `<path d="M-14.8 ${blink === 'half' ? 436 : 434.4}l-2.3 -2.2M-12.8 ${blink === 'half' ? 434.6 : 432.8}l-1.6 -2.6M14.8 ${blink === 'half' ? 436 : 434.4}l2.3 -2.2M12.8 ${blink === 'half' ? 434.6 : 432.8}l1.6 -2.6" fill="none" stroke-width="1.5" stroke-linecap="round"/>` : '';
-    const browSvg = brows ? `<path d="${brows.d}" fill="none" stroke="${brows.color}" stroke-width="${brows.w}" stroke-linecap="round"/>` : `<path d="${m.b}" fill="none" stroke-width="${OTHER_BROW_W[face.brow]}"/>`;
+    /* дальний при повороте — глаз со стороны движения: он уже в TURN_FAR_EYE раз, всё его окружение (ресницы, бровь) вместе с ним */
+    const kOf = (cx: number): number => (view !== 0 && Math.sign(cx) === view ? TURN_FAR_EYE : 1);
+    const closedEye = (cx: number): string => { const k = kOf(cx); return `M${+(cx - 5 * k).toFixed(2)} 438q${+(5 * k).toFixed(2)} -7 ${+(10 * k).toFixed(2)} 0`; };
+    const eyes = closed ? `<path d="${closedEye(-10)}${closedEye(10)}" fill="none" stroke-width="2.6"/>` : blink === 'half' ? `${halfEye(-10, gaze, kOf(-10))}${halfEye(10, gaze, kOf(10))}` : `${eye(-10, -8.5, gaze, kOf(-10))}${eye(10, 11.5, gaze, kOf(10))}`;
+    const lashSide = (cx: number, sg: number): string => {
+      const k = kOf(cx);
+      const y1 = blink === 'half' ? 436 : 434.4;
+      const y2 = blink === 'half' ? 434.6 : 432.8;
+      const n = (v: number): number => +v.toFixed(2);
+      return `M${n(cx + 4.8 * sg * k)} ${y1}l${n(2.3 * sg * k)} -2.2M${n(cx + 2.8 * sg * k)} ${y2}l${n(1.6 * sg * k)} -2.6`;
+    };
+    const lash = face.lashes && !closed ? `<path d="${lashSide(-10, -1)}${lashSide(10, 1)}" fill="none" stroke-width="1.5" stroke-linecap="round"/>` : '';
+    /* при повороте бровь дальнего глаза сужается вместе с ним (вокруг его центра) */
+    const browPath = (d: string, attrs: string): string => (view === 0 ? `<path d="${d}" fill="none" ${attrs}/>` : d.split(/(?=M)/).filter(Boolean).map((part) => {
+      const cx = (Number((/^M(-?[\d.]+)/.exec(part) ?? [])[1]) || 0) > 0 ? 10 : -10;
+      const k = kOf(cx);
+      return `<path d="${part}" fill="none" ${attrs}${k === 1 ? '' : ` transform="translate(${cx} 0) scale(${k} 1) translate(${-cx} 0)"`}/>`;
+    }).join(''));
+    const browSvg = brows ? browPath(brows.d, `stroke="${brows.color}" stroke-width="${brows.w}" stroke-linecap="round"`) : browPath(m.b, `stroke-width="${OTHER_BROW_W[face.brow]}"`);
     /* возрастные черты (32-Е): мягкие короткие дуги вместо веера; тонкие, полупрозрачные, цвет кожи на тон темнее; при повороте дальняя сторона скрыта */
     const WL = `fill="none" stroke="${wrinkleTone}" stroke-opacity="${WRINKLE_ALPHA}" stroke-width="${WRINKLE_W}" stroke-linecap="round"`;
     const sides = [-1, 1].filter((sg) => sg !== view);
@@ -378,9 +572,9 @@ export function personParts(o: Look, seat = false): PersonParts {
       neck,
       ears: earsSvg(view),
       face: `${faceBase}<path d="M14 408Q34 424 20 452Q28 432 14 408Z" fill="${skd}" fill-opacity=".35" stroke="none"/><path d="M-26 424Q-24 414 -18 410" fill="none" stroke="${lt(sk, 0.5)}" stroke-width="3" stroke-opacity=".7"/>`,
-      beard: view !== 0 && beard ? `<g transform="translate(${fx * 0.45} 0) scale(0.9 1)">${beard}</g>` : beard,
+      beard: view !== 0 ? beardLayer(o.facial, o.hairCol, o.age, fx, face.shape) : beard,
       features: view !== 0 ? `<g transform="translate(${fx} 0)">${feat}</g>` : feat,
-      glasses: view !== 0 && glasses ? `<g transform="translate(${fx * 0.75} 0)">${glassesSvg(view)}</g>` : glasses,
+      glasses: view !== 0 ? glassesSvg(view) : glasses,
       hair: hr.f,
       band,
       bun: hr.o,

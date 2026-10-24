@@ -32,6 +32,9 @@ const OUTFITS = [
 const BEARDS = ['none', 'stubble', 'short', 'mustache', 'beard'].map((f) => ['b_' + f, 'l.sex === "m" && l.age === "adult" && l.acc === "none" && l.facial === "' + f + '" && l.hair !== "beanie"']);
 const SHAPES = [['sq_m', 'l.sex === "m" && l.face.shape === "square" && l.facial === "none" && l.acc === "none"'], ['sq_m2', 'l.sex === "m" && l.face.shape === "square" && l.facial === "beard"'], ['ov_m', 'l.sex === "m" && l.face.shape === "oval" && l.facial === "none" && l.acc === "none"'], ['sq_m3', 'l.sex === "m" && l.face.shape === "square" && l.age === "senior" && l.acc === "none"'], ['rd_f', 'l.sex === "f" && l.face.shape === "round" && l.acc === "none"'], ['ov_f', 'l.sex === "f" && l.face.shape === "oval" && l.acc === "none"']];
 const WRINKLES = [['w_adult_m', 'l.sex === "m" && l.age === "adult" && l.face.wrinkles >= 1 && l.facial === "none" && l.acc === "none"'], ['w_adult_f', 'l.sex === "f" && l.age === "adult" && l.face.wrinkles >= 1 && l.acc === "none"'], ['w_senior_m1', 'l.sex === "m" && l.age === "senior" && l.face.wrinkles === 1 && l.facial === "none" && l.acc === "none"'], ['w_senior_m2', 'l.sex === "m" && l.age === "senior" && l.face.wrinkles === 2 && l.facial === "none" && l.acc === "none"'], ['w_senior_f', 'l.sex === "f" && l.age === "senior" && l.acc === "none"'], ['w_senior_beard', 'l.sex === "m" && l.age === "senior" && l.facial === "beard"']];
+/* 32-Ж: глаза при повороте (м/ж, с очками и без), curly */
+const EYES = [['e_m', 'l.sex === "m" && l.acc === "none" && l.facial === "none" && l.face.lashes === false'], ['e_f', 'l.sex === "f" && l.acc === "none" && l.face.lashes === true'], ['e_m_gl', 'l.sex === "m" && l.acc === "glasses"'], ['e_f_gl', 'l.sex === "f" && l.acc === "glasses"']];
+const CURLY = [['c_m', 'l.hair === "curly" && l.sex === "m" && l.acc === "none"'], ['c_f', 'l.hair === "curly" && l.sex === "f" && l.acc === "none"']];
 const SEAT32 = { sm_coat: 'l.sex === "m" && l.outfit === "coat"', sm_vest: 'l.sex === "m" && l.outfit === "vest" && l.facial === "beard"', sm_hoodie: 'l.sex === "m" && l.outfit === "hoodie"', sf_dress: 'l.sex === "f" && l.outfit === "dress"', sf_cardigan: 'l.sex === "f" && l.outfit === "cardigan"', sf_beltcoat: 'l.sex === "f" && l.outfit === "beltcoat"' };
 (async () => {
   const PW = require('./pw');
@@ -107,6 +110,26 @@ const SEAT32 = { sm_coat: 'l.sex === "m" && l.outfit === "coat"', sm_vest: 'l.se
   if (mode === 'faces' || mode === 'all') await lineup(FACES, 'face');
   if (mode === 'shapes') await lineup(SHAPES, 'shape', true);
   if (mode === 'wrinkles') await lineup(WRINKLES, 'wr', true);
+  const headTurn = async (list, prefix) => {
+    for (const [name, pred] of list) for (const [dn, dir] of [['front', 0], ['right', 1], ['left', -1]]) {
+      const { p, errs } = await open();
+      const sd = await p.evaluate(pred => window.__seed(pred, false), pred);
+      await p.evaluate(([sd, dir]) => { window.__a = window.__spawn(sd, dir >= 0 ? 300 : 900); window.__x = dir >= 0 ? 300 : 900; window.__dir = dir; }, [sd, dir]);
+      await p.waitForTimeout(3000);
+      await p.evaluate(() => { const a = window.__a; for (let i = 0; i < 20; i++) { a.update(1 / 30, window.__x, 0); window.__dbg.WORLD.update(1 / 30, 0.3, 480); } });
+      await p.waitForTimeout(1500);
+      await p.evaluate(() => { const a = window.__a; for (let i = 0; i < 40; i++) { window.__x += window.__dir * 105 / 30; a.update(1 / 30, window.__x, 0); } window.__dbg.WORLD.update(1 / 30, 0.3, 480); });
+      /* картинка головы «вбок» запекается асинхронно: ждём и продолжаем идти */
+      await p.waitForTimeout(2500);
+      await p.evaluate(() => { const a = window.__a; for (let i = 0; i < 10; i++) { window.__x += window.__dir * 105 / 30; a.update(1 / 30, window.__x, 0); } window.__dbg.WORLD.update(1 / 30, 0.3, 480); });
+      save(`${prefix}_${name}_${dn}.png`, await p.evaluate(() => window.__crop(window.__x - 60, 262, 120, 120, 540, 540)));
+      console.log(prefix, name, dn, 'seed', sd.s, 'ERRS', errs.slice(0, 3).join('|') || 'нет');
+      await p.context().close();
+    }
+  };
+  if (mode === 'eyes') await headTurn(EYES, 'eyes');
+  if (mode === 'stubble') await headTurn([['st_m', 'l.sex === "m" && l.age === "adult" && l.acc === "none" && l.facial === "stubble"'], ['st_dark', 'l.sex === "m" && l.facial === "stubble" && l.age === "adult" && l.hair !== "short"'], ['st_senior', 'l.sex === "m" && l.age === "senior" && l.facial === "stubble"'], ['sh_m', 'l.sex === "m" && l.facial === "short"'], ['bd_m', 'l.sex === "m" && l.facial === "beard" && l.acc === "none"'], ['mu_m', 'l.sex === "m" && l.facial === "mustache" && l.acc === "none"']], 'stub');
+  if (mode === 'curly') { await headTurn(CURLY, 'curly'); }
   if (mode === 'outfits') await lineup(OUTFITS, 'outfit');
   if (mode === 'beards') {
     await lineup(BEARDS, 'beard');
