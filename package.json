@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/game src/ui src/render test",
     "format": "prettier --write \"src/game/**/*.ts\" \"test/**/*.ts\"",
+    "e2e": "node e2e/run.mjs",
     "check": "npm run typecheck && npm run lint && npm test && npm run content:check",
     "sim:table": "node scripts/make-typical-progress.mjs",
     "audit:recipes": "node scripts/make-recipes-audit.mjs",

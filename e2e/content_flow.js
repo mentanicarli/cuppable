@@ -23,7 +23,7 @@ const out = process.argv[3] || 'out/content';
   await pw.startNew(p); await p.waitForTimeout(500);
 
   /* ---------- 1. книга рецептов ---------- */
-  await p.evaluate(() => { const G = window.__dbg.G; G.rank = 9; G.day = 31; G.milk = true; });
+  await p.evaluate(() => { const G = window.__dbg.G; G.rank = 9; G.day = 31; G.milk = true; G.money = 20000; /* аренда 9-го ранга 1550 ₽ (33-Д): без денег день заканчивается экраном «Игра окончена», а не вечером */ });
   await p.evaluate(() => window.__dbg.endDay()); await p.waitForSelector('.evening', { timeout: 15000 }); await p.waitForTimeout(1200);
   await p.click('[data-book=evening]'); await p.waitForTimeout(700);
   await p.click('[data-bookfam=milk]'); await p.waitForTimeout(300);

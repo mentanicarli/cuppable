@@ -184,7 +184,9 @@ const out = process.argv[3] || 'out/vf';
         WORLD.app.render(); const px = window.__px();
         window.__acts.filter(a => a.__row === row).forEach(a => {
           const cx = a.__x + (walking ? 89 * 1.2 : 0), y0 = 600;
-          const h = window.__holes(px, cx - 20, y0 - 125 * K, cx + 20, y0 - 32 * K);
+          /* низ проверяемого окна — подол: с 32-Ж мужские пальто и куртки короче (MALE_HEM_Y в art.ts: coat 558, jacket 554, suit 560), ниже подола видны ноги, а не торс */
+          const HEM = { coat: 558, jacket: 554, suit: 560 }, up = Math.max(32, 601 - (HEM[a.__look.outfit] || 0));
+          const h = window.__holes(px, cx - 20, y0 - 125 * K, cx + 20, y0 - up * K);
           total++; if (h > 0.004) bad.push(`${a.__look.outfit}/${a.__look.build}/${a.__look.cloth} ${(h * 100).toFixed(1)}%`);
         });
       }

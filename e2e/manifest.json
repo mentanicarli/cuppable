@@ -1,0 +1,979 @@
+{
+ "version": 1,
+ "note": "e2e не входят в npm run check и в деплой. kind: test — сценарий с проверками, shot — кадры и листы, measure — замер, helper — вспомогательный; stability: stable / flaky / broken / obsolete / tool. Плейсхолдеры в args: {html} отладочная сборка, {out} префикс файлов теста в out/e2e/<имя>/, {dir} папка теста.",
+ "groups": {
+  "release": [
+   "abandon_refund",
+   "bar_test2",
+   "book_tut",
+   "closing_flow",
+   "content_flow",
+   "drip_flow",
+   "exit_say_test",
+   "food_test",
+   "helper_test",
+   "menu_flow",
+   "milk_flow",
+   "pause_test",
+   "sandbox_flow",
+   "sides_flow",
+   "tutorial_flow",
+   "visual_fixes_test",
+   "zones_test"
+  ]
+ },
+ "tests": [
+  {
+   "name": "abandon_refund",
+   "file": "abandon_refund.js",
+   "kind": "test",
+   "args": [
+    "{html}"
+   ],
+   "timeout": 300,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "возврат расходов, если гость ушёл посреди заказа; помощник и игрок не списывают дважды"
+  },
+  {
+   "name": "bar_test2",
+   "file": "bar_test2.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{out}",
+    "espresso"
+   ],
+   "timeout": 300,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "один полный заказ в баре на мыши (эспрессо): помол, темпер, шот, подача, деньги"
+  },
+  {
+   "name": "book_tut",
+   "file": "book_tut.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{out}"
+   ],
+   "timeout": 200,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "книга рецептов: цена недостающего оборудования, кнопка «Подсказка», «Точные цифры»"
+  },
+  {
+   "name": "closing_flow",
+   "file": "closing_flow.js",
+   "kind": "test",
+   "args": [
+    "{html}"
+   ],
+   "timeout": 200,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "закрытие кафе: после 18:00 новых гостей нет, страховка завершает день без штрафа"
+  },
+  {
+   "name": "cold_steam",
+   "file": "cold_steam.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{out}"
+   ],
+   "timeout": 200,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "пар только у горячих напитков"
+  },
+  {
+   "name": "content_flow",
+   "file": "content_flow.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{out}"
+   ],
+   "timeout": 600,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "тексты К1 в игре: книга, справочник, окна «Зачем», карточка «Новый напиток»"
+  },
+  {
+   "name": "drip_flow",
+   "file": "drip_flow.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{dir}"
+   ],
+   "timeout": 300,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "капельная кофеварка: покупка, заварка колбы, подача фильтр-кофе"
+  },
+  {
+   "name": "exit_say_test",
+   "file": "exit_say_test.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{out}"
+   ],
+   "timeout": 300,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "реплика гостя не переживает выход из дня"
+  },
+  {
+   "name": "food_test",
+   "file": "food_test.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{out}"
+   ],
+   "timeout": 200,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "еда с витрины: заказ, разогрев, станция еды"
+  },
+  {
+   "name": "guide_screen",
+   "file": "guide_screen.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{out}"
+   ],
+   "timeout": 200,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "справочник как отдельный экран, возврат туда, откуда открыт"
+  },
+  {
+   "name": "helper_test",
+   "file": "helper_test.js",
+   "kind": "test",
+   "args": [
+    "{html}"
+   ],
+   "timeout": 400,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "помощник: американо, чай, холодный чай; деньги и счёт"
+  },
+  {
+   "name": "menu_flow",
+   "file": "menu_flow.js",
+   "kind": "test",
+   "args": [
+    "{out}"
+   ],
+   "timeout": 400,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "главное меню, настройки, пауза, сохранение, экспорт и импорт",
+   "server": true,
+   "pass": "NO_ERRORS|OK|ok"
+  },
+  {
+   "name": "menu_test",
+   "file": "menu_test.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{out}",
+    "latte"
+   ],
+   "timeout": 200,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "заказ напитка по ключу из меню (латте)"
+  },
+  {
+   "name": "milk_flow",
+   "file": "milk_flow.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{out}"
+   ],
+   "timeout": 400,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "магазин по рангам, покупка молока, обучение молоку и пару"
+  },
+  {
+   "name": "music_test",
+   "file": "music_test.js",
+   "kind": "test",
+   "args": [],
+   "timeout": 200,
+   "debug": false,
+   "stability": "broken",
+   "retry": 0,
+   "note": "плеер музыки на коротких тестовых треках: нужны сгенерированные треки (scratch gen.mjs, MUSIC_DIR) и сервер; сценарий не самодостаточен",
+   "server": true
+  },
+  {
+   "name": "noshot_flow",
+   "file": "noshot_flow.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{out}"
+   ],
+   "timeout": 400,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "напитки без шота: заливка по клику на чашку; латте с шотом"
+  },
+  {
+   "name": "pause_test",
+   "file": "pause_test.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{out}"
+   ],
+   "timeout": 200,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "пауза во время приготовления: окна скрыты, ввод заблокирован, «Продолжить»"
+  },
+  {
+   "name": "sandbox_flow",
+   "file": "sandbox_flow.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{out}"
+   ],
+   "timeout": 200,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "песочница #dev: день 10, ранг 5, заказ, «Закончить день»; сейв не меняется"
+  },
+  {
+   "name": "sections_cam",
+   "file": "sections_cam.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{dir}"
+   ],
+   "timeout": 200,
+   "debug": true,
+   "stability": "obsolete",
+   "retry": 0,
+   "note": "камера секций бара (Б1-1): ожидания про «#dev открывает обе секции» устарели с 31-7; логику камеры проверяют sections_flow и sides_flow"
+  },
+  {
+   "name": "sections_flow",
+   "file": "sections_flow.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{dir}/a",
+    "{dir}/b",
+    "{dir}/c"
+   ],
+   "timeout": 600,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "листание бара: клавиши, стрелки, перетаскивание, блокировки, зоны боковых секций"
+  },
+  {
+   "name": "sides_flow",
+   "file": "sides_flow.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{dir}"
+   ],
+   "timeout": 400,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "боковые секции у игрока: покупка чая и бабл ти, плашка, стрелки, возврат"
+  },
+  {
+   "name": "ticket_names",
+   "file": "ticket_names.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{out}"
+   ],
+   "timeout": 300,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "билет и пузырь гостя: название напитка целиком, цвет плашек"
+  },
+  {
+   "name": "toast_say",
+   "file": "toast_say.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{dir}"
+   ],
+   "timeout": 200,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "тост зала и реплика гостя не налезают друг на друга"
+  },
+  {
+   "name": "tutorial_flow",
+   "file": "tutorial_flow.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{out}"
+   ],
+   "timeout": 300,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "подсказки новой станции на примере матчи"
+  },
+  {
+   "name": "visual_fixes_test",
+   "file": "visual_fixes_test.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{out}"
+   ],
+   "timeout": 600,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "кольцо фокуса меню, сидящий гость, гости без просветов, порядок слоёв пола"
+  },
+  {
+   "name": "zones_test",
+   "file": "zones_test.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{out}"
+   ],
+   "timeout": 200,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "зоны бара: нет оборудования — нет клика; «X не нужен»"
+  },
+  {
+   "name": "zones_check",
+   "file": "zones_check.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{dir}"
+   ],
+   "timeout": 300,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "зоны боковых секций и полосы интерфейса на 1280×720 и 1024×600",
+   "pass": "ALL OK"
+  },
+  {
+   "name": "art_checks",
+   "file": "art_checks.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{out}"
+   ],
+   "timeout": 600,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "аудит вёрстки: наложения, панели, чашки, тексты, узнаваемость"
+  },
+  {
+   "name": "art_misc",
+   "file": "art_misc.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{out}",
+    "load"
+   ],
+   "timeout": 300,
+   "debug": true,
+   "stability": "stable",
+   "retry": 0,
+   "note": "аудит графики, часть 2 (нагрузка: разбор реплик)"
+  },
+  {
+   "name": "art_panel_clicks",
+   "file": "art_panel_clicks.js",
+   "kind": "test",
+   "args": [
+    "{html}",
+    "{out}"
+   ],
+   "timeout": 3600,
+   "debug": true,
+   "stability": "broken",
+   "retry": 1,
+   "note": "клики по кнопкам всех панелей станций; на этой машине не укладывается в час (за 45 минут две панели из двадцати), страница падает без звукового устройства; нужен отдельный разбор"
+  },
+  {
+   "name": "art_under_clicks",
+   "file": "art_under_clicks.js",
+   "kind": "test",
+   "args": [
+    "{html}"
+   ],
+   "timeout": 200,
+   "debug": true,
+   "stability": "obsolete",
+   "retry": 0,
+   "note": "центры зон food, ice, micro (этап 12.3(2)): ждёт заранее подготовленный файл out/s5/after.dbg.html с вшитым хуком __dbg и читает out/s5/after.html; зоны проверяют zones_test и zones_check"
+  },
+  {
+   "name": "art_bar_shot",
+   "file": "art_bar_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "art_pilot_shot",
+   "file": "art_pilot_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "art_under_shot",
+   "file": "art_under_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "bar_items_shot",
+   "file": "bar_items_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "bar_shot",
+   "file": "bar_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "brand_png",
+   "file": "brand_png.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "c1_cups4",
+   "file": "c1_cups4.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "c1_cups6",
+   "file": "c1_cups6.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "c1_pf7",
+   "file": "c1_pf7.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "c1_shot",
+   "file": "c1_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "c1_shot2",
+   "file": "c1_shot2.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "c2_shot",
+   "file": "c2_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "c3_shot",
+   "file": "c3_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "c4_shot",
+   "file": "c4_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "coach_shot",
+   "file": "coach_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "crop",
+   "file": "crop.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "drink_model_shot",
+   "file": "drink_model_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "drip_c2_shot",
+   "file": "drip_c2_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "empty_shot",
+   "file": "empty_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "errs",
+   "file": "errs.js",
+   "kind": "helper",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "отладка: печатает ошибки страницы"
+  },
+  {
+   "name": "fps",
+   "file": "fps.js",
+   "kind": "measure",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "замер (не тест)"
+  },
+  {
+   "name": "grind_shot",
+   "file": "grind_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "layer_shot",
+   "file": "layer_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "levels_sheet",
+   "file": "levels_sheet.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "machine_shot",
+   "file": "machine_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "menu_game_shot",
+   "file": "menu_game_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "paint_time",
+   "file": "paint_time.js",
+   "kind": "measure",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "замер (не тест)"
+  },
+  {
+   "name": "pair",
+   "file": "pair.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "panel_shot",
+   "file": "panel_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "people_shot",
+   "file": "people_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "perf3",
+   "file": "perf3.js",
+   "kind": "measure",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "замер (не тест)"
+  },
+  {
+   "name": "places_shot",
+   "file": "places_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "pw",
+   "file": "pw.js",
+   "kind": "helper",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "общие помощники: страница, запуск новой игры, зоны, песочница, закрытие окон"
+  },
+  {
+   "name": "r6_shot",
+   "file": "r6_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "s1_shot",
+   "file": "s1_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "s2_shot",
+   "file": "s2_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "s3_shot",
+   "file": "s3_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "scene_shot",
+   "file": "scene_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "seat_shot",
+   "file": "seat_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "seq_shot",
+   "file": "seq_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "sheet",
+   "file": "sheet.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "shop_icons_shot",
+   "file": "shop_icons_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "sign_shot",
+   "file": "sign_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "steam_shot",
+   "file": "steam_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "step_times",
+   "file": "step_times.js",
+   "kind": "measure",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "замер (не тест)"
+  },
+  {
+   "name": "tile",
+   "file": "tile.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "world_shot",
+   "file": "world_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  }
+ ]
+}

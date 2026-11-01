@@ -27,7 +27,7 @@ const { chromium } = require('playwright'); const path = require('path'); const 
   await p.screenshot({ path: process.argv[3] + '_book_milk.png' });
   await p.click('[data-bookfam=tonic]'); await p.waitForTimeout(400);
   await p.click('.bkExactBtn'); await p.waitForTimeout(400);
-  ok('холодные: в «Точных цифрах» тоника лёд и слои', await p.evaluate(() => /Лёд/.test(document.querySelector('.bkTbl').textContent) && /Слои/.test(document.querySelector('.bkExact').textContent)));
+  ok('холодные: в «Точных цифрах» тоника лёд и слои', await p.evaluate(() => /Лёд/.test(document.querySelector('.bkTbl').textContent) && /слои: лёд/.test(document.querySelector('.bkExact').textContent)));
   await p.screenshot({ path: process.argv[3] + '_book_cold.png' });
   console.log(errs.length ? errs.join('\n') : 'NO_ERRORS'); await b.close();
 })().catch(e => { console.error(e); process.exit(1); });
