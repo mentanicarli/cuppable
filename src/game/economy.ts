@@ -66,7 +66,18 @@ export function settle(i: SettleIn): Settled {
 export const ratingAfterLoss = (rating: number): number => Math.max(1, rating - 0.15);
 
 /** Плата за аренду и проверка конца игры в конце дня. */
-export const rentFor = (rank = 1): number => Math.round((RENT_BASE * (1 + 0.45 * (Math.max(1, rank) - 1))) / 10) * 10;
+/* Рост аренды с рангом: до 4-го ранга +0,45 базы за ранг (защита новичка, как всегда), с 5-го ранга +RENT_LATE_STEP за ранг (33-Г; было 0,45).
+   Подобрано на симуляции с профилями скорости 0,70–1,40: при 2,0 ни у одного профиля нет конца игры к 60-му дню, при 2,5 он появляется у медленного (1,20), при 3,0 — у неторопливого (1,00).
+   Временное значение до реальных смен: вернуть 0,45, чтобы откатить. */
+export const RENT_STEP = 0.45;
+export const RENT_LATE_FROM = 5;
+export const RENT_LATE_STEP = 2.0;
+export const rentFor = (rank = 1): number => {
+  const r = Math.max(1, rank);
+  const early = Math.min(r, RENT_LATE_FROM - 1) - 1;
+  const late = Math.max(0, r - (RENT_LATE_FROM - 1));
+  return Math.round((RENT_BASE * (1 + RENT_STEP * early + RENT_LATE_STEP * late)) / 10) * 10;
+};
 
 /** Зарплата помощника за смену: растёт с рангом на 10 ₽ (ранг 5 — 70, ранг 9 — 110; до 33-Б шаг был 25 ₽). */
 export const helperWage = (rank: number): number => 60 + 10 * Math.max(0, rank - 4);

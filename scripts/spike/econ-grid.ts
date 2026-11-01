@@ -45,7 +45,7 @@ if (mode === 'cmp') {
   const g = Number(process.env['RENT_G'] ?? 0.45), sx = Number(process.env['RENT_S'] ?? 0);
   const rows: string[][] = [];
   for (const p of [...PROFILE_SET, STRESS]) {
-    for (const [lab, rules] of [['до', {}], ['после', { rent: rentWith(g, sx) }]] as Array<[string, Rules]>) {
+    for (const [lab, rules] of [['до', { rent: rentWith(0.45, 0) }], ['после', { rent: rentWith(g, sx) }]] as Array<[string, Rules]>) {
       const sm = summarize(runProfile(p.prof, 60, { rules }), [10, 20, 30, 40, 60]);
       rows.push([p.key, lab, ...[10, 20, 30, 40, 60].map((d) => `${n0(sm.money[d] as number)} / ${pc(sm.over[d] as number)}`), n0(sm.rank9Day), `${n0(sm.waitMax)}`]);
     }
