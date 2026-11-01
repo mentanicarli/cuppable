@@ -133,6 +133,24 @@ if (mode === 'rent') {
   }
   out.push('**Аренда после правки штрафа: конец игры к 40-му / 60-му дню; деньги на 40-й день (медиана, ₽). Профили скорости × доля брака:**', '', ...md([...head, ...combos.map(([k, b]) => (b === null ? k : `${k} / ${pc(b)}`))], rows));
 }
+
+if (mode === 'final') {
+  /* до: штраф 0,15 на всех рангах и аренда 33-Г (g = 2,0); после: код игры как есть */
+  const rentOld = (rank: number): number => (rank <= 4 ? rentFor(rank) : Math.round((RENT_BASE * (1 + 0.45 * 3 + 2.0 * (rank - 4))) / 10) * 10);
+  const before: Rules = { loss: lossFn(LOSS, null, null), rent: rentOld };
+  const combos: Array<[string, number | null]> = [['0.70', null], ['0.88', null], ...BADS.map((b) => ['1.00', b] as [string, number | null]), ...BADS.map((b) => ['1.20', b] as [string, number | null]), ...BADS.map((b) => ['1.40', b] as [string, number | null])];
+  const rows: string[][] = [];
+  for (const [k, b] of combos) {
+    const prof = b === null ? slow(k) : withQ(slow(k), b);
+    for (const [lab, rules] of [['до', before], ['после', {}]] as Array<[string, Rules]>) {
+      const sims = runs(prof, 60, rules);
+      const sm = summarize(sims, [40, 60]);
+      const at = (d: number): string => `${n0(rankAt(sims, d))} / ${n2(ratingAt(sims, d))}`;
+      rows.push([k, b === null ? '—' : pc(b), lab, at(15), at(30), `${pc(sm.over[40] as number)} / ${pc(sm.over[60] as number)}`, n0(sm.money[40] as number), [3, 4, 5].map((r) => dayStr(rankDay(sims, r))).join(' / ')]);
+    }
+  }
+  out.push('**Профиль × (ранг / рейтинг на 15-й и 30-й день, конец игры к 40-му / 60-му дню, деньги на 40-й день, день вступления рангов 3 / 4 / 5):**', '', ...md(['Профиль', 'Брак', '', 'д15', 'д30', 'Конец игры д40 / д60', 'Деньги д40', 'Ранги 3/4/5'], rows));
+}
 void RENT_BASE; void summarize;
 mkdirSync('out/economy', { recursive: true });
 writeFileSync(`out/economy/33d-${mode}.md`, out.join('\n') + '\n');
