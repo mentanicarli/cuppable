@@ -1,7 +1,7 @@
 /* Копия цикла дня и прогона из src/game/playerModel.ts со счётчиками, работой помощника и подменой правил (аренда, приход гостей, цены магазина).
    Без подмены правил даёт те же доходы и снимки, что simulate() (проверяет economy-audit.ts). Только для скриптов аудита, в игру не входит. */
 import { drinkCost, helperWage, ratingAfterLoss, rentFor, settle, settleDay, DEBT_LIMIT } from '../../src/game/economy';
-import { EQ_IMPL, nextRank } from '../../src/game/menu';
+import { EQ_IMPL, MAX_RANK, nextRank, rankInfo } from '../../src/game/menu';
 import { estimatedPrepSeconds, patienceMax, queueDecayRate } from '../../src/game/patience';
 import { CLOSING_LIMIT, DAY_LEN, arrivalRange, isRush } from '../../src/game/shift';
 import { FOOD_COST_SHARE } from '../../src/game/food';
@@ -21,12 +21,20 @@ export interface Rules {
   cost?: Readonly<Record<string, number>>;
   /** зарплата помощника по рангу */
   wage?: (rank: number) => number;
+  /** рейтинг после потерянного гостя (по умолчанию ratingAfterLoss) */
+  loss?: (rating: number, day: number, rank: number) => number;
+  /** день, по которому считается поддержка новичков в терпении (по умолчанию сам день) */
+  newbieDay?: (day: number) => number;
+  /** пороги рейтинга рангов вместо progression.json */
+  rankRating?: Readonly<Record<number, number>>;
+  /** гости не уходят (бесконечное терпение): сколько дней шёл бы игрок без потерь */
+  noLoss?: boolean;
 }
 
 /* ---------- копия дня модели с счётчиками ---------- */
 export interface DayState { day: number; rank: number; rating: number; owned: Record<string, boolean> }
-export interface DayOut { revenue: number; price: number; tips: number; costs: number; served: number; lost: number; guests: number; rating: number; byHelper: number; foodGuests: number; hlpCosts: number; hTea: number }
-export interface Guest { type: CustomerType; pat: number; order: Order; taken?: boolean }
+export interface DayOut { revenue: number; price: number; tips: number; costs: number; served: number; lost: number; guests: number; rating: number; byHelper: number; foodGuests: number; hlpCosts: number; hTea: number; lostPos: number[]; lostLen: number[]; gotLen: number[] }
+export interface Guest { type: CustomerType; pat: number; order: Order; taken?: boolean; len: number }
 const STEP = 0.5;
 export interface Opt { helperWork?: boolean; extraKeys?: ReadonlySet<string>; rules?: Rules }
 
@@ -44,13 +52,15 @@ export function playDay(s: DayState, prof: Profile, rng: () => number, opt: Opt 
   const owned = s.owned;
   const eq = Object.fromEntries(EQ_IMPL.map((e) => [e, !!owned['eq_' + e]]));
   const typeOf = (): CustomerType => { const r = rng(); return day === 1 ? (r < 0.6 ? 'regular' : 'student') : r < 0.45 ? 'regular' : r < 0.75 ? 'student' : 'hurry'; };
-  const out: DayOut = { revenue: 0, price: 0, tips: 0, costs: 0, served: 0, lost: 0, guests: 0, rating, byHelper: 0, foodGuests: 0, hlpCosts: 0, hTea: 0 };
+  const out: DayOut = { revenue: 0, price: 0, tips: 0, costs: 0, served: 0, lost: 0, guests: 0, rating, byHelper: 0, foodGuests: 0, hlpCosts: 0, hTea: 0, lostPos: [0, 0, 0], lostLen: [0, 0, 0], gotLen: [0, 0, 0] };
   const queue: Guest[] = [];
   let nextArr = 4, prep: Guest | null = null, prepLeft = 0, prepCost = 0;
   let hg: Guest | null = null, hLeft = 0, hCost = 0;
   const lose = (g: Guest): void => {
-    rating = ratingAfterLoss(rating);
+    rating = opt.rules?.loss ? opt.rules.loss(rating, day, rank) : ratingAfterLoss(rating);
     out.lost++;
+    out.lostPos[Math.min(2, queue.indexOf(g))]++;
+    out.lostLen[g.len]++;
     queue.splice(queue.indexOf(g), 1);
     if (g === prep) { prep = null; out.costs -= prepCost; }
     if (g === hg) { hg = null; out.costs -= hCost; out.hlpCosts -= hCost; }
@@ -65,8 +75,11 @@ export function playDay(s: DayState, prof: Profile, rng: () => number, opt: Opt 
           nextArr = gap(day, rating, t, !!owned['wifi'], rng, opt.rules);
           const type = typeOf();
           const ord = rollOrder({ rank, day, milk: !!owned['milk'], eq }, type, rng);
-          const pat = patienceMax(type, { cozy: !!owned['cozy'], helper: !!owned['helper'], prep: estimatedPrepSeconds(ord), day, rng });
-          queue.push({ type, pat, order: ord });
+          const prepS = estimatedPrepSeconds(ord);
+          const pat0 = patienceMax(type, { cozy: !!owned['cozy'], helper: !!owned['helper'], prep: prepS, day: opt.rules?.newbieDay ? opt.rules.newbieDay(day) : day, rng });
+          const len = prepS <= 40 ? 0 : prepS <= 70 ? 1 : 2;
+          out.gotLen[len]++;
+          queue.push({ type, pat: opt.rules?.noLoss ? 1e9 : pat0, order: ord, len });
           out.guests++;
           if (ord.food) out.foodGuests++;
         }
@@ -129,7 +142,7 @@ export function playDay(s: DayState, prof: Profile, rng: () => number, opt: Opt 
 }
 
 /** Полный прогон по дням (копия simulate); policy.noHelper — помощник не покупается; policy.helperWork — помощник готовит сам. */
-export interface DayRec { day: number; rank: number; revenue: number; price: number; tips: number; costs: number; rent: number; net: number; moneyEnd: number; served: number; lost: number; guests: number; byHelper: number; teaH: number; owned: number }
+export interface DayRec { lostPos: number[]; lostLen: number[]; gotLen: number[]; day: number; rank: number; revenue: number; price: number; tips: number; costs: number; rent: number; net: number; moneyEnd: number; served: number; lost: number; guests: number; byHelper: number; teaH: number; owned: number }
 export interface Sim { run: Run; days: DayRec[]; overDay: number; moneyOver: number; minMoney: number; helperDay: number }
 export interface Policy { rules?: Rules; extraKeys?: ReadonlySet<string>; noReserve?: boolean; noHelper?: boolean; helperWork?: boolean; helperAt?: number }
 export function simFull(seed: number, prof: Profile, days: number, pol: Policy = {}): Sim {
@@ -150,9 +163,11 @@ export function simFull(seed: number, prof: Profile, days: number, pol: Policy =
     money = fin.money;
     run.income.push(o.revenue - o.costs - fin.rent);
     minMoney = Math.min(minMoney, money);
-    rec.push({ day, rank, revenue: o.revenue, price: o.price, tips: o.tips, costs: o.costs, rent: fin.rent, net: o.revenue - o.costs - fin.rent, moneyEnd: money, served: o.served, lost: o.lost, guests: o.guests, byHelper: o.byHelper, teaH: o.hTea, owned: order.length });
+    rec.push({ lostPos: o.lostPos, lostLen: o.lostLen, gotLen: o.gotLen, day, rank, revenue: o.revenue, price: o.price, tips: o.tips, costs: o.costs, rent: fin.rent, net: o.revenue - o.costs - fin.rent, moneyEnd: money, served: o.served, lost: o.lost, guests: o.guests, byHelper: o.byHelper, teaH: o.hTea, owned: order.length });
     if (fin.over) { run.over = true; overDay = day; moneyOver = money; break; }
-    const nr = nextRank(rank, { day: day + 1, rating, served });
+    const nr = pol.rules?.rankRating
+      ? (() => { if (rank >= MAX_RANK) return null; const n = rankInfo(rank + 1); return day + 1 >= n.minDay && rating >= (pol.rules?.rankRating?.[n.rank] ?? n.minRating) && served >= n.minServed ? n : null; })()
+      : nextRank(rank, { day: day + 1, rating, served });
     if (nr) { rank = nr.rank; run.rank.set(rank, day); }
     const eveningRent = (pol.rules?.rent ?? rentFor)(rank);
     let blocked = false;
