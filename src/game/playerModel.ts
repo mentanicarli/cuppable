@@ -144,7 +144,7 @@ export function simulate(seed: number, prof: Profile, days = 40): Run {
       if (owned['helper'] && rank >= HELPER_MIN_RANK) {
         if (!hg) {
           const cand = queue.filter((g) => g !== prep && !g.taken);
-          const pick = helperPick(cand.map((g, i) => ({ id: i, drink: g.order.key, arrived: true, leaving: false, pat: g.pat, syrup: g.order.syrup ? g.order.syrup.name : null, food: !!g.order.food })), null, null);
+          const pick = helperPick(cand.map((g, i) => ({ id: i, drink: g.order.key, arrived: true, leaving: false, pat: g.pat, syrup: g.order.syrup ? g.order.syrup.name : null, food: !!g.order.food })), null, null, eq);
           if (pick) {
             hg = cand[pick.id] as Guest;
             hg.taken = true;

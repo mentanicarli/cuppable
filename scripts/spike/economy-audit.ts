@@ -12,7 +12,7 @@ import { RAF_NO_VANILLA_SHARE, rollOrder } from '../../src/game/orders';
 import { cardVariants } from '../../src/game/recipeCard';
 import { recipeNumbers } from '../../src/game/volumes';
 import { BATCHES, CARAFE_ML } from '../../src/game/stations/drip';
-import { HELPER_KEYS, HELPER_MIN_RANK, helperPrepTime, helperQuality } from '../../src/game/helper';
+import { HELPER_KEYS, HELPER_MIN_RANK, HELPER_TEA_MINUTES, helperPrepTime, helperQuality } from '../../src/game/helper';
 import { PRIORITY, PROFILES, SHOP_DEFS, isPurchasable, seeded, simulate } from '../../src/game/playerModel';
 import type { Profile, Run, ShopDef } from '../../src/game/playerModel';
 import type { CustomerType, Order, Quality, Size } from '../../src/game/types';
@@ -32,7 +32,7 @@ const nameOf = (id: string): string => SHOP_DEFS.find((x) => x.id === id)?.name 
 
 /* ---------- копия дня модели с счётчиками ---------- */
 interface DayState { day: number; rank: number; rating: number; owned: Record<string, boolean> }
-interface DayOut { revenue: number; price: number; tips: number; costs: number; served: number; lost: number; guests: number; rating: number; byHelper: number; foodGuests: number; hlpCosts: number }
+interface DayOut { revenue: number; price: number; tips: number; costs: number; served: number; lost: number; guests: number; rating: number; byHelper: number; foodGuests: number; hlpCosts: number; hTea: number }
 interface Guest { type: CustomerType; pat: number; order: Order; taken?: boolean }
 const STEP = 0.5;
 interface Opt { helperWork?: boolean; extraKeys?: ReadonlySet<string> }
@@ -43,7 +43,7 @@ function playDay(s: DayState, prof: Profile, rng: () => number, opt: Opt = {}): 
   const owned = s.owned;
   const eq = Object.fromEntries(EQ_IMPL.map((e) => [e, !!owned['eq_' + e]]));
   const typeOf = (): CustomerType => { const r = rng(); return day === 1 ? (r < 0.6 ? 'regular' : 'student') : r < 0.45 ? 'regular' : r < 0.75 ? 'student' : 'hurry'; };
-  const out: DayOut = { revenue: 0, price: 0, tips: 0, costs: 0, served: 0, lost: 0, guests: 0, rating, byHelper: 0, foodGuests: 0, hlpCosts: 0 };
+  const out: DayOut = { revenue: 0, price: 0, tips: 0, costs: 0, served: 0, lost: 0, guests: 0, rating, byHelper: 0, foodGuests: 0, hlpCosts: 0, hTea: 0 };
   const queue: Guest[] = [];
   let nextArr = 4, prep: Guest | null = null, prepLeft = 0, prepCost = 0;
   let hg: Guest | null = null, hLeft = 0, hCost = 0;
@@ -98,7 +98,7 @@ function playDay(s: DayState, prof: Profile, rng: () => number, opt: Opt = {}): 
         }
       } else {
         hLeft -= STEP;
-        if (hLeft <= 0) { const g: Guest = hg; hg = null; out.byHelper++; settleGuest(g, helperQuality(rank, rng), false); }
+        if (hLeft <= 0) { const g: Guest = hg; hg = null; out.byHelper++; if (g.order.key in HELPER_TEA_MINUTES) out.hTea++; settleGuest(g, helperQuality(rank, rng), false); }
       }
     }
     if (!prep) {
@@ -128,7 +128,7 @@ function playDay(s: DayState, prof: Profile, rng: () => number, opt: Opt = {}): 
 }
 
 /** Полный прогон по дням (копия simulate); policy.noHelper — помощник не покупается; policy.helperWork — помощник готовит сам. */
-interface DayRec { day: number; rank: number; revenue: number; price: number; tips: number; costs: number; rent: number; net: number; moneyEnd: number; served: number; lost: number; guests: number; byHelper: number; owned: number }
+interface DayRec { day: number; rank: number; revenue: number; price: number; tips: number; costs: number; rent: number; net: number; moneyEnd: number; served: number; lost: number; guests: number; byHelper: number; teaH: number; owned: number }
 interface Sim { run: Run; days: DayRec[]; overDay: number; moneyOver: number; minMoney: number; helperDay: number }
 interface Policy { extraKeys?: ReadonlySet<string>; noReserve?: boolean; noHelper?: boolean; helperWork?: boolean; helperAt?: number }
 function simFull(seed: number, prof: Profile, days: number, pol: Policy = {}): Sim {
@@ -147,7 +147,7 @@ function simFull(seed: number, prof: Profile, days: number, pol: Policy = {}): S
     money = fin.money;
     run.income.push(o.revenue - o.costs - fin.rent);
     minMoney = Math.min(minMoney, money);
-    rec.push({ day, rank, revenue: o.revenue, price: o.price, tips: o.tips, costs: o.costs, rent: fin.rent, net: o.revenue - o.costs - fin.rent, moneyEnd: money, served: o.served, lost: o.lost, guests: o.guests, byHelper: o.byHelper, owned: order.length });
+    rec.push({ day, rank, revenue: o.revenue, price: o.price, tips: o.tips, costs: o.costs, rent: fin.rent, net: o.revenue - o.costs - fin.rent, moneyEnd: money, served: o.served, lost: o.lost, guests: o.guests, byHelper: o.byHelper, teaH: o.hTea, owned: order.length });
     if (fin.over) { run.over = true; overDay = day; moneyOver = money; break; }
     const nr = nextRank(rank, { day: day + 1, rating, served });
     if (nr) { rank = nr.rank; run.rank.set(rank, day); }
@@ -473,21 +473,17 @@ function DRINK_NEEDSOF(id: string): string[] { return [...(DRINK_NEEDS[id] ?? []
     L.push(...md(['Ранг', 'Зарплата', 'Чистый без помощника', 'Чистый (как в модели)', 'Чистый с работой', 'Гостей у помощника/день'], rr), '');
   }
 
-  /* что если: помощнику разрешить чаи (ключи напитков семейства tea); фильтр-кофе по-прежнему исключён (колбы в модели нет) */
-  const teaKeys = new Set(DRINKS.filter((d) => d.family === 'tea' && d.id in ENGINE).map((d) => ENGINE[d.id] as string));
-  L.push('**Что если помощнику разрешить чаи** (`HELPER_KEYS` + 5 чайных напитков; только расчёт, игра не менялась), дни 14–40, 120 прогонов, зарплата как сейчас:', '');
-  const wr: string[][] = [];
+  /* доля чая среди заказов помощника и доля заказов, доступных помощнику (при полном оборудовании) */
+  const tq: string[][] = [];
   for (const prof of PROFILES) {
-    const run = (pol: Policy) => Array.from({ length: N }, (_, i) => simFull(i + 1, prof, DAYS, pol));
-    const per = (sims: Sim[], f: (d: DayRec) => number): number => mean(sims.flatMap((s) => s.days.filter((x) => x.day >= 14 && x.day <= 40).map(f)));
-    const a = run({ noHelper: true }), b = run({}), c = run({ extraKeys: teaKeys });
-    const wageNow = mean(b.flatMap((s) => s.days.filter((x) => x.day >= 14 && x.day <= 40 && x.owned >= 0).map((x) => helperWage(x.rank))));
-    wr.push([prof.name, f0(per(a, (x) => x.net)), f0(per(b, (x) => x.net)), f0(per(c, (x) => x.net)), f1(per(b, (x) => x.byHelper)), f1(per(c, (x) => x.byHelper)), f0(wageNow)]);
+    const sims = Array.from({ length: N }, (_, i) => simFull(i + 1, prof, DAYS));
+    const ds = sims.flatMap((x) => x.days.filter((d) => d.day >= 14 && d.day <= 40 && d.byHelper >= 0 && d.rank >= HELPER_MIN_RANK && d.owned > 0));
+    const all = mean(ds.map((d) => d.byHelper)), tea = mean(ds.map((d) => d.teaH));
+    tq.push([prof.name, f2(all), f2(tea), all > 0 ? f0((tea / all) * 100) + '%' : '—']);
   }
-  L.push(...md(['Игрок', 'Чистый без помощника', 'Чистый, как сейчас', 'Чистый, с чаями', 'Гостей у помощника, как сейчас', 'Гостей у помощника, с чаями', 'Средняя зарплата дн.14–40'], wr), '');
-  /* доля заказов, доступных помощнику, при полном оборудовании */
-  const elig = (rank: number, keys: ReadonlySet<string>): number => { const rng = seeded(21); const eq = Object.fromEntries(EQ_IMPL.map((e) => [e, true])); let c = 0; const n = 20000; for (let i = 0; i < n; i++) { const o = rollOrder({ rank, day: 30, milk: true, eq }, 'regular', rng); if (!o.syrup && !o.food && o.key !== 'filter_coffee' && keys.has(o.key)) c++; } return (c / n) * 100; };
-  L.push('Доля заказов, которые помощник вообще может взять (без сиропа и еды, фильтр-кофе исключён), при полном оборудовании, %:', '', ...md(['Ранг', 'Сейчас (HELPER_KEYS)', 'С чаями'], [5, 6, 7, 8, 9].map((r) => [String(r), f1(elig(r, HELPER_KEYS)), f1(elig(r, new Set([...HELPER_KEYS, ...teaKeys])))])));
+  L.push('**Заказы помощника, дни 14–40 (модель с чаями, как в игре):**', '', ...md(['Игрок', 'Гостей/день (все)', 'из них чай', 'Доля чая'], tq), '');
+  const elig = (rank: number): number => { const rng = seeded(21); const eq = Object.fromEntries(EQ_IMPL.map((e) => [e, true])); let c = 0; const n = 20000; for (let i = 0; i < n; i++) { const o = rollOrder({ rank, day: 30, milk: true, eq }, 'regular', rng); if (!o.syrup && !o.food && o.key !== 'filter_coffee' && HELPER_KEYS.has(o.key)) c++; } return (c / n) * 100; };
+  L.push('Доля заказов, которые помощник может взять (без сиропа и еды, фильтр-кофе исключён из-за колбы), при полном оборудовании, %:', '', ...md(['Ранг', 'Доля'], [5, 6, 7, 8, 9].map((r) => [String(r), f1(elig(r))])));
   out['06-helper'] = L;
 }
 
