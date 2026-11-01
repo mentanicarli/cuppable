@@ -16,7 +16,7 @@ test('эспрессо — один шот, двойной — два; репл�
   const r = seeded(21);
   for (let i = 0; i < 400; i++) {
     const o = rollOrder({ rank: 1, day: 5, milk: true }, 'regular', r);
-    if (o.id === 'espresso') { assert.equal(o.shots, 1); assert.equal(o.key, 'espresso'); assert.ok(!o.syrup); assert.ok(/эспрессо/i.test(o.line) && !/двойной/i.test(o.line)); assert.equal(o.base, 70); }
+    if (o.id === 'espresso') { assert.equal(o.shots, 1); assert.equal(o.key, 'espresso'); assert.ok(!o.syrup); assert.ok(/эспрессо/i.test(o.line) && !/двойной/i.test(o.line)); assert.equal(o.base, 80); }
     if (o.id === 'espresso_double') { assert.equal(o.shots, 2); assert.equal(o.key, 'espresso2'); assert.ok(!o.syrup); assert.ok(/двойной эспрессо/i.test(o.line)); assert.equal(o.base, 100); }
   }
 });
