@@ -128,7 +128,7 @@ describe('заказы новых напитков', () => {
 });
 
 import { helperPick, helperQuality, helperPrepTime, helperCanPour } from '../src/game/helper';
-import { rentFor, helperWage } from '../src/game/economy';
+import { rentFor, helperWage, settleDay } from '../src/game/economy';
 test('помощник берёт только простые напитки и самого нетерпеливого', () => {
   const g = (id: number, drink: string, pat: number, extra = {}) => ({ id, drink, arrived: true, leaving: false, pat, syrup: null, food: false, ...extra });
   expect(helperPick([g(1, 'latte', 5), g(2, 'americano', 90), g(3, 'espresso', 40)], null)?.id).toBe(3);
@@ -163,4 +163,11 @@ test('аренда растёт с рангом, зарплата помощни
   expect(rentFor(1)).toBe(140);
   expect(rentFor(9)).toBeGreaterThan(rentFor(5));
   expect(helperWage(9)).toBeGreaterThan(helperWage(5));
+});
+test('зарплата помощника: 60 + 10·(ранг − 4), ранг 5 — 70, ранг 9 — 110 (33-Б), итог дня вычитает её вместе с арендой', () => {
+  expect([5, 6, 7, 8, 9].map(helperWage)).toEqual([70, 80, 90, 100, 110]);
+  expect(helperWage(1)).toBe(60);
+  const s = settleDay({ money: 1000, rank: 9, wage: helperWage(9) });
+  expect(s.rent).toBe(rentFor(9) + 110);
+  expect(s.money).toBe(1000 - rentFor(9) - 110);
 });

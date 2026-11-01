@@ -68,8 +68,8 @@ export const ratingAfterLoss = (rating: number): number => Math.max(1, rating - 
 /** Плата за аренду и проверка конца игры в конце дня. */
 export const rentFor = (rank = 1): number => Math.round((RENT_BASE * (1 + 0.45 * (Math.max(1, rank) - 1))) / 10) * 10;
 
-/** Зарплата помощника за смену: берёт часть выручки на себя, поэтому растёт вместе с рангом. */
-export const helperWage = (rank: number): number => 60 + 25 * Math.max(0, rank - 4);
+/** Зарплата помощника за смену: растёт с рангом на 10 ₽ (ранг 5 — 70, ранг 9 — 110; до 33-Б шаг был 25 ₽). */
+export const helperWage = (rank: number): number => 60 + 10 * Math.max(0, rank - 4);
 
 export function settleDay(i: { money: number; rank?: number; wage?: number }): { money: number; over: boolean; rent: number } {
   const rent = rentFor(i.rank) + (i.wage ?? 0);
