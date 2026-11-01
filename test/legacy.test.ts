@@ -20,6 +20,11 @@ describe('экономика', () => {
   test('потеря гостя и терпение', () => {
     expect(ratingAfterLoss(1.1)).toBe(1);
     expect(ratingAfterLoss(3)).toBeCloseTo(2.85);
+    /* 33-Д: на рангах 1–3 штраф 0,10, с 4-го прежние 0,15; без ранга считается как раньше */
+    expect(ratingAfterLoss(3, 1)).toBeCloseTo(2.9);
+    expect(ratingAfterLoss(3, 3)).toBeCloseTo(2.9);
+    expect(ratingAfterLoss(3, 4)).toBeCloseTo(2.85);
+    expect(ratingAfterLoss(1.05, 2)).toBe(1);
     // без заказа, дня и случайности: только запас A, зал и помощник
     expect(patienceMax('student', { cozy: true, helper: true })).toBeCloseTo(70 * 1.15 * 1.2);
     expect(patienceMax('hurry', {})).toBe(35);

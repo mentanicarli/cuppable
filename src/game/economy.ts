@@ -63,15 +63,21 @@ export function settle(i: SettleIn): Settled {
 }
 
 /** Рейтинг после ушедшего гостя. */
-export const ratingAfterLoss = (rating: number): number => Math.max(1, rating - 0.15);
+/* Штраф рейтинга за ушедшего гостя: на первых рангах мягче (33-Д). Без этого медленный игрок, теряющий больше 9 % гостей, падает до рейтинга 1 и застревает
+   на 2–3 ранге (пороги рейтинга 2,5 и 3,0). Подобрано на симуляции с профилями скорости 1,20–1,40; откат — RATING_LOSS_EARLY = RATING_LOSS. */
+export const RATING_LOSS = 0.15;
+export const RATING_LOSS_EARLY = 0.1;
+export const RATING_LOSS_EARLY_RANK = 3;
+export const ratingAfterLoss = (rating: number, rank: number = RATING_LOSS_EARLY_RANK + 1): number => Math.max(1, rating - (rank <= RATING_LOSS_EARLY_RANK ? RATING_LOSS_EARLY : RATING_LOSS));
 
 /** Плата за аренду и проверка конца игры в конце дня. */
 /* Рост аренды с рангом: до 4-го ранга +0,45 базы за ранг (защита новичка, как всегда), с 5-го ранга +RENT_LATE_STEP за ранг (33-Г; было 0,45).
    Подобрано на симуляции с профилями скорости 0,70–1,40: при 2,0 ни у одного профиля нет конца игры к 60-му дню, при 2,5 он появляется у медленного (1,20), при 3,0 — у неторопливого (1,00).
+   33-Д: после смягчения штрафа за потерю гостя медленные игроки доходят до 5-го ранга, поэтому 2,0 дал 8 % концов игры к 60-му дню у профиля 1,40 при 20 % брака; 1,75 — наибольшее значение из сетки, где ни у одного профиля нет конца игры к 60-му дню и запас прочности при +0,5 у 1,00 и 1,20 не хуже 10 %.
    Временное значение до реальных смен: вернуть 0,45, чтобы откатить. */
 export const RENT_STEP = 0.45;
 export const RENT_LATE_FROM = 5;
-export const RENT_LATE_STEP = 2.0;
+export const RENT_LATE_STEP = 1.75;
 export const rentFor = (rank = 1): number => {
   const r = Math.max(1, rank);
   const early = Math.min(r, RENT_LATE_FROM - 1) - 1;

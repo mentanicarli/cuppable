@@ -105,7 +105,7 @@ export function simulate(seed: number, prof: Profile, days = 40): Run {
     let nextArr = 4, prep: Guest | null = null, prepLeft = 0, prepCost = 0;
     let hg: Guest | null = null, hLeft = 0, hCost = 0, hServed = 0, hRev = 0, hCosts = 0;
     const lose = (g: Guest): void => {
-      rating = ratingAfterLoss(rating);
+      rating = ratingAfterLoss(rating, rank);
       run.lost++;
       queue.splice(queue.indexOf(g), 1);
       if (g === prep) { prep = null; costs -= prepCost; }

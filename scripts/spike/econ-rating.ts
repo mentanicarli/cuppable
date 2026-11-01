@@ -2,7 +2,7 @@
    MODE=variants — варианты правки и критерии (шаг 2); MODE=rent — сетка аренды после правки (шаг 4).
    Запуск: MODE=diag node scripts/spike/econ-run.mjs econ-rating → out/economy/33d-<режим>.md */
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { RENT_BASE } from '../../src/game/economy';
+import { RENT_BASE, rentFor } from '../../src/game/economy';
 import { PROFILE_SET, median, runProfile, summarize } from './econ-profiles';
 import type { Policy, Rules, Sim } from './econ-sim';
 import type { Profile } from '../../src/game/playerModel';
@@ -113,6 +113,25 @@ if (mode === 'variants') {
   out.push('**Критерии: 1 — 1,20: 4-й ранг к д16, 5-й к д30; 2 — 1,40: 3-й к д14, 4-й к д30 (все три допущения брака); 3 — быстрые (0,70, 0,88, 1,00 при трёх допущениях) меняются не больше чем на день, рейтинг д20 не выше более чем на 0,1; 4 — конец игры не растёт:**', '', ...md(['Вариант', 'Правка', '1', '2', '3', '4'], rows), '');
   out.push('**Детали: день вступления рангов 3 / 4 / 5 и рейтинг на 20-й день у медленных:**', '', ...md(['Вариант', 'Профиль', 'Брак', 'Ранги 3 / 4 / 5, день', 'Рейтинг д20', 'Конец игры к д60'], detail));
   out.push('', '**Базовые сроки рангов 2–5 по профилям (для критерия 3):**', '', ...md(['Профиль', 'Брак', 'Ранги 2 / 3 / 4 / 5, день', 'Рейтинг д20', 'Конец игры к д60'], combos.map(([k, b]) => { const x = baseC[key(k, b)] as Cell; return [k, b === null ? '—' : pc(b), `${dayStr(x.r2)} / ${dayStr(x.r3)} / ${dayStr(x.r4)} / ${dayStr(x.r5)}`, n2(x.rate20), pc(x.over)]; })));
+}
+
+if (mode === 'rent') {
+  const rentWith = (g: number) => (rank: number): number => (rank <= 4 ? rentFor(rank) : Math.round((RENT_BASE * (1 + 0.45 * 3 + g * (rank - 4))) / 10) * 10);
+  const grid = (process.env['GRID'] ?? '0.45,1.0,1.5,2.0,2.5,3.0').split(',').map(Number);
+  const combos: Array<[string, number | null]> = [['0.88', null], ...BADS.map((b) => ['1.00', b] as [string, number | null]), ...BADS.map((b) => ['1.20', b] as [string, number | null]), ...BADS.map((b) => ['1.40', b] as [string, number | null])];
+  const head = ['g', 'аренда р5/р7/р9'];
+  const rows: string[][] = [];
+  for (const g of grid) {
+    const row = [String(g), [5, 7, 9].map((r) => rentWith(g)(r)).join('/')];
+    for (const [k, b] of combos) {
+      const prof = b === null ? slow(k) : withQ(slow(k), b);
+      const sims = runs(prof, 60, { rent: rentWith(g) });
+      const sm = summarize(sims, [40, 60]);
+      row.push(`${pc(sm.over[40] as number)} / ${pc(sm.over[60] as number)}; ${n0(sm.money[40] as number)}`);
+    }
+    rows.push(row);
+  }
+  out.push('**Аренда после правки штрафа: конец игры к 40-му / 60-му дню; деньги на 40-й день (медиана, ₽). Профили скорости × доля брака:**', '', ...md([...head, ...combos.map(([k, b]) => (b === null ? k : `${k} / ${pc(b)}`))], rows));
 }
 void RENT_BASE; void summarize;
 mkdirSync('out/economy', { recursive: true });

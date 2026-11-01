@@ -57,7 +57,7 @@ export function playDay(s: DayState, prof: Profile, rng: () => number, opt: Opt 
   let nextArr = 4, prep: Guest | null = null, prepLeft = 0, prepCost = 0;
   let hg: Guest | null = null, hLeft = 0, hCost = 0;
   const lose = (g: Guest): void => {
-    rating = opt.rules?.loss ? opt.rules.loss(rating, day, rank) : ratingAfterLoss(rating);
+    rating = opt.rules?.loss ? opt.rules.loss(rating, day, rank) : ratingAfterLoss(rating, rank);
     out.lost++;
     out.lostPos[Math.min(2, queue.indexOf(g))]++;
     out.lostLen[g.len]++;
