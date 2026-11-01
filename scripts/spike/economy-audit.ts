@@ -3,7 +3,7 @@
    Здесь лежит копия цикла дня из src/game/playerModel.ts с счётчиками (выручка/чаевые/расходы/потери по дням) и необязательной работой помощника;
    без помощника копия обязана давать те же доходы и снимки, что simulate() — это проверяется в начале (check «копия == модель»). */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { DRINKS, DRINK_NEEDS, ENGINE, EQ_IMPL, EQUIPMENT, ICED, RANKS, drinkById, nextRank } from '../../src/game/menu';
+import { DRINKS, DRINK_NEEDS, FORCED_SYRUP, ENGINE, EQ_IMPL, EQUIPMENT, ICED, RANKS, drinkById, nextRank } from '../../src/game/menu';
 import { COST, DEBT_LIMIT, RENT_BASE, drinkCost, helperWage, ratingAfterLoss, recipeCost, rentFor, settle, settleDay } from '../../src/game/economy';
 import { estimatedPrepSeconds, patienceMax, queueDecayRate } from '../../src/game/patience';
 import { CLOSING_LIMIT, DAY_LEN, arrivalInterval } from '../../src/game/shift';
@@ -199,7 +199,7 @@ for (const d of DRINKS) {
     const r = recipeNumbers(d, v.size, v.cold);
     const cost = recipeCost(r);
     let sec = NaN;
-    try { sec = estimatedPrepSeconds({ key: coldKey(d, v.cold), cold: v.cold, shots: r.shots, syrup: null, food: null }); } catch { /* нет шагов */ }
+    try { sec = estimatedPrepSeconds({ key: coldKey(d, v.cold), cold: v.cold, shots: r.shots, syrup: FORCED_SYRUP[d.id] ? true : null, food: null }); } catch { /* нет шагов */ }
     drows.push({ id: d.id, name: d.name, family: d.family, rank: d.rank, size: v.size, cold: v.cold, price, cost, margin: price - cost, pct: ((price - cost) / price) * 100, sec, perMin: ((price - cost) / sec) * 60, shots: r.shots });
   }
 }
