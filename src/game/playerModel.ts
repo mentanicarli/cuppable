@@ -1,6 +1,7 @@
 import { EQUIPMENT, EQ_IMPL, nextRank } from './menu';
 import { drinkCost, helperWage, ratingAfterLoss, rentFor, settle, settleDay } from './economy';
 import { estimatedPrepSeconds, patienceMax, queueDecayRate, queueOrder } from './patience';
+import { HELPER_MIN_RANK, helperPick, helperPrepTime, helperQuality } from './helper';
 import { CLOSING_LIMIT, DAY_LEN, arrivalInterval } from './shift';
 import { FOOD_COST_SHARE } from './food';
 import { rollOrder } from './orders';
@@ -10,6 +11,7 @@ import type { CustomerType, Order, Quality } from './types';
 /**
  * Модель игрока: проходит дни с теми же формулами, что и игра (заказы, приход гостей, цены, аренда, ранги, правила магазина),
  * только вместо рук бариста у неё время приготовления `estimatedPrepSeconds(заказ)·speed` и доли качества; гости идут строгой очередью (`queueOrder`), терпение тает по месту (`queueDecayRate`).
+ * Помощник (куплен и ранг ≥ HELPER_MIN_RANK) работает параллельно игроку: берёт гостя через `helperPick` (простые напитки без сиропа и еды, фильтр-кофе исключён: колбу модель не ведёт), готовит `helperPrepTime`, качество `helperQuality`, расходы по `drinkCost`.
  * Используется скриптом `scripts/shop-sim.test.ts` (отчёт по покупкам) и `scripts/typical-progress.ts` (таблица для песочницы).
  * Числа в модели грубые; перегенерировать таблицу нужно после изменения цен, порогов рангов, правил магазина или самой модели.
  */
@@ -77,6 +79,8 @@ export interface Run {
   /** всего гостей пришло / ушло по терпению за все сыгранные дни */
   guests: number;
   lost: number;
+  /** по дням: сколько гостей обслужил помощник, их выручка с чаевыми и расходы на них (без зарплаты) */
+  helper: Array<{ served: number; revenue: number; costs: number }>;
 }
 
 const STEP = 0.5;
@@ -84,7 +88,7 @@ export function simulate(seed: number, prof: Profile, days = 40): Run {
   const rng = seeded(seed);
   const owned: Record<string, boolean> = {};
   const order: string[] = [];
-  const run: Run = { avail: new Map(), afford: new Map(), bought: new Map(), rank: new Map([[1, 1]]), income: [], over: false, snaps: [], idle: [], guests: 0, lost: 0 };
+  const run: Run = { avail: new Map(), afford: new Map(), bought: new Map(), rank: new Map([[1, 1]]), income: [], over: false, snaps: [], idle: [], guests: 0, lost: 0, helper: [] };
   let money = 500, rank = 1, rating = 3, served = 0;
   const typeOf = (day: number): CustomerType => {
     const r = rng();
@@ -96,14 +100,16 @@ export function simulate(seed: number, prof: Profile, days = 40): Run {
     let revenue = 0, costs = 0;
     /* смена идёт шагом в полсекунды: гости приходят по таймеру (мест у стойки три), игрок готовит только заказ первого в очереди (queueOrder),
        терпение каждого гостя тает со скоростью по его месту (queueDecayRate); заказ, который готовится, оплачивается расходами сразу, как в игре */
-    interface Guest { type: CustomerType; pat: number; order: Order; leaving?: boolean }
+    interface Guest { type: CustomerType; pat: number; order: Order; leaving?: boolean; taken?: boolean }
     const queue: Guest[] = [];
     let nextArr = 4, prep: Guest | null = null, prepLeft = 0, prepCost = 0;
+    let hg: Guest | null = null, hLeft = 0, hCost = 0, hServed = 0, hRev = 0, hCosts = 0;
     const lose = (g: Guest): void => {
       rating = ratingAfterLoss(rating);
       run.lost++;
       queue.splice(queue.indexOf(g), 1);
       if (g === prep) { prep = null; costs -= prepCost; }
+      if (g === hg) { hg = null; costs -= hCost; hCosts -= hCost; }
     };
     /* гости приходят до DAY_LEN; потом очередь дообслуживается с обычным терпением; не управились за CLOSING_LIMIT — день тихо заканчивается без штрафа */
     for (let t = 0; t < DAY_LEN + CLOSING_LIMIT; t += STEP) {
@@ -126,8 +132,39 @@ export function simulate(seed: number, prof: Profile, days = 40): Run {
         g.pat -= STEP * queueDecayRate(queue.indexOf(g));
         if (g.pat <= 0) lose(g);
       }
+      const finish = (g: Guest, quality: Quality, flawless: boolean): number => {
+        const st = settle({ basePrice: g.order.base, beans: !!owned['beans'], paidSyrup: !!g.order.syrup && !g.order.syrupImplied, quality, type: g.type, flawless, cards: !!owned['cards'], rating, extra: g.order.food?.price ?? 0 });
+        revenue += st.total;
+        rating = st.rating;
+        served++;
+        queue.splice(queue.indexOf(g), 1);
+        return st.total;
+      };
+      /* помощник: параллельно игроку, только простые заказы (колбы в модели нет, фильтр-кофе ему не достаётся) */
+      if (owned['helper'] && rank >= HELPER_MIN_RANK) {
+        if (!hg) {
+          const cand = queue.filter((g) => g !== prep && !g.taken);
+          const pick = helperPick(cand.map((g, i) => ({ id: i, drink: g.order.key, arrived: true, leaving: false, pat: g.pat, syrup: g.order.syrup ? g.order.syrup.name : null, food: !!g.order.food })), null, null);
+          if (pick) {
+            hg = cand[pick.id] as Guest;
+            hg.taken = true;
+            hLeft = helperPrepTime(hg.order.key, hg.order.shots);
+            hCost = drinkCost(hg.order.key, !!owned['beans'], { size: hg.order.size, cold: hg.order.cold });
+            costs += hCost;
+            hCosts += hCost;
+          }
+        } else {
+          hLeft -= STEP;
+          if (hLeft <= 0) {
+            const g: Guest = hg;
+            hg = null;
+            hServed++;
+            hRev += finish(g, helperQuality(rank, rng), false);
+          }
+        }
+      }
       if (!prep) {
-        const first = queueOrder(queue);
+        const first = queueOrder(queue.filter((g) => !g.taken));
         if (first) {
           prep = first;
           prepLeft = estimatedPrepSeconds(first.order) * prof.speed;
@@ -140,16 +177,14 @@ export function simulate(seed: number, prof: Profile, days = 40): Run {
           const g: Guest = prep;
           const r = rng();
           const quality = (r < prof.q[0] ? 0 : r < prof.q[0] + prof.q[1] ? 1 : 2) as Quality;
-          const st = settle({ basePrice: g.order.base, beans: !!owned['beans'], paidSyrup: !!g.order.syrup && !g.order.syrupImplied, quality, type: g.type, flawless: quality === 2 && rng() < 0.5, cards: !!owned['cards'], rating, extra: g.order.food?.price ?? 0 });
-          revenue += st.total;
-          rating = st.rating;
-          served++;
-          queue.splice(queue.indexOf(g), 1);
           prep = null;
+          finish(g, quality, quality === 2 && rng() < 0.5);
         }
       }
     }
     if (prep) costs -= prepCost; // день закрылся посреди заказа: расход возвращается, как в игре
+    if (hg) { costs -= hCost; hCosts -= hCost; }
+    run.helper.push({ served: hServed, revenue: hRev, costs: hCosts });
     const fin = settleDay({ money: money + revenue - costs, rank, wage: owned['helper'] ? helperWage(rank) : 0 });
     money = fin.money;
     run.income.push(revenue - costs - fin.rent);

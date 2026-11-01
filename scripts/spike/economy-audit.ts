@@ -12,7 +12,7 @@ import { RAF_NO_VANILLA_SHARE, rollOrder } from '../../src/game/orders';
 import { cardVariants } from '../../src/game/recipeCard';
 import { recipeNumbers } from '../../src/game/volumes';
 import { BATCHES, CARAFE_ML } from '../../src/game/stations/drip';
-import { HELPER_KEYS, helperPrepTime, helperQuality } from '../../src/game/helper';
+import { HELPER_KEYS, HELPER_MIN_RANK, helperPrepTime, helperQuality } from '../../src/game/helper';
 import { PRIORITY, PROFILES, SHOP_DEFS, isPurchasable, seeded, simulate } from '../../src/game/playerModel';
 import type { Profile, Run, ShopDef } from '../../src/game/playerModel';
 import type { CustomerType, Order, Quality, Size } from '../../src/game/types';
@@ -83,11 +83,11 @@ function playDay(s: DayState, prof: Profile, rng: () => number, opt: Opt = {}): 
       queue.splice(queue.indexOf(g), 1);
     };
     /* помощник (только в варианте helperWork): берёт самого нетерпеливого из простых, кого не готовит игрок */
-    if (opt.helperWork && owned['helper']) {
+    if (opt.helperWork && owned['helper'] && rank >= HELPER_MIN_RANK) {
       if (!hg) {
         let best: Guest | null = null;
         for (const g of queue) {
-          if (g === prep || g.taken || g.order.syrup || g.order.food || !HELPER_KEYS.has(g.order.key)) continue;
+          if (g === prep || g.taken || g.order.syrup || g.order.food || !(g.order.key !== 'filter_coffee' && HELPER_KEYS.has(g.order.key))) continue;
           if (!best || g.pat < best.pat) best = g;
         }
         if (best) {
@@ -140,7 +140,7 @@ function simFull(seed: number, prof: Profile, days: number, pol: Policy = {}): S
   let money = 500, rank = 1, rating = 3, served = 0, overDay = 0, moneyOver = 0, minMoney = 500, helperDay = 0;
   for (let day = 1; day <= days; day++) {
     run.snaps.push({ day, rank, rating, served, money, owned: [...order] });
-    const o = playDay({ day, rank, rating, owned }, prof, rng, { helperWork: pol.helperWork });
+    const o = playDay({ day, rank, rating, owned }, prof, rng, { helperWork: pol.helperWork !== false });
     rating = o.rating; served += o.served;
     run.guests += o.guests; run.lost += o.lost;
     const fin = settleDay({ money: money + o.revenue - o.costs, rank, wage: owned['helper'] ? helperWage(rank) : 0 });
@@ -451,7 +451,7 @@ function DRINK_NEEDSOF(id: string): string[] { return [...(DRINK_NEEDS[id] ?? []
   L.push(...md(['Ранг', 'Зарплата/день', 'Аренда/день'], wageRows), '');
   const base: Policy = {};
   for (const prof of PROFILES) {
-    const variants: Array<[string, Policy]> = [['без помощника', { noHelper: true }], ['помощник: только терпение +20% и зарплата (как в playerModel)', {}], ['помощник работает (готовит простые, 16–26 с, качество helperQuality)', { helperWork: true }]];
+    const variants: Array<[string, Policy]> = [['без помощника', { noHelper: true }], ['помощник: только терпение +20% и зарплата (модель до 33-Б)', { helperWork: false }], ['помощник работает (модель с 33-Б: простые заказы, helperPrepTime, helperQuality)', {}]];
     const res = variants.map(([name, pol]) => {
       const sims = Array.from({ length: N }, (_, i) => simFull(i + 1, prof, DAYS, { ...base, ...pol }));
       /* сравниваем дни с 12-го по 40-й (после покупки у «помощниковых» вариантов); цель — чистый доход за день и обслуженные */
