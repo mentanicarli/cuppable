@@ -33,6 +33,8 @@ describe('помощник в модели игрока (33-Б)', () => {
     }
   });
   test('детерминизм: один семя — один результат', () => {
-    expect(JSON.stringify(simulate(5, PROFILES[0]!, 25))).toBe(JSON.stringify(simulate(5, PROFILES[0]!, 25)));
+    const p = PROFILES.find((x) => x.id === 'medium') ?? PROFILES[0];
+    if (!p) throw new Error('нет профилей');
+    expect(JSON.stringify(simulate(5, p, 25))).toBe(JSON.stringify(simulate(5, p, 25)));
   });
 });

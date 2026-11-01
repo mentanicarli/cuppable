@@ -110,7 +110,7 @@ describe('шанс взять еду растёт с числом витрин (
     });
   }
   test('при одной витрине поток бросков прежний: порог 0,4, число бросков то же', () => {
-    const eq = { case_snacks: true };
+    const eq: Record<string, boolean> = { case_snacks: true };
     const a = seeded(11), b = seeded(11);
     let ca = 0, cb = 0;
     const ra = () => { ca++; return a(); };
