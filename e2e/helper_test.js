@@ -15,6 +15,22 @@ const { chromium } = require('playwright'); const path = require('path'); const 
   console.log('chip', await p.evaluate(() => document.querySelector('#helperChip').textContent));
   await p.waitForFunction(() => window.__dbg.D.stats.served > 0, null, { timeout: 60000 });
   console.log('served by helper; money', m0, '->', await p.evaluate(() => window.__dbg.G.money));
+  /* 33-В: чай. Без чайной станции помощник его не берёт, с ней берёт, чашка уходит гостю, деньги и счёт растут */
+  const setTea = () => window.__dbg.D.customers.find((c) => c.arrived && !c.leaving);
+  await p.waitForFunction(() => window.__dbg.D.customers.some((c) => c.arrived && !c.leaving), null, { timeout: 60000 });
+  await p.evaluate(() => { const G = window.__dbg.G; G.eq_tea = false; const c = window.__dbg.D.customers.find((x) => x.arrived && !x.leaving); c.drink = 'tea_assam'; c.syrup = null; c.strong = false; c.pat = c.max = 999; Object.assign(c.order, { id: 'tea_assam', key: 'tea_assam', name: 'Чай чёрный ассам', size: '0.2', base: 100, price: 100, cold: false, shots: 0, syrup: null, food: null }); window.__teaId = c.id; });
+  await p.waitForTimeout(3500);
+  const picked0 = await p.evaluate(() => !!(window.__dbg.D.helper && window.__dbg.D.helper.c && window.__dbg.D.helper.c.id === window.__teaId));
+  console.log('без станции помощник взял чай:', picked0);
+  if (picked0) { console.log('FAIL: чай без чайной станции'); process.exitCode = 1; }
+  const s1 = await p.evaluate(() => window.__dbg.D.stats.served); const m1 = await p.evaluate(() => window.__dbg.G.money);
+  await p.evaluate(() => { window.__dbg.G.eq_tea = true; });
+  await p.waitForFunction(() => window.__dbg.D.helper && window.__dbg.D.helper.c && window.__dbg.D.helper.c.id === window.__teaId, null, { timeout: 20000 });
+  console.log('chip', await p.evaluate(() => document.querySelector('#helperChip').textContent));
+  await p.waitForFunction((n) => window.__dbg.D.stats.served > n, s1, { timeout: 60000 });
+  const m2 = await p.evaluate(() => window.__dbg.G.money);
+  console.log('чай выдан помощником; money', m1, '->', m2, m2 > m1 ? 'OK' : 'FAIL');
+  if (!(m2 > m1)) process.exitCode = 1;
   await p.evaluate(() => window.__dbg.showBook()); await p.waitForTimeout(600); await p.screenshot({ path: 'book.png' });
   console.log(errs.length ? errs.slice(0, 4).join('\n') : 'NO_ERRORS'); await b.close();
 })();
