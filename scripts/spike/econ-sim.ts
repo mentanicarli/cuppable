@@ -1,7 +1,8 @@
 /* Копия цикла дня и прогона из src/game/playerModel.ts со счётчиками, работой помощника и подменой правил (аренда, приход гостей, цены магазина).
    Без подмены правил даёт те же доходы и снимки, что simulate() (проверяет economy-audit.ts). Только для скриптов аудита, в игру не входит. */
 import { drinkCost, helperWage, ratingAfterLoss, rentFor, settle, settleDay, DEBT_LIMIT } from '../../src/game/economy';
-import { EQ_IMPL, MAX_RANK, nextRank, rankInfo } from '../../src/game/menu';
+import { EQ_IMPL, MAX_RANK, drinkById, nextRank, rankInfo } from '../../src/game/menu';
+import { recipeNumbers } from '../../src/game/volumes';
 import { estimatedPrepSeconds, patienceMax, queueDecayRate } from '../../src/game/patience';
 import { CLOSING_LIMIT, DAY_LEN, arrivalRange, isRush } from '../../src/game/shift';
 import { FOOD_COST_SHARE } from '../../src/game/food';
@@ -9,7 +10,7 @@ import { rollOrder } from '../../src/game/orders';
 import { HELPER_KEYS, HELPER_MIN_RANK, HELPER_TEA_MINUTES, helperPrepTime, helperQuality } from '../../src/game/helper';
 import { PRIORITY, isPurchasable, seeded } from '../../src/game/playerModel';
 import type { Profile, Run } from '../../src/game/playerModel';
-import type { CustomerType, Order, Quality } from '../../src/game/types';
+import type { CustomerType, Order, Quality, Size } from '../../src/game/types';
 
 /** Подмена правил для проб (по умолчанию всё как в игре). */
 export interface Rules {
@@ -29,6 +30,9 @@ export interface Rules {
   rankRating?: Readonly<Record<number, number>>;
   /** гости не уходят (бесконечное терпение): сколько дней шёл бы игрок без потерь */
   noLoss?: boolean;
+  /** 35-А: напитки, холодный вариант которых гость может заказать (при льдогенераторе), и доля таких заказов */
+  coldBook?: ReadonlySet<string>;
+  coldShare?: number;
 }
 
 /* ---------- копия дня модели с счётчиками ---------- */
@@ -75,6 +79,16 @@ export function playDay(s: DayState, prof: Profile, rng: () => number, opt: Opt 
           nextArr = gap(day, rating, t, !!owned['wifi'], rng, opt.rules);
           const type = typeOf();
           const ord = rollOrder({ rank, day, milk: !!owned['milk'], eq }, type, rng);
+          if (opt.rules?.coldBook && eq['ice'] && opt.rules.coldBook.has(ord.id) && !ord.cold) {
+            const dd = drinkById[ord.id];
+            const coin = seeded(day * 7919 + out.guests * 31 + 1)();
+            if (dd && dd.coldSizes.length && coin < (opt.rules.coldShare ?? 0.3)) {
+              const size = dd.coldSizes.includes(ord.size) ? ord.size : (dd.coldSizes[0] as Size);
+              ord.cold = true; ord.size = size; ord.base = dd.sizes[size] ?? ord.base;
+              ord.price = ord.base + (ord.syrup && !ord.syrupImplied ? 20 : 0);
+              ord.shots = recipeNumbers(dd, size, true).shots;
+            }
+          }
           const prepS = estimatedPrepSeconds(ord);
           const pat0 = patienceMax(type, { cozy: !!owned['cozy'], helper: !!owned['helper'], prep: prepS, day: opt.rules?.newbieDay ? opt.rules.newbieDay(day) : day, rng });
           const len = prepS <= 40 ? 0 : prepS <= 70 ? 1 : 2;
