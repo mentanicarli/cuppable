@@ -1,5 +1,5 @@
 import { FORCED_SYRUP, ENGINE, ICED, drinkById, rankInfo } from './menu';
-import { buildTasks, brewOf, stepLabels } from './recipes';
+import { buildTasks, brewOf, coldVariantOk, stepLabels } from './recipes';
 import type { Drink, Size } from './types';
 import { PUMP_ML, SHOT_G, SHOT_ML, SIZE_ML, cupScale, recipeNumbers, type Part, type Recipe } from './volumes';
 
@@ -67,8 +67,8 @@ export function cardVariants(d: Drink): { size: Size; cold: boolean }[] {
   }
   return out;
 }
-/** У холодного варианта есть механика: старые напитки с ICED и чаи. */
-const coldHasBar = (d: Drink): boolean => (ENGINE[d.id] ?? '') in ICED || d.family === 'tea';
+/** У холодного варианта есть механика: старые напитки с ICED, чаи и напитки из COLD_ORDERABLE. */
+const coldHasBar = (d: Drink): boolean => (ENGINE[d.id] ?? '') in ICED || coldVariantOk(d);
 
 function stepDetail(task: string, d: Drink, r: Recipe, i: number, tasks: readonly string[]): string {
   const raf = d.family === 'raf';

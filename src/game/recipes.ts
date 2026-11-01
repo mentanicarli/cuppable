@@ -86,7 +86,11 @@ export function buildTasks(key: string, o: BuildOpts): string[] {
   // сироп идёт на дно стакана первым шагом; у бабл ти он добавляется в шейкер к чаю, поэтому стоит там, где в рецепте
   const syrupInPlace = d.family === 'boba';
   if (o.syrup && !syrupInPlace) t.push('syrup');
+  /* холодные напитки без пара (35-Б): лёд кладётся перед молоком, шагов steam и pour нет, как у холодного латте */
+  const coldNoSteam = o.cold && COLD_ORDERABLE.has(d.id);
   for (const s of d.steps) {
+    if (coldNoSteam && (s.st === 'steam' || s.st === 'pour')) continue;
+    if (coldNoSteam && s.st === 'milk') t.push('ice');
     switch (s.st) {
       case 'syrup': if (syrupInPlace && o.syrup) t.push('syrup'); break;
       case 'cream': break; // сливки входят в раф (раф идёт по ключам старой механики)
@@ -101,7 +105,9 @@ export function buildTasks(key: string, o: BuildOpts): string[] {
 }
 
 /** Какие напитки можно сделать холодными вариантом по просьбе (кроме старых с ключами ice*). */
-export const coldVariantOk = (d: Drink): boolean => d.temp === 'both' && d.family === 'tea' && d.coldSizes.length > 0;
+/** Напитки по шагам меню, у которых холодный вариант можно заказать, кроме чаёв (35-Б): холодное молоко без пара, лёд перед молоком. */
+export const COLD_ORDERABLE: ReadonlySet<string> = new Set(['cappuccino_pumpkin', 'matcha_latte', 'matcha_coconut', 'latte_sakura', 'latte_banana', 'latte_lemon', 'latte_coconut']);
+export const coldVariantOk = (d: Drink): boolean => d.temp === 'both' && d.coldSizes.length > 0 && (d.family === 'tea' || COLD_ORDERABLE.has(d.id));
 
 export interface TaskTarget { value: number; unit: string }
 /** Цель для шага (единицы налива, секунды таймера). Налив считается по объёму: см. recipeNumbers в volumes.ts. */

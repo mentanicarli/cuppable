@@ -29,7 +29,8 @@ describe('тексты К1 в игре', () => {
       .filter(([, d]) => d.ice.length)
       .map(([id]) => id)
       .sort();
-    expect(withIce).toEqual(['americano', 'cappuccino', 'latte', 'tea_assam', 'tea_currant', 'tea_hibiscus', 'tea_sencha']);
+    /* 14 напитков: три «айс» (американо, капучино, латте), четыре чая и семь холодных из 35-Б (COLD_ORDERABLE) */
+    expect(withIce).toEqual(['americano', 'cappuccino', 'cappuccino_pumpkin', 'latte', 'latte_banana', 'latte_coconut', 'latte_lemon', 'latte_sakura', 'matcha_coconut', 'matcha_latte', 'tea_assam', 'tea_currant', 'tea_hibiscus', 'tea_sencha']);
   });
   test('справочник: термины по группам, у каждого текст', () => {
     expect(glossaryGroups().map((g) => g.group)).toEqual(['Кофе', 'Молоко и пена', 'Добавки и основа', 'Чай, матча и остальное']);

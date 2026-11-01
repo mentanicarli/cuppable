@@ -198,7 +198,7 @@ export function recipeNumbers(d: Drink, size: Size, coldIn = false): Recipe {
       const x = foamXOf(d.id);
       if (cold) {
         // холодный напиток без пара: молоко наливается в стакан; у капучино оно «холодно взбитое» (x = 0,5), у латте жидкое
-        const cx = d.id === 'cappuccino' ? 0.5 : 0;
+        const cx = d.id === 'cappuccino' || d.id === 'cappuccino_pumpkin' ? 0.5 : 0;
         coldBase();
         parts.push(shotPart(S));
         syrupPart('тыква');
@@ -206,6 +206,7 @@ export function recipeNumbers(d: Drink, size: Size, coldIn = false): Recipe {
         out.cupMilk = true;
         if (cx) out.coldX = cx;
         parts.push({ task: 'milk', label: 'Молоко', amount: out.milk, unit: 'мл', vol: L - shotMl - syrupMl, note: cx ? `холодная пена, вместе ${L - shotMl} мл` : undefined });
+        if (d.id === 'cappuccino_pumpkin') parts.push({ task: 'topping', label: 'Специи', amount: SPICE_G, unit: 'г', vol: 0, note: 'щепотка' });
         return out;
       }
       parts.push(shotPart(S));
@@ -249,6 +250,16 @@ export function recipeNumbers(d: Drink, size: Size, coldIn = false): Recipe {
       const top = d.id === 'matcha_coconut' ? TOP_FOAM[size] : 0;
       if (top) out.topFoam = top;
       syrupPart('кокосовый пломбир');
+      if (cold) {
+        /* холодная матча: лёд, холодное молоко без пара (как у холодного латте), у кокосовой сверху холодная пенка */
+        coldBase();
+        const Mc = L - mw - top - syrupMl;
+        out.milk = round(Mc);
+        out.cupMilk = true;
+        parts.push({ task: 'milk', label: 'Молоко', amount: out.milk, unit: 'мл', vol: Mc, note: 'холодное, без пара' });
+        if (top) parts.push({ task: 'foam', label: 'Холодная пенка таро', amount: top, unit: 'мл', vol: top });
+        return out;
+      }
       const x = foamXOf(d.id);
       const M = V - mw - top - syrupMl;
       out.milk = round(M / (1 + x));
@@ -266,6 +277,16 @@ export function recipeNumbers(d: Drink, size: Size, coldIn = false): Recipe {
       syrupPart(name);
       const top = TOP_FOAM[size];
       out.topFoam = top;
+      if (cold) {
+        /* холодный латте с пенкой: лёд, шоты, холодное молоко без пара, сверху холодная пенка */
+        coldBase();
+        const Mc = L - shotMl - top - syrupMl;
+        out.milk = round(Mc);
+        out.cupMilk = true;
+        parts.push({ task: 'milk', label: 'Молоко', amount: out.milk, unit: 'мл', vol: Mc, note: 'холодное, без пара' });
+        parts.push({ task: 'foam', label: d.id === 'latte_banana' ? 'Протеиновая пенка крем-брюле' : 'Холодная пенка таро', amount: top, unit: 'мл', vol: top });
+        return out;
+      }
       const x = foamXOf('latte');
       const M = V - shotMl - top - syrupMl;
       out.milk = round(M / (1 + x));

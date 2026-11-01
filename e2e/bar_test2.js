@@ -76,7 +76,7 @@ const specs = (process.argv[4] || 'espresso').split(',').map(s => { const [drink
         /* станции нового ядра (сок, слои и т. п.): открыть зону, держать кнопку «Лить» до цели, «Готово» */
         await zone(await p.evaluate(tt => window.__MENUAPI.TASK_ZONE[tt], t)); await p.waitForSelector('#xPanel [data-xhold]', { timeout: 10000 }); await p.waitForTimeout(250);
         const bx = await p.locator('#xPanel [data-xhold]').boundingBox(); await p.mouse.move(bx.x + bx.width / 2, bx.y + bx.height / 2); await p.mouse.down();
-        await waitFor(tt => { const B = window.__dbg.BR, st = B.xs[tt]; return st.ml !== undefined ? st.ml >= st.target - 1 : st.t >= st.target - 0.05; }, t, 60000);
+        await waitFor(tt => { const B = window.__dbg.BR, st = B.xs[tt]; return st.ml !== undefined ? st.ml >= st.target - Math.min(1, st.target * 0.2) : st.t >= st.target - 0.05; }, t, 60000);
         await p.screenshot({ path: `${out}_${tag}_6${t}.png` }); await p.mouse.up(); await p.click('#xPanel [data-xdone]'); await p.waitForTimeout(400);
         const ok = await p.evaluate(tt => !!window.__dbg.BR.done[tt], t); if (!ok) throw new Error('шаг ' + t + ' не засчитан');
       } else if (t === 'ice') {

@@ -2,16 +2,16 @@ import { describe, expect, test } from 'vitest';
 import { COLD_MODEL_GROUPS, allSpecs, compactGlassDelta, pilotRef, specOf, type DrinkSpec } from '../src/game/drinkModel';
 import { drinkIconSvg, drinkParts } from '../src/render/world/drinkModel';
 
-/** Н2-2: холодные группы C1–C3 (23 вида). */
+/** Н2-2: холодные группы C1–C3; с 35-Б у раф, раф сливочная халва, какао и цикория латте холодного варианта нет. */
 const COLD_GROUPS: Record<string, string[]> = {
   C1: ['americano', 'tea_sencha', 'tea_assam', 'tea_hibiscus', 'tea_currant'],
-  C2: ['cappuccino', 'latte', 'cocoa', 'raf', 'matcha_latte', 'chicory_latte', 'latte_sakura', 'latte_banana', 'latte_lemon', 'latte_coconut', 'matcha_coconut', 'cappuccino_pumpkin', 'raf_halva'],
+  C2: ['cappuccino', 'latte', 'matcha_latte', 'latte_sakura', 'latte_banana', 'latte_lemon', 'latte_coconut', 'matcha_coconut', 'cappuccino_pumpkin'],
   C3: ['pomegranate_bumble', 'orange_bumble', 'espresso_tonic', 'matcha_bumble', 'matcha_tonic']
 };
 const ALL_IDS = Object.values(COLD_GROUPS).flat();
 const cold = (id: string): DrinkSpec[] => allSpecs().filter((x) => x.id === id && x.cold);
 
-describe('Н2-2: холодные C1–C3 (24 вида)', () => {
+describe('Н2-2: холодные C1–C3 (19 видов после 35-Б)', () => {
   test('посуда стекло, слои с суммой 1, лёд по размеру (3 × 3 до 0,4 л, 4 × 3 с 0,6 л), размеры только допустимые', () => {
     expect([...COLD_MODEL_GROUPS].sort()).toEqual(['C1', 'C2', 'C3', 'C5', 'C6']);
     let n = 0;
@@ -30,7 +30,7 @@ describe('Н2-2: холодные C1–C3 (24 вида)', () => {
         }
       }
     }
-    expect(n).toBe(23);
+    expect(n).toBe(19);
   });
   test('верх и детали: таро у четырёх, крем-брюле у банана, крапинки у тыквы, мутный тон у смородины, пузырьки у тоников, языки у C3', () => {
     for (const id of ['latte_sakura', 'latte_lemon', 'latte_coconut', 'matcha_coconut']) {
@@ -77,8 +77,6 @@ describe('Н2-2: холодные C1–C3 (24 вида)', () => {
   const CONFUSABLE: string[][] = [
     ['tea_sencha', 'tea_assam', 'tea_hibiscus', 'tea_currant', 'americano'],
     ['latte_sakura', 'latte_lemon', 'latte_coconut', 'matcha_coconut', 'latte_banana'],
-    ['raf', 'raf_halva'],
-    ['cocoa', 'americano', 'chicory_latte'],
     ['cappuccino', 'latte', 'cappuccino_pumpkin']
   ];
   const MIN_MAX_DE = 12;
@@ -96,7 +94,7 @@ describe('Н2-2: холодные C1–C3 (24 вида)', () => {
   });
   test('compactGlassDelta: одинаковые стопки дают 0, функция симметрична', () => {
     const a = cold('latte')[0] as DrinkSpec;
-    const b = cold('cocoa')[0] as DrinkSpec;
+    const b = cold('cappuccino')[0] as DrinkSpec;
     expect(compactGlassDelta(a, a)).toEqual({ max: 0, mean: 0 });
     expect(compactGlassDelta(a, b).max).toBeCloseTo(compactGlassDelta(b, a).max, 9);
     expect(specOf('latte', '0.3', true).group).toBe('C2');

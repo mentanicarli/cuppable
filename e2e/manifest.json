@@ -624,6 +624,28 @@
    "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
   },
   {
+   "name": "cold_hall_shot",
+   "file": "cold_hall_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
+   "name": "cold_shot",
+   "file": "cold_shot.js",
+   "kind": "shot",
+   "args": [],
+   "timeout": 0,
+   "debug": true,
+   "stability": "tool",
+   "retry": 0,
+   "note": "кадры для приёмки или листы (инструмент для глаз, не тест); на него могут ссылаться CLAUDE.md и docs"
+  },
+  {
    "name": "crop",
    "file": "crop.js",
    "kind": "shot",

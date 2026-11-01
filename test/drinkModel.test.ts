@@ -42,11 +42,11 @@ describe('посуда по правилу владельца', () => {
 
 describe('описания всех напитков', () => {
   const specs = allSpecs();
-  test('53 вида (24 горячих и 29 холодных), на каждый вид хотя бы один размер', () => {
+  test('49 видов (24 горячих и 25 холодных; с 35-Б у раф, раф сливочная халва, какао и цикория латте холодного вида нет), на каждый вид хотя бы один размер', () => {
     const looks = new Set(specs.map((s) => `${s.id}|${s.cold}`));
-    expect(looks.size).toBe(53);
+    expect(looks.size).toBe(49);
     expect([...looks].filter((k) => k.endsWith('false')).length).toBe(24);
-    expect([...looks].filter((k) => k.endsWith('true')).length).toBe(29);
+    expect([...looks].filter((k) => k.endsWith('true')).length).toBe(25);
   });
   test('сумма долей слоёв равна 1 (допуск 0,001), доли положительные', () => {
     for (const s of specs) {

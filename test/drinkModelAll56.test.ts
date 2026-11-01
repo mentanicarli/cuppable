@@ -21,9 +21,9 @@ class Fake {
 }
 
 describe('Н2-4: все виды × размеры × уровни', () => {
-  test('видов 53, у каждого есть ссылка на модель (ни одного напитка по-старому)', () => {
+  test('видов 49, у каждого есть ссылка на модель (ни одного напитка по-старому)', () => {
     const kinds = new Set(specs.map((s) => `${s.id}|${s.cold}`));
-    expect(kinds.size).toBe(53);
+    expect(kinds.size).toBe(49);
     expect(new Set(specs.map((s) => s.id)).size).toBe(DRINKS.length);
     for (const s of specs) expect(pilotRef(s.id, s.size, s.cold), `${s.id} ${s.size} ${s.cold}`).toEqual({ id: s.id, size: s.size, cold: s.cold });
   });

@@ -1,22 +1,19 @@
 import { describe, expect, test } from 'vitest';
 import { DRINKS } from '../src/game/menu';
 import { sizesOf, variantsOf } from '../src/game/drinkModel';
-import { buildTasks, stepLabels } from '../src/game/recipes';
+import { buildTasks, coldVariantOk, stepLabels } from '../src/game/recipes';
 import { recipeCard } from '../src/game/recipeCard';
 import { recipeNumbers } from '../src/game/volumes';
 
 /** Шаг «лёд» в билете и цель льда в рецепте согласованы: нет шага без цели и цели без шага. */
 const ICED_KEY: Readonly<Record<string, string>> = { americano: 'icedamericano', cappuccino: 'icedcappuccino', latte: 'icedlatte' };
-/** Холодные варианты напитков «и горячий, и холодный» без холодной механики: в баре их заказать нельзя, видны только в книге и окне. У них шаг «лёд» стоит, а цели льда в рецепте нет
- *  (известное расхождение, решение владельца отдельно; список зафиксирован, чтобы новое расхождение не прошло незамеченным). */
-const BOOK_ONLY_COLD_WITHOUT_ICE_TARGET = ['chicory_latte', 'cocoa', 'latte_banana', 'latte_coconut', 'latte_lemon', 'latte_sakura', 'matcha_coconut', 'matcha_latte', 'raf_halva'];
-
 describe('шаг «лёд» и цель льда', () => {
   test('в баре: шаг «лёд» есть ровно тогда, когда в recipeNumbers есть цель льда (все напитки, варианты и размеры)', () => {
     let checked = 0;
     for (const d of DRINKS) for (const cold of variantsOf(d)) {
-      const orderableInBar = !(cold && d.temp === 'both') || !!ICED_KEY[d.id];
-      if (!orderableInBar) continue;
+      /* с 35-Б у каждого холодного варианта напитка «и горячий, и холодный» есть заказ в баре (ICED или COLD_ORDERABLE и чаи) */
+      const orderableInBar = !(cold && d.temp === 'both') || !!ICED_KEY[d.id] || coldVariantOk(d);
+      expect(orderableInBar, `${d.id}: холодный вариант без заказа в баре`).toBe(true);
       const key = cold && ICED_KEY[d.id] ? (ICED_KEY[d.id] as string) : d.id;
       for (const size of sizesOf(d.id, cold)) {
         const r = recipeNumbers(d, size, cold);
@@ -42,16 +39,29 @@ describe('шаг «лёд» и цель льда', () => {
       expect(stepLabels(card.tasks, id), id).toHaveLength(3);
     }
   });
-  test('известное расхождение зафиксировано: у холодных вариантов без механики шаг «лёд» стоит, цели льда нет (только книга и окно)', () => {
-    const found = new Set<string>();
+  test('холодный вариант есть ровно у тех «и горячий, и холодный», что заказываются; убранные в 35-Б (раф, раф сливочная халва, какао, цикорий латте) только горячие', () => {
     for (const d of DRINKS) {
-      if (d.temp !== 'both' || ICED_KEY[d.id]) continue;
-      for (const size of sizesOf(d.id, true)) {
+      if (d.temp === 'both') expect(!!ICED_KEY[d.id] || coldVariantOk(d), d.id).toBe(true);
+    }
+    for (const id of ['raf', 'raf_halva', 'cocoa', 'chicory_latte']) {
+      const d = DRINKS.find((x) => x.id === id);
+      expect(d?.temp, id).toBe('hot');
+      expect(d?.coldSizes, id).toEqual([]);
+    }
+  });
+  test('холодные заказы 35-Б: лёд перед молоком, нет пара и заливки, у каждого есть цель льда', () => {
+    for (const id of ['cappuccino_pumpkin', 'matcha_latte', 'matcha_coconut', 'latte_sakura', 'latte_banana', 'latte_lemon', 'latte_coconut']) {
+      const d = DRINKS.find((x) => x.id === id) as (typeof DRINKS)[number];
+      for (const size of sizesOf(id, true)) {
         const r = recipeNumbers(d, size, true);
-        if (buildTasks(d.id, { cold: true, syrup: false, shots: r.shots }).includes('ice') && !((r.ice ?? 0) > 0)) found.add(d.id);
+        const t = buildTasks(id, { cold: true, syrup: !!r.pumps, shots: r.shots });
+        expect(t, `${id} ${size}`).not.toContain('steam');
+        expect(t, `${id} ${size}`).not.toContain('pour');
+        expect(t.indexOf('ice'), `${id} ${size}`).toBeGreaterThan(-1);
+        expect(t.indexOf('ice'), `${id} ${size}`).toBe(t.indexOf('milk') - 1);
+        expect(r.ice ?? 0, `${id} ${size}`).toBeGreaterThan(0);
       }
     }
-    expect([...found].sort()).toEqual(BOOK_ONLY_COLD_WITHOUT_ICE_TARGET);
   });
   test('остальные напитки не изменились: шаги холодных напитков с механикой по-прежнему кончаются льдом там, где цель есть', () => {
     expect(buildTasks('icedlatte', { cold: true, syrup: false })).toContain('ice');
