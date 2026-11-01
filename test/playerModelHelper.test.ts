@@ -21,13 +21,13 @@ describe('помощник в модели игрока (33-Б)', () => {
       }
     }
   });
-  test('после покупки помощник готовит: в среднем хотя бы полгостя в день, выручка и расходы положительны', () => {
+  test('после покупки помощник готовит: в среднем хотя бы 0,2 гостя в день (простых заказов без еды немного), выручка и расходы положительны', () => {
     for (const p of PROFILES) {
       const rs = Array.from({ length: 20 }, (_, i) => simulate(i + 1, p, 40));
       const ds = rs.flatMap((r) => r.helper.filter((h, i) => (r.snaps[i]?.owned.includes('helper') ?? false) && (r.snaps[i]?.rank ?? 0) >= HELPER_MIN_RANK));
       expect(ds.length).toBeGreaterThan(100);
       const served = ds.reduce((a, h) => a + h.served, 0) / ds.length;
-      expect(served).toBeGreaterThan(0.4);
+      expect(served).toBeGreaterThan(0.2);
       expect(served).toBeLessThan(3);
       expect(ds.every((h) => h.revenue >= 0 && h.costs >= 0 && (h.served === 0 || h.revenue > h.costs))).toBe(true);
     }

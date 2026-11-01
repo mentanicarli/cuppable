@@ -10,7 +10,15 @@ export const CASE_EQ: Readonly<Record<string, string>> = {
 };
 export const MICROWAVE = 'microwave';
 export const FOOD_COST_SHARE = 0.45;
+/** Шанс взять еду при одной витрине; каждая следующая витрина прибавляет FOOD_CHANCE_STEP, не больше FOOD_CHANCE_MAX (33-Б). */
 export const FOOD_CHANCE = 0.4;
+export const FOOD_CHANCE_STEP = 0.1;
+export const FOOD_CHANCE_MAX = 0.7;
+/** Шанс по числу разных витрин среди доступных блюд: одна — 0,4 (как раньше), две — 0,5, три — 0,6, четыре — 0,7. */
+export const foodChance = (pool: readonly Food[]): number => {
+  const n = new Set(pool.map((f) => f.case)).size;
+  return Math.min(FOOD_CHANCE_MAX, FOOD_CHANCE + FOOD_CHANCE_STEP * Math.max(0, n - 1));
+};
 
 export interface ShowcaseState {
   rank: number;
@@ -28,7 +36,7 @@ export function foodAvailable(s: ShowcaseState): Food[] {
 export function rollFood(s: ShowcaseState, rng: Rng): OrderFood | null {
   const pool = foodAvailable(s);
   if (!pool.length || (s.day ?? 99) < 2) return null;
-  if (rng() >= FOOD_CHANCE) return null;
+  if (rng() >= foodChance(pool)) return null;
   const f = pool[Math.floor(rng() * pool.length) % pool.length] as Food;
   const heat = f.heatable && !!s.eq?.[MICROWAVE] && rng() < 0.5;
   return { id: f.id, name: f.name, price: f.price, case: f.case, heat };

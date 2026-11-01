@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { foodAvailable, foodChoices, foodStation, heatScore, rollFood, rollOrder, say, settle } from '../src/game/api';
+import { foodAvailable, foodChance, foodChoices, foodStation, heatScore, rollFood, rollOrder, say, settle } from '../src/game/api';
 
 const seeded = (s: number) => () => (s = (s * 1664525 + 1013904223) % 4294967296) / 4294967296;
 const names = { a: 'Круассан', b: 'Чизкейк' };
@@ -88,4 +88,41 @@ describe('станция еды', () => {
 test('цена блюда добавляется к цене напитка и не умножается на зерно', () => {
   const r = settle({ basePrice: 100, beans: true, paidSyrup: false, extra: 200, quality: 1, type: 'regular', flawless: false, cards: false, rating: 3 });
   expect(r.price).toBe(Math.round(100 * 1.15) + 200);
+});
+
+describe('шанс взять еду растёт с числом витрин (33-Б)', () => {
+  const sets: Array<[string, Record<string, boolean>, number]> = [
+    ['одна витрина', { case_snacks: true }, 0.4],
+    ['две', { case_snacks: true, case_pastry: true }, 0.5],
+    ['три', { case_snacks: true, case_pastry: true, case_dessert: true }, 0.6],
+    ['четыре', { case_snacks: true, case_pastry: true, case_dessert: true, fridge_deli: true }, 0.7]
+  ];
+  for (const [name, eq, p] of sets) {
+    test(`${name}: порог ${p}`, () => {
+      expect(foodChance(foodAvailable({ rank: 9, eq }))).toBeCloseTo(p, 10);
+      /* порог проверяем границей броска: чуть ниже — берёт, чуть выше — нет; второй бросок выбирает блюдо */
+      const below = [p - 1e-9, 0.5];
+      const above = [p + 1e-9, 0.5];
+      let i = 0; const rb = () => below[i++ % 2] as number;
+      let j = 0; const ra = () => above[j++ % 2] as number;
+      expect(rollFood({ rank: 9, day: 9, eq }, rb)).not.toBeNull();
+      expect(rollFood({ rank: 9, day: 9, eq }, ra)).toBeNull();
+    });
+  }
+  test('при одной витрине поток бросков прежний: порог 0,4, число бросков то же', () => {
+    const eq = { case_snacks: true };
+    const a = seeded(11), b = seeded(11);
+    let ca = 0, cb = 0;
+    const ra = () => { ca++; return a(); };
+    const rb = () => { cb++; return b(); };
+    for (let k = 0; k < 400; k++) {
+      const x = rollFood({ rank: 9, day: 9, eq }, ra);
+      /* эталон: прежнее правило, шанс 0,4 */
+      const pool = foodAvailable({ rank: 9, day: 9, eq });
+      let y = null;
+      if (rb() < 0.4) { const f = pool[Math.floor(rb() * pool.length) % pool.length]; const h = f && f.heatable && !!eq['microwave'] && rb() < 0.5; y = f ? { id: f.id, heat: !!h } : null; }
+      expect(x?.id ?? null).toBe(y?.id ?? null);
+    }
+    expect(ca).toBe(cb);
+  });
 });
