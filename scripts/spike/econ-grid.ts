@@ -2,7 +2,11 @@
    Запуск: MODE=base node scripts/spike/econ-run.mjs econ-grid  → out/economy/33g-<mode>.md */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { RENT_BASE, rentFor } from '../../src/game/economy';
-import { PROFILE_SET, STRESS, runProfile, summarize } from './econ-profiles';
+import { arrivalRange } from '../../src/game/shift';
+import { playDay } from './econ-sim';
+import { seeded } from '../../src/game/playerModel';
+import { SHOP_DEFS } from '../../src/game/playerModel';
+import { PROFILE_SET, STRESS, mean, runProfile, summarize } from './econ-profiles';
 import type { Summary } from './econ-profiles';
 import type { Rules } from './econ-sim';
 
@@ -13,9 +17,17 @@ const n0 = (x: number): string => (Number.isFinite(x) ? String(Math.round(x)) : 
 /** Аренда с коэффициентом роста g за ранг начиная с 5-го и надбавкой s ₽ с 5-го ранга; ранги 1–4 как в игре. */
 export const rentWith = (g: number, s: number) => (rank: number): number => (rank <= 4 ? rentFor(rank) : Math.round((RENT_BASE * (1 + 0.45 * 3 + g * (rank - 4)) + s) / 10) * 10);
 
+/** Пауза между гостями: как arrivalRange до 10-го дня, дальше продолжает снижаться до 25-го дня на долю s от прежних полов (20 и 28 с). */
+export const arrivalWith = (sCut: number, until = 25) => (day: number): [number, number] => {
+  const [a, b] = arrivalRange(day);
+  if (day <= 10 || sCut === 0) return [a, b];
+  const k = Math.min(1, (day - 10) / (until - 10));
+  return [20 * (1 - sCut * k), 28 * (1 - sCut * k)];
+};
+
 const mode = process.env['MODE'] ?? 'base';
 const out: string[] = [];
-const run = (rules: Rules, days = 40): Array<{ key: string; sm: Summary }> => PROFILE_SET.map((p) => ({ key: p.key, sm: summarize(runProfile(p.prof, days, { rules })) }));
+const run = (rules: Rules, days = 40): Array<{ key: string; sm: Summary }> => PROFILE_SET.map((p) => ({ key: p.key, sm: summarize(runProfile(p.prof, days, { rules }, Number(process.env['RUNS'] ?? 60))) }));
 
 if (mode === 'base') {
   const res = run({});
@@ -51,6 +63,54 @@ if (mode === 'cmp') {
     }
   }
   out.push(`Аренда после: g = ${g}, надбавка ${sx}; ранги 5 / 7 / 9: ${[5, 7, 9].map((r) => rentWith(g, sx)(r)).join(' / ')} (было ${[5, 7, 9].map(rentFor).join(' / ')}). Ячейка: деньги на конец дня (медиана), ₽ / доля прогонов с концом игры к этому дню.`, '', ...md(['Профиль', '', 'д10', 'д20', 'д30', 'д40', 'д60', 'Ранг 9, день', 'Ожидание покупки, макс дн.'], rows));
+}
+
+if (mode === 'arrival') {
+  const base = run({});
+  const rows: string[][] = [];
+  for (const sCut of (process.env['CUTS'] ?? '0.1,0.2,0.3,0.4,0.5').split(',').map(Number)) {
+    const res = run({ arrival: arrivalWith(sCut) });
+    const dl = (k: string): number => ((res.find((x) => x.key === k) as { sm: Summary }).sm.lostShare - (base.find((x) => x.key === k) as { sm: Summary }).sm.lostShare) * 100;
+    const dn = (k: string): number => (res.find((x) => x.key === k) as { sm: Summary }).sm.net2540 - (base.find((x) => x.key === k) as { sm: Summary }).sm.net2540;
+    const okLost = dl('1.20') <= 3 && dl('1.40') <= 3;
+    const okNet = ['0.70', '0.88', '1.00'].every((k) => dn(k) > 0);
+    rows.push([String(sCut), `${(20 * (1 - sCut)).toFixed(0)}–${(28 * (1 - sCut)).toFixed(0)}`, ...['0.70', '0.88', '1.00', '1.20', '1.40'].map((k) => `${dn(k) >= 0 ? '+' : ''}${n0(dn(k))}`), ...['1.00', '1.20', '1.40'].map((k) => `${dl(k) >= 0 ? '+' : ''}${dl(k).toFixed(1)}`), okLost ? 'да' : 'нет', okNet ? 'да' : 'нет']);
+  }
+  out.push('**Приход гостей: продолжение ускорения с 10-го до 25-го дня (доля s от старых полов 20 и 28 с). Изменение чистого дохода д25–40, ₽/день, и потерянных гостей, п. п.:**', '', ...md(['s', 'пол к 25-му дню, с', 'Δ чистый 0,70', '0,88', '1,00', '1,20', '1,40', 'Δ потеряно 1,00', '1,20', '1,40', 'потери ≤ +3 п. п. (1,20 и 1,40)', 'доход растёт (0,70–1,00)'], rows));
+}
+
+if (mode === 'cases') {
+  /* окупаемость позиций по профилям: в каждом прогоне берётся его состояние на день, когда позиция впервые доступна, и играются AB_DAYS дня с позицией и без (одни семена) */
+  const AB_DAYS = 4;
+  const ids = (process.env['ITEMS'] ?? 'eq_case_pastry,eq_case_dessert,eq_fridge_deli,eq_microwave,eq_whipper,eq_juice').split(',');
+  const rows: string[][] = [];
+  for (const id of ids) {
+    const def = SHOP_DEFS.find((x) => x.id === id);
+    if (!def) throw new Error('нет позиции ' + id);
+    for (const p of PROFILE_SET) {
+      const sims = runProfile(p.prof, 60, {}, Number(process.env['RUNS'] ?? 60));
+      const diffs: number[] = [];
+      for (const sm of sims) {
+        const av = sm.run.avail.get(id);
+        if (av === undefined) continue;
+        const snap = sm.run.snaps[av];
+        if (!snap) continue;
+        const owned: Record<string, boolean> = {};
+        for (const o of snap.owned) if (o !== id) owned[o] = true;
+        const arm = (own: Record<string, boolean>): number => {
+          const rng = seeded(7000 + diffs.length);
+          let rating = snap.rating, net = 0;
+          for (let k = 0; k < AB_DAYS; k++) { const o = playDay({ day: snap.day + k, rank: snap.rank, rating, owned: own }, p.prof, rng); rating = o.rating; net += o.revenue - o.costs; }
+          return net / AB_DAYS;
+        };
+        diffs.push(arm({ ...owned, [id]: true }) - arm(owned));
+      }
+      const m = mean(diffs), se = diffs.length > 1 ? Math.sqrt(mean(diffs.map((x) => (x - m) ** 2)) / diffs.length) : NaN;
+      const pay = (price: number): string => (diffs.length && m > 2 * se ? (price / m).toFixed(1) : m > 0 ? (price / m).toFixed(1) + '?' : 'никогда');
+      rows.push([def.name, String(def.cost), p.key, `${diffs.length}/${process.env['RUNS'] ?? 60}`, diffs.length ? `${n0(m)} (±${n0(se)})` : '—', diffs.length ? pay(def.cost) : '—', diffs.length ? pay(Math.round(def.cost / 2)) : '—']);
+    }
+  }
+  out.push(`**Окупаемость по профилям (${AB_DAYS} дня A/B на состоянии дня открытия каждого прогона), дней; «?» — прирост в пределах шума. Последняя колонка — при цене вдвое ниже:**`, '', ...md(['Позиция', 'Цена', 'Профиль', 'Дошли', 'Прирост ₽/день', 'Окупается, дней', 'при 50 % цены'], rows));
 }
 mkdirSync('out/economy', { recursive: true });
 writeFileSync(`out/economy/33g-${mode}.md`, out.join('\n') + '\n');
