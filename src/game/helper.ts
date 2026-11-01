@@ -17,10 +17,10 @@ export const helperCanPour = (g: HelperGuest, c: HelperCarafe | null): boolean =
 
 /** Сколько секунд помощник готовит напиток: каждый шот сверх первого (двойной эспрессо, 0.4 и 0.6 л) добавляет ещё один полный цикл. */
 export const helperPrepTime = (key: string, shots = 1): number => (key === 'filter_coffee' ? 10 : key in HELPER_TEA_MINUTES ? teaTime(key) : key === 'espresso' || key === 'espresso2' ? 16 : key === 'americano' ? 20 : 26) + (key in HELPER_TEA_MINUTES ? 0 : 16 * (Math.max(1, shots) - 1));
-/** Время чая: 10 с на воду, засыпку и подачу (STEP_SECONDS: water 5 + доля запаса заказа) плюс заварка по рецепту в реальных секундах бара (минуты · 2,5 / BREW_SPEED: сенча 6,3 с, ассам 12,5 с, каркадэ и гречишный 15,6 с); не меньше американо (20 с). Сенча 20, ассам 23, каркадэ и гречишный 26 с. */
+/** Время чая: 10 с на воду, засыпку и подачу плюс заварка в баре до целевого времени рецепта (минуты / BREW_SPEED: сенча 2,5 с, ассам 5 с, каркадэ и гречишный 6,3 с, замер ботом 33-Г: 6,3 с у ассама вместе с кликами), но не меньше американо (20 с). Итог для всех четырёх чаёв 20 с. */
 function teaTime(key: string): number {
   const minutes = HELPER_TEA_MINUTES[key] ?? 4;
-  return Math.max(20, Math.round(10 + (minutes * 2.5) / BREW_SPEED));
+  return Math.max(20, Math.round(10 + minutes / BREW_SPEED));
 }
 
 /** Берёт самого нетерпеливого из тех, кого можно отдать помощнику. */

@@ -31,6 +31,16 @@ const { chromium } = require('playwright'); const path = require('path'); const 
   const m2 = await p.evaluate(() => window.__dbg.G.money);
   console.log('чай выдан помощником; money', m1, '->', m2, m2 > m1 ? 'OK' : 'FAIL');
   if (!(m2 > m1)) process.exitCode = 1;
+  /* 33-Г: холодный чай (нужен льдогенератор): помощник берёт и выдаёт так же */
+  const sC = await p.evaluate(() => window.__dbg.D.stats.served); const mC = await p.evaluate(() => window.__dbg.G.money);
+  await p.waitForFunction(() => window.__dbg.D.customers.some((c) => c.arrived && !c.leaving && !(window.__dbg.D.helper && window.__dbg.D.helper.c === c)), null, { timeout: 90000 });
+  await p.evaluate(() => { const G = window.__dbg.G; G.eq_tea = true; G.eq_ice = true; const c = window.__dbg.D.customers.find((x) => x.arrived && !x.leaving && !(window.__dbg.D.helper && window.__dbg.D.helper.c === x)); c.drink = 'tea_sencha'; c.syrup = null; c.strong = false; c.pat = c.max = 999; Object.assign(c.order, { id: 'tea_sencha', key: 'tea_sencha', name: 'Чай зелёный сенча', size: '0.3', base: 160, price: 160, cold: true, shots: 0, syrup: null, food: null }); window.__coldId = c.id; });
+  await p.waitForFunction(() => window.__dbg.D.helper && window.__dbg.D.helper.c && window.__dbg.D.helper.c.id === window.__coldId, null, { timeout: 30000 });
+  console.log('chip', await p.evaluate(() => document.querySelector('#helperChip').textContent));
+  await p.waitForFunction((n) => window.__dbg.D.stats.served > n, sC, { timeout: 60000 });
+  const mC2 = await p.evaluate(() => window.__dbg.G.money);
+  console.log('холодный чай выдан помощником; money', mC, '->', mC2, mC2 > mC ? 'OK' : 'FAIL');
+  if (!(mC2 > mC)) process.exitCode = 1;
   await p.evaluate(() => window.__dbg.showBook()); await p.waitForTimeout(600); await p.screenshot({ path: 'book.png' });
   console.log(errs.length ? errs.slice(0, 4).join('\n') : 'NO_ERRORS'); await b.close();
 })();

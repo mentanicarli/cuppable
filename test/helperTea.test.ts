@@ -30,8 +30,8 @@ describe('чаи у помощника (33-В)', () => {
   test('самого нетерпеливого берёт и среди чаёв', () => {
     expect(helperPick([g(1, 'tea_assam', 40), g(2, 'americano', 20), g(3, 'tea_sencha', 5)], null, null, { tea: true })?.id).toBe(3);
   });
-  test('время чая: не меньше американо, растёт с заваркой: сенча 20, ассам 23, каркадэ и гречишный 26 с; шоты не прибавляют', () => {
-    expect(TEAS.map((k) => helperPrepTime(k))).toEqual([20, 23, 26, 26]);
+  test('время чая: не меньше американо; заварка до цели рецепта 2,5–6,3 с, поэтому у всех четырёх 20 с; шоты не прибавляют', () => {
+    expect(TEAS.map((k) => helperPrepTime(k))).toEqual([20, 20, 20, 20]);
     for (const k of TEAS) {
       expect(helperPrepTime(k)).toBeGreaterThanOrEqual(helperPrepTime('americano'));
       expect(helperPrepTime(k, 3)).toBe(helperPrepTime(k));

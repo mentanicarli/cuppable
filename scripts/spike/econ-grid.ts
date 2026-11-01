@@ -1,7 +1,7 @@
 /* 33-Г: прогон набора профилей. MODE=base — таблица «профиль × метрики» на текущих правилах; MODE=rent — сетка параметров аренды.
    Запуск: MODE=base node scripts/spike/econ-run.mjs econ-grid  → out/economy/33g-<mode>.md */
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { RENT_BASE, rentFor } from '../../src/game/economy';
+import { RENT_BASE, helperWage, rentFor } from '../../src/game/economy';
 import { arrivalRange } from '../../src/game/shift';
 import { playDay } from './econ-sim';
 import { seeded } from '../../src/game/playerModel';
@@ -111,6 +111,23 @@ if (mode === 'cases') {
     }
   }
   out.push(`**Окупаемость по профилям (${AB_DAYS} дня A/B на состоянии дня открытия каждого прогона), дней; «?» — прирост в пределах шума. Последняя колонка — при цене вдвое ниже:**`, '', ...md(['Позиция', 'Цена', 'Профиль', 'Дошли', 'Прирост ₽/день', 'Окупается, дней', 'при 50 % цены'], rows));
+}
+
+if (mode === 'helper') {
+  /* выгода помощника по рангам: те же семена с помощником и без (чистый доход за день, средний по дням этого ранга) */
+  const N = Number(process.env['RUNS'] ?? 120);
+  const wageRule = process.env['WAGE_FROM'] ? (r: number): number => helperWage(r) - (r >= Number(process.env['WAGE_FROM']) ? Number(process.env['WAGE_CUT'] ?? 0) : 0) : undefined;
+  const rows: string[][] = [];
+  for (const p of PROFILE_SET) {
+    const w = runProfile(p.prof, 60, { rules: wageRule ? { wage: wageRule } : {} }, N), n = runProfile(p.prof, 60, { noHelper: true }, N);
+    const cells: string[] = [];
+    for (let r = 5; r <= 9; r++) {
+      const a = w.flatMap((x) => x.days.filter((d) => d.rank === r && x.helperDay > 0 && d.day > x.helperDay)), b = n.flatMap((x) => x.days.filter((d) => d.rank === r));
+      cells.push(a.length > 40 && b.length > 40 ? `${n0(mean(a.map((d) => d.net)) - mean(b.map((d) => d.net)))} (${a.length})` : '—');
+    }
+    rows.push([p.key, ...cells]);
+  }
+  out.push(`**Выгода помощника, ₽/день (чистый с помощником минус без; в скобках число дней в выборке; ${N} прогонов, 60 дней; зарплата ${wageRule ? 'с поправкой' : 'как в игре'}):**`, '', ...md(['Профиль', 'ранг 5', 'ранг 6', 'ранг 7', 'ранг 8', 'ранг 9'], rows));
 }
 mkdirSync('out/economy', { recursive: true });
 writeFileSync(`out/economy/33g-${mode}.md`, out.join('\n') + '\n');
